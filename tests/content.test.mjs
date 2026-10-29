@@ -75,6 +75,12 @@ test('el CTA principal dice lo mismo en toda la landing', async () => {
   assert.match(html, /<a class="btn btn-s" href="#formulario">Estrategia gratis<\/a>/);
 });
 
+test('Exoneris con las cifras nuevas y ninguna antigua', async () => {
+  const html = await readFile(path.join(dist, 'index.html'), 'utf8');
+  for (const old of ['106 mil', '+600 seguidores', '658 seguidores', '652', '106.866']) assert.ok(!html.includes(old), `cifra antigua: ${old}`);
+  for (const now of ['151 mil', '+1.000 seguidores nuevos', '1.058', '1.032 seguidores']) assert.ok(html.includes(now), `falta: ${now}`);
+});
+
 test('solo cifras confirmadas en la landing', async () => {
   const html = await readFile(path.join(dist, 'index.html'), 'utf8');
   // Los prefijos telefónicos del selector no son cifras de resultados.
@@ -83,16 +89,18 @@ test('solo cifras confirmadas en la landing', async () => {
   const numbers = new Set((text.match(/(?<![\p{L}\d])[+<]?\d[\d.,]*\d(?:\s?(?:millones|mil|M)\b)?|(?<![\p{L}\d])[+<]?\d(?:\s?(?:millones|mil|M)\b)?/gu) || []).map((n) => n.trim()));
   const allowed = [
     // Agencia y casos (sección 3 del encargo y web aasmarketing.com)
-    '+10 M', '10 millones', '+2.500', '2.500', '+300', '+25', '25', '5,0', '+5.000', '2,5 millones', '+2,5 M', '<3', '3', '2',
-    '106 mil', '+600', '600', '24',
+    '+10 M', '10 millones', '+2.500', '2.500', '+300', '+25', '25', '5,0', '+5.000', '2,5 millones', '+2,5 M', '<3', '3', '2', '24',
+    // Exoneris (capturas actualizadas de octubre de 2026)
+    '151 mil', '126 mil', '1.058', '+1.000', '1.032', '151.155', '126.433', '15',
     // Capturas de reels (alt del origen)
     '946 mil', '+406 mil', '406 mil', '306,9 mil', '257 mil', '110 mil', '80,3 mil', '53,8 mil', '52,4 mil', '37,1 mil', '33,2 mil',
     // Capturas de perfiles y casos (alt del origen)
     '59,1 mil', '19 mil', '8.975', '7.772', '5.784', '4.878', '4.784', '3.878', '3.159', '2.616', '1.777', '1.768', '1.377', '1.368',
-    '1.267', '1.057', '1.046', '863', '790', '732', '716', '658', '583', '543', '148', '128', '3.541', '74,2 mil', '106.866', '652',
+    '1.267', '1.057', '1.046', '863', '790', '732', '716', '583', '543', '148', '128', '3.541', '74,2 mil',
     '3.000', '5.000', '30', '10',
     // Textos: pasos, plazos, formulario, contacto y legal
     '1', '4', '5', '1/5', '100', '10/10', '100%', '2026', '695', '850', '590', '+34', '34', '0', '000', '1.0', '6',
+    '600', // ejemplo del campo de teléfono (600 000 000)
   ];
   const unknown = [...numbers].filter((n) => !allowed.includes(n.trim()) && !allowed.includes(n.replace(/^[+<]/, '').trim()));
   const where = unknown.map((n) => `${n} → «${text.slice(Math.max(0, text.indexOf(n) - 40), text.indexOf(n) + 40)}»`);

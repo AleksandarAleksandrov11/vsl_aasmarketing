@@ -214,8 +214,8 @@
 .ex-phone { width: min(62%, 260px); margin-inline: auto; }
 .ex-title b { display: block; }
 .ex-title span { display: block; color: var(--ink-mute); }
-.ex-stats { display: flex; gap: 32px; margin-top: 28px; }
-.ex-stats dt { font-size: clamp(1.9rem, 1.4rem + 2vw, 3rem); font-weight: 640; line-height: 1; letter-spacing: -0.045em; }
+.ex-stats { display: grid; grid-template-columns: repeat(3, auto); justify-content: start; gap: 12px clamp(18px, 4vw, 40px); margin-top: 28px; }
+.ex-stats dt { font-size: clamp(1.5rem, 1.1rem + 2vw, 3rem); font-weight: 640; line-height: 1; letter-spacing: -0.045em; white-space: nowrap; }
 .ex-stats dd { margin-top: 6px; font-size: 0.9375rem; color: var(--ink-mute); }
 .ex-shots { display: grid; gap: 12px; margin-top: 28px; }
 .ex-shots .shot-img { border-color: var(--line); background: #0c0c0d; box-shadow: var(--shadow-s); }

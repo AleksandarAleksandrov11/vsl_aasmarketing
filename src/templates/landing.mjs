@@ -124,8 +124,8 @@ async function vdn(ctx) {
 async function exoneris(ctx) {
   return `<section class="sec" id="caso-exoneris" aria-labelledby="t-exoneris">
   <div class="wrap ex-grid">
-    <figure class="phone ex-phone">${await picture(ctx.assets, 'img/cases/exoneris-primer-video.webp', {
-      alt: 'Primer vídeo de Javier Núñez en Instagram, con 106 mil visualizaciones', widths: [280, 401], sizes: '(min-width: 900px) 320px, 62vw',
+    <figure class="phone ex-phone">${await picture(ctx.assets, 'img/cases/exoneris-primer-video.jpg', {
+      alt: 'Primer vídeo de Javier Núñez en Instagram, con 151 mil visualizaciones', widths: [280, 405], sizes: '(min-width: 900px) 320px, 62vw',
     })}</figure>
     <div>
       <h2 class="h2 ex-title" id="t-exoneris"><b>${esc(EXONERIS.titleA)}</b> <span>${esc(EXONERIS.titleB)}</span></h2>
@@ -134,8 +134,8 @@ async function exoneris(ctx) {
         ${EXONERIS.stats.map((s) => `<div><dt>${esc(s.value)}</dt><dd>${esc(s.label)}</dd></div>`).join('\n        ')}
       </dl>
       <div class="ex-shots">
-        <figure class="shot"><div class="shot-img">${await picture(ctx.assets, 'img/cases/exoneris-estadisticas.webp', { alt: 'Estadísticas del primer vídeo: 106.866 reproducciones y 652 seguidores nuevos', widths: [450, 900], sizes: '(min-width: 900px) 330px, 92vw' })}</div></figure>
-        <figure class="shot"><div class="shot-img">${await picture(ctx.assets, 'img/cases/exoneris-perfil.webp', { alt: 'Perfil de Instagram de Javier Núñez, de Exoneris Consulting', widths: [450, 900], sizes: '(min-width: 900px) 330px, 92vw' })}</div></figure>
+        <figure class="shot"><div class="shot-img">${await picture(ctx.assets, 'img/cases/exoneris-estadisticas.jpg', { alt: 'Estadísticas del primer vídeo: 151.155 reproducciones, 126.433 espectadores, 15 segundos de tiempo medio y 1.058 seguidores nuevos', widths: [450, 900, 1206], sizes: '(min-width: 900px) 330px, (min-width: 640px) 45vw, 92vw' })}</div></figure>
+        <figure class="shot"><div class="shot-img">${await picture(ctx.assets, 'img/cases/exoneris-perfil.jpg', { alt: 'Perfil de Instagram de Javier Núñez, de Exoneris Consulting, con 1.032 seguidores', widths: [450, 900, 1206], sizes: '(min-width: 900px) 330px, (min-width: 640px) 45vw, 92vw' })}</div></figure>
       </div>
     </div>
   </div>

@@ -349,8 +349,11 @@ test('cookies: el píxel solo carga con consentimiento y usa los mismos event_id
     assert.equal(pageView.consent, false);
     assert.match(pageView.fbp, /^fb\.1\.\d+\.\d+$/);
 
+    assert.equal(await page.evaluate(() => window.__vercelScripts || 0), 0, 'la analítica no carga sin consentimiento');
     await page.click('[data-ck="accept"]');
     await page.waitForFunction(() => Array.isArray(window.__fbq) && window.__fbq.some((c) => c[0] === 'track'));
+    await page.waitForFunction(() => window.__vercelScripts === 2);
+    assert.equal(typeof (await page.evaluate(() => window.vaq && window.vaq[0] && window.vaq[0][0])), 'string', 'cola de Web Analytics con beforeSend');
     const calls = await page.evaluate(() => window.__fbq);
     const pv = calls.filter((c) => c[0] === 'track' && c[1] === 'PageView');
     assert.equal(pv.length, 1, 'un solo PageView en el navegador');
@@ -529,9 +532,21 @@ test('cookies: rechazar se recuerda, configurar activa y desactivar revoca', { s
     await page.evaluate(() => scrollTo(0, 300));
     await page.waitForTimeout(3300);
     assert.equal(await page.isVisible('#ck'), false, 'la decisión se recuerda');
+    assert.equal(await page.evaluate(() => window.__vercelScripts || 0), 0, 'rechazar: sin analítica');
+    // Solo analítica: carga Vercel Analytics y no el píxel.
     await page.click('[data-open-cookies]');
     assert.equal(await page.isVisible('#ck-panel'), true);
+    assert.equal(await page.isChecked('#ck-ana'), false);
     assert.equal(await page.isChecked('#ck-mkt'), false);
+    await page.check('#ck-ana');
+    await page.click('[data-ck="save"]');
+    await page.waitForFunction(() => window.__vercelScripts === 2);
+    assert.equal(await page.evaluate(() => typeof window.fbq), 'undefined', 'solo analítica: sin píxel');
+    const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('aas_consent')));
+    assert.deepEqual([stored.v, stored.analytics, stored.marketing], [2, true, false]);
+    // Y ahora también marketing.
+    await page.click('[data-open-cookies]');
+    assert.equal(await page.isChecked('#ck-ana'), true);
     await page.check('#ck-mkt');
     await page.click('[data-ck="save"]');
     await page.waitForFunction(() => Array.isArray(window.__fbq));

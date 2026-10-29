@@ -46,13 +46,13 @@ export function track(name, { params, beacon = false, replay = false } = {}) {
 // Si aceptan las cookies más tarde: el píxel manda PageView (y ViewContent si
 // ya ocurrió) con el MISMO event_id que el servidor. Nunca dos PageView distintos.
 export function initTracking() {
-  onConsentChange((marketing, before) => {
-    if (marketing && !before) {
+  onConsentChange((state, before) => {
+    if (state.marketing && !before.marketing) {
       for (const e of fired) {
         pixelTrack(e.name, e.params, e.id);
         sendServer(payload(e.name, e.id, { replay: true }));
       }
-    } else if (!marketing && before) {
+    } else if (!state.marketing && before.marketing) {
       revokePixel();
     }
   });

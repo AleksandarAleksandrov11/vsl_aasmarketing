@@ -36,7 +36,7 @@ export const HERO = {
   sub: 'Voy a tu negocio a grabar, edito los vídeos, gestiono tus redes y lanzo tus anuncios. Tú atiendes a los clientes.',
   note: 'Gratis y sin compromiso. Te la mando por WhatsApp en menos de 24 horas.',
   phones: [
-    { src: 'img/results/exoneris-106mil.webp', alt: 'Primer reel de Javier Núñez, de Exoneris Consulting, con 106 mil visualizaciones' },
+    { src: 'img/cases/exoneris-primer-video.jpg', alt: 'Primer reel de Javier Núñez, de Exoneris Consulting, con 151 mil visualizaciones' },
     { src: 'img/results/tatuajes-946mil.webp', alt: 'Reel de un estudio de tatuajes con 946 mil visualizaciones' },
     { src: 'img/results/michel-tobias-80mil.webp', alt: 'Reel de Míchel Tobías, psicólogo deportivo, con 80,3 mil visualizaciones' },
   ],
@@ -61,8 +61,8 @@ export const RESULTS = [
   { src: 'img/results/vdn-performance-406mil.webp', views: '+406 mil', who: 'VDN Performance', alt: 'Reel de VDN Performance sobre los mejores coches por menos de 3.000 euros, con más de 406 mil visualizaciones' },
   { src: 'img/results/vdn-performance-307mil.webp', views: '306,9 mil', who: 'VDN Performance', alt: 'Reel de VDN Performance sobre los mejores coches por menos de 5.000 euros, con 306,9 mil visualizaciones' },
   { src: 'img/results/tatuajes-250mil.webp', views: '257 mil', who: 'Estudio de tatuajes', alt: 'Reel de un estudio de tatuajes sobre las zonas que más duelen al tatuarse, con 257 mil visualizaciones' },
+  { src: 'img/cases/exoneris-primer-video.jpg', views: '151 mil', who: 'Exoneris Consulting', alt: 'Primer reel de Javier Núñez, de Exoneris Consulting, con 151 mil visualizaciones' },
   { src: 'img/results/wash-go-detailing-110mil.webp', views: '110 mil', who: 'Wash & Go Detailing', alt: 'Reel de presentación de Wash & Go Detailing con 110 mil visualizaciones' },
-  { src: 'img/results/exoneris-106mil.webp', views: '106 mil', who: 'Exoneris Consulting', alt: 'Primer reel de Javier Núñez, de Exoneris Consulting, con 106 mil visualizaciones' },
   { src: 'img/results/michel-tobias-80mil.webp', views: '80,3 mil', who: 'Míchel Tobías, psicólogo deportivo', alt: 'Reel de Míchel Tobías, psicólogo deportivo, con 80,3 mil visualizaciones' },
   { src: 'img/results/vdn-performance-54mil.webp', views: '53,8 mil', who: 'VDN Performance', alt: 'Reel de VDN Performance con 53,8 mil visualizaciones' },
   { src: 'img/results/wash-go-detailing-52mil.webp', views: '52,4 mil', who: 'Wash & Go Detailing', alt: 'Reel de Wash & Go Detailing con un Volvo XC40, con 52,4 mil visualizaciones' },
@@ -83,13 +83,17 @@ export const VDN = {
   ],
 };
 
+// Cifras actualizadas con las capturas de octubre de 2026 (estadísticas del
+// primer vídeo y perfil): 151.155 reproducciones, 126.433 espectadores,
+// 1.058 seguidores nuevos y 1.032 seguidores en la cuenta.
 export const EXONERIS = {
   titleA: 'Su primer vídeo.',
-  titleB: '+600 seguidores en 24 horas.',
+  titleB: '+1.000 seguidores nuevos.',
   text: 'Javier Núñez, de Exoneris Consulting, ayuda a inversores en subastas, NPL y REO. Fue el primer vídeo que subimos a su cuenta.',
   stats: [
-    { value: '106 mil', label: 'visitas del primer vídeo' },
-    { value: '+600', label: 'seguidores en 24 horas' },
+    { value: '151 mil', label: 'visitas del primer vídeo' },
+    { value: '126 mil', label: 'personas lo vieron' },
+    { value: '1.058', label: 'seguidores nuevos con ese vídeo' },
   ],
 };
 
@@ -145,11 +149,11 @@ export const ACCOUNTS = [
   ['monica-baena', 'Mónica Baena', 'terapeuta en Málaga', '1.267'],
   ['vanessa', 'Vanessa', 'facilitadora de Kundalini', '1.057'],
   ['gloria', 'Gloria Díaz', 'psicóloga', '1.046'],
+  ['javier-nunez-exoneris', 'Javier Núñez', 'subastas y NPL', '1.032'],
   ['programa-mujeres-30', 'Programa de entrenamiento para mujeres de más de 30', '', '863'],
   ['psiquekarolina', 'Karolina Cieliczka', 'psicóloga', '790'],
   ['aniitatellootattoo', 'Ana Tello', 'tatuadora en Málaga', '732'],
   ['brandon-palate', 'Brandon', 'nutricionista online', '716'],
-  ['javier-nunez-exoneris', 'Javier Núñez', 'subastas y NPL', '658'],
   ['laura-dominguez', 'Laura Domínguez Partia', '', '583'],
   ['michel-tobias', 'Míchel Tobías', 'psicólogo deportivo', '543'],
   ['yallah-viajes', 'Yallah Viajes', 'viajes a Marruecos', '148'],

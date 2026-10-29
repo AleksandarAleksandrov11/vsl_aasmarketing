@@ -80,9 +80,21 @@ async function serveApi(req, res, name) {
   return true;
 }
 
+// En Vercel, /_vercel/insights y /_vercel/speed-insights los sirve la plataforma
+// cuando Web Analytics y Speed Insights están activados. Aquí se simulan.
+const VERCEL_STUB = 'window.__vercelScripts=(window.__vercelScripts||0)+1;';
+
 const server = http.createServer(async (req, res) => {
   const urlPath = req.url.split('?')[0];
   try {
+    if (urlPath.startsWith('/_vercel/')) {
+      if (urlPath.endsWith('/script.js')) {
+        res.writeHead(200, { 'content-type': 'text/javascript; charset=utf-8' });
+        return res.end(VERCEL_STUB);
+      }
+      res.writeHead(204);
+      return res.end();
+    }
     const api = urlPath.match(/^\/api\/([a-z]+)$/);
     if (api && (await serveApi(req, res, api[1]))) return;
 

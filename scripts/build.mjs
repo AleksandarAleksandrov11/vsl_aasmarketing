@@ -4,7 +4,9 @@
 //
 // Variables de entorno que lee en el build (las mismas de Vercel):
 //   META_PIXEL_ID     ID del píxel. Si falta, la página no carga el píxel.
-//   VERCEL_ANALYTICS  "true" para añadir Vercel Web Analytics y Speed Insights.
+//   VERCEL_ANALYTICS  Vercel Web Analytics y Speed Insights (por defecto sí; "false" los quita).
+//                     Se cargan solo si aceptan la analítica en el aviso de cookies.
+//   LEADS_DB_ENABLED  "true" si se usa la copia en Upstash (la política de privacidad la nombra).
 //   OUT_DIR           carpeta de salida (por defecto dist; las pruebas usan otra).
 
 import { createHash } from 'node:crypto';
@@ -91,7 +93,8 @@ async function main() {
     assets,
     criticalCss,
     pixelId: pixelIdFromEnv(),
-    analytics: flag(process.env.VERCEL_ANALYTICS),
+    analytics: !/^(0|false|no|off)$/i.test(String(process.env.VERCEL_ANALYTICS ?? '').trim()),
+    leadsDb: flag(process.env.LEADS_DB_ENABLED),
     aleksPhoto: await findAleksPhoto(),
     mapSize: await svgSize('img/mapa-europa.svg'),
     asset: {
@@ -107,10 +110,7 @@ async function main() {
     },
   };
 
-  const analytics = ctx.analytics
-    ? '<script defer src="/_vercel/insights/script.js"></script><script defer src="/_vercel/speed-insights/script.js"></script>'
-    : '';
-  const finish = (html) => minifyHtml(html.replace('</body>', `${analytics}</body>`));
+  const finish = (html) => minifyHtml(html);
 
   await writeOut('index.html', finish(await landing(ctx)));
   for (const page of legalPages(ctx)) await writeOut(page.file, finish(page.html));
@@ -145,7 +145,7 @@ async function report(ctx) {
   console.log(line('main.css', css));
   console.log(line('app.js', js));
   console.log(`  Píxel de Meta: ${ctx.pixelId ? ctx.pixelId : 'no configurado (META_PIXEL_ID vacío)'}`);
-  console.log(`  Vercel Analytics: ${ctx.analytics ? 'sí' : 'no'}  ·  Foto de Aleks: ${ctx.aleksPhoto || 'no (se muestra el logo)'}`);
+  console.log(`  Vercel Analytics: ${ctx.analytics ? 'sí (tras el consentimiento de analítica)' : 'no'}  ·  Foto de Aleks: ${ctx.aleksPhoto || 'no (se muestra el logo)'}`);
 }
 
 main().catch((err) => {

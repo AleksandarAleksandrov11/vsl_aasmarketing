@@ -88,9 +88,12 @@ Abre http://localhost:3000. Para probar el formulario contra un Sheet, copia
 5. **Meta:** sigue [docs/meta.md](docs/meta.md) (portfolio, cuenta publicitaria,
    píxel desde el portfolio, verificación del dominio con TXT, token, Redeploy y
    "Probar eventos").
-6. **Opcional:** Vercel Web Analytics y Speed Insights. Actívalos en las pestañas
-   Analytics y Speed Insights del proyecto, pon `VERCEL_ANALYTICS=true` y Redeploy.
-   Speed Insights te dará el LCP, CLS e INP reales de las visitas.
+6. **Vercel Analytics:** en el proyecto, pestaña **Analytics** > Enable y pestaña
+   **Speed Insights** > Enable, y después Redeploy. La landing ya los trae
+   conectados al aviso de cookies: solo se cargan si el visitante acepta la
+   analítica (categoría propia en "Configurar"). Speed Insights te dará el LCP,
+   CLS e INP reales de las visitas desde Instagram. Si no los quieres, pon
+   `VERCEL_ANALYTICS=false`.
 7. **Opcional (decide tú):** copia de cada solicitud en una base de datos propia
    (Upstash Redis desde el Marketplace de Vercel). Está hecha y desactivada:
    `LEADS_DB_ENABLED=true` más `UPSTASH_REDIS_REST_URL` y `UPSTASH_REDIS_REST_TOKEN`.
@@ -209,11 +212,12 @@ la página publicada). Búscalos con `grep -rn "PENDIENTE\|REVISAR" src docs .en
 - FAQ "¿Qué necesito para empezar?": adaptada de la respuesta de la web.
 - Política de privacidad: datos recogidos, finalidad, base jurídica (medidas
   precontractuales y, para la medición, interés legítimo: confirmar con un
-  asesor), destinatarios (Vercel, Google, Meta, WhatsApp), transferencias,
+  asesor), analítica de Vercel con consentimiento, destinatarios (Vercel,
+  Google, Meta, WhatsApp y Upstash si activas la copia), transferencias,
   envío por servidor a Meta sin cookies (`CAPI_WITHOUT_CONSENT=true`),
   conservación, derechos y seguridad.
-- Política de cookies: lista de almacenamiento, `aas_attr`, cookies de Meta Pixel
-  y cómo cambiar la decisión.
+- Política de cookies: lista de almacenamiento, `aas_attr`, analítica de Vercel,
+  cookies de Meta Pixel y cómo cambiar la decisión.
 - Aviso legal: dominio y capturas de clientes.
 
 ## Decisiones que conviene que conozcas
@@ -225,8 +229,17 @@ la página publicada). Búscalos con `grep -rn "PENDIENTE\|REVISAR" src docs .en
   capa informativa).
 - **El banner de cookies sale al primer scroll o a los 3 segundos**, para que el
   primer pantallazo del móvil muestre solo titular, CTA y línea de confianza.
-  Hasta que deciden no se instala ninguna cookie, así que esperar no cambia nada
+  Hasta que deciden no se carga nada opcional, así que esperar no cambia nada
   legalmente; los eventos por servidor no dependen del banner.
+- **Tres categorías en el aviso de cookies:** necesarias (siempre), analítica
+  (Vercel Web Analytics y Speed Insights, sin cookies) y marketing (Meta Pixel).
+  "Aceptar" activa las dos opcionales, "Rechazar" ninguna y "Configurar" deja
+  elegir. A Vercel no se le manda el identificador de clic de los anuncios
+  (fbclid y similares): se quita de la dirección antes de enviarla.
+- **Caso Exoneris actualizado** con tus capturas nuevas: 151 mil visitas, 126 mil
+  personas lo vieron y 1.058 seguidores nuevos con su primer vídeo, y 1.032
+  seguidores en la cuenta. He quitado "en 24 horas" porque las capturas nuevas no
+  indican plazo; si lo sabes, dímelo y lo añado.
 - **Perfil del formulario:** acepta @usuario, usuario o una URL de Instagram,
   TikTok o web. Si alguien escribe otra cosa (por ejemplo, el nombre del
   negocio o "no tengo"), se guarda tal cual en lugar de bloquear el envío.

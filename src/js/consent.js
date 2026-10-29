@@ -1,11 +1,11 @@
-// Consentimiento de cookies: dos categorías, necesarias (siempre) y marketing
-// (Meta Pixel). La decisión se guarda en localStorage. El banner es una capa
-// fija: no empuja la página y sube por encima del CTA fijo del móvil.
+// Consentimiento: necesarias (siempre), analítica (Vercel Web Analytics y Speed
+// Insights) y marketing (Meta Pixel). La decisión se guarda en localStorage.
+// El banner es una capa fija: no empuja la página y sube por encima del CTA fijo.
 
 import { $, local } from './util.js';
 
 const KEY = 'aas_consent';
-const VERSION = 1;
+const VERSION = 2; // v2 añade la analítica: quien decidió con v1 vuelve a ver el banner
 const listeners = new Set();
 let state = read();
 
@@ -16,26 +16,29 @@ function read() {
 
 export const hasDecision = () => !!state;
 export const hasMarketing = () => !!state?.marketing;
+export const hasAnalytics = () => !!state?.analytics;
 export const onConsentChange = (fn) => listeners.add(fn);
 
-export function setConsent(marketing) {
-  const before = hasMarketing();
-  state = { v: VERSION, marketing: !!marketing, ts: Date.now() };
+export function setConsent({ analytics, marketing }) {
+  const before = { analytics: hasAnalytics(), marketing: hasMarketing() };
+  state = { v: VERSION, analytics: !!analytics, marketing: !!marketing, ts: Date.now() };
   local.set(KEY, state);
-  listeners.forEach((fn) => fn(state.marketing, before));
+  listeners.forEach((fn) => fn(state, before));
 }
 
 export function initConsent() {
   const box = $('#ck');
   if (!box) return;
   const panel = $('#ck-panel', box);
-  const toggle = $('#ck-mkt', box);
+  const analytics = $('#ck-ana', box);
+  const marketing = $('#ck-mkt', box);
   const configBtn = $('[data-ck="config"]', box);
 
   const open = (withPanel) => {
     box.hidden = false;
     panel.hidden = !withPanel;
-    toggle.checked = hasMarketing();
+    analytics.checked = hasAnalytics();
+    marketing.checked = hasMarketing();
     configBtn.textContent = withPanel ? 'Guardar' : 'Configurar';
     configBtn.dataset.ck = withPanel ? 'save' : 'config';
     configBtn.setAttribute('aria-expanded', String(withPanel));
@@ -48,12 +51,12 @@ export function initConsent() {
     const btn = e.target.closest('[data-ck]');
     if (!btn) return;
     const action = btn.dataset.ck;
-    if (action === 'accept') setConsent(true);
-    else if (action === 'reject') setConsent(false);
-    else if (action === 'save') setConsent(toggle.checked);
+    if (action === 'accept') setConsent({ analytics: true, marketing: true });
+    else if (action === 'reject') setConsent({ analytics: false, marketing: false });
+    else if (action === 'save') setConsent({ analytics: analytics.checked, marketing: marketing.checked });
     else if (action === 'config') {
       open(true);
-      toggle.focus();
+      analytics.focus();
       return;
     }
     close();
@@ -62,11 +65,11 @@ export function initConsent() {
   document.addEventListener('click', (e) => {
     if (!e.target.closest('[data-open-cookies]')) return;
     open(true);
-    toggle.focus();
+    analytics.focus();
   });
 
   // Primer pantallazo limpio: el banner sale al primer scroll o a los 3 s.
-  // Hasta que decidan no se instala ninguna cookie, así que esperar no cambia nada.
+  // Hasta que decidan no se carga nada opcional, así que esperar no cambia nada.
   if (!hasDecision()) {
     let timer = 0;
     const show = () => {

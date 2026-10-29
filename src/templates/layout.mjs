@@ -44,6 +44,7 @@ export function head(ctx, { title, description, path = '/', ogTitle, ogDescripti
 <noscript><link rel="stylesheet" href="${ctx.asset.css}"></noscript>
 <script type="module" src="${ctx.asset.js}"></script>
 ${ctx.pixelId ? `<meta name="aas-pixel" content="${esc(ctx.pixelId)}">` : ''}
+${ctx.analytics ? '<meta name="aas-analytics" content="1">' : ''}
 ${jsonLd}
 </head>`;
 }
@@ -87,11 +88,15 @@ export function stickyCta() {
 
 export function cookieBanner() {
   return `<section class="ck" id="ck" aria-label="Cookies" hidden>
-  <p>Uso cookies necesarias y, si aceptas, las de Meta para medir mis anuncios. <a href="/cookies">Más info</a></p>
+  <p>Uso cookies necesarias y, si aceptas, analítica y cookies de Meta para medir mis anuncios. <a href="/cookies">Más info</a></p>
   <div class="ck-panel" id="ck-panel" hidden>
     <div class="ck-row">
       <div><b>Necesarias</b><span>Hacen que la web y el formulario funcionen.</span></div>
       <span class="ck-always">Siempre activas</span>
+    </div>
+    <div class="ck-row">
+      <label for="ck-ana"><b>Analítica</b><span>Vercel Analytics: visitas y velocidad, sin cookies.</span></label>
+      <span class="switch"><input type="checkbox" id="ck-ana"><i></i></span>
     </div>
     <div class="ck-row">
       <label for="ck-mkt"><b>Marketing</b><span>Meta Pixel, para medir los anuncios.</span></label>
