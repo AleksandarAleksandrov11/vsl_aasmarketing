@@ -588,7 +588,8 @@
 }
 .lf-options { display: grid; gap: 10px; }
 @media (min-width: 640px) {
-  .lf-options { grid-template-columns: 1fr 1fr; }
+  .lf-options { grid-template-columns: 1fr 1fr; grid-auto-rows: 1fr; }
+  .lf-opt span { height: 100%; }
 }
 .lf-opt { position: relative; display: block; }
 .lf-opt input { position: absolute; opacity: 0; width: 1px; height: 1px; }
