@@ -117,7 +117,10 @@ npm test
 ```
 
 Pruebas unitarias: teléfono y E.164, perfil, fila del Sheet sin IDs de Meta,
-hash SHA-256, carga útil de la API de conversiones, reintentos del Sheet y antispam.
+hash SHA-256, carga útil de la API de conversiones, reintentos del Sheet y
+antispam. También ejecuta `apps-script/Code.gs` con los servicios de Google
+simulados: clave, cabeceras y fila de 11 columnas, protección contra fórmulas,
+duplicados y correo.
 
 ```bash
 npm run build && node --test tests/content.test.mjs

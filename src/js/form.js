@@ -104,6 +104,7 @@ export function initForm() {
   let submitting = false;
   let arrowKey = false;
   let advanceTimer = 0;
+  let redirectTimer = 0;
   const touched = new Set();
 
   const val = (name) => (el[name] ? String(el[name].value || '') : '');
@@ -370,16 +371,20 @@ export function initForm() {
       try {
         history.replaceState(null, '', '#formulario');
       } catch {}
-      setTimeout(() => {
+      redirectTimer = setTimeout(() => {
         contact();
         window.location.href = info.wa; // window.open lo bloquea el navegador de Instagram
       }, REDIRECT_MS);
     }
   }
 
-  waBtn.addEventListener('click', contact);
+  waBtn.addEventListener('click', () => {
+    clearTimeout(redirectTimer);
+    contact();
+  });
 
   $('[data-again]', done).addEventListener('click', () => {
+    clearTimeout(redirectTimer); // si aún no se había abierto WhatsApp, ya no se abre
     session.del(DONE);
     form.reset();
     el.prefijo.value = detectCountry(navigator.languages || [navigator.language]);

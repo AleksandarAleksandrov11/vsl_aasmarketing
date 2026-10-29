@@ -627,3 +627,21 @@ test('sin JavaScript, con movimiento reducido, en horizontal y en las páginas l
   assert.deepEqual(ctx.log.errors, []);
   await ctx.browser.close();
 });
+
+test('"Enviar otra solicitud" antes de 1,5 s cancela la apertura de WhatsApp', { skip, timeout: 60000 }, async () => {
+  const { browser, page, log } = await open(pw.webkit, MOBILE);
+  try {
+    await page.evaluate(() => scrollTo(0, 300));
+    await page.click('[data-ck="reject"]');
+    await fillForm(page, { otro: false });
+    await page.click('[data-submit]');
+    await page.locator('[data-done]').waitFor({ state: 'visible', timeout: 9000 });
+    await page.click('[data-again]');
+    await page.waitForTimeout(2500);
+    assert.deepEqual(log.wa, [], 'no debe abrir WhatsApp');
+    assert.equal(await page.isVisible('[data-step="1"]'), true);
+    assert.equal(log.events.filter((e) => e.event_name === 'Contact').length, 0);
+  } finally {
+    await browser.close();
+  }
+});
