@@ -134,8 +134,12 @@ Playwright en WebKit (390 px, user agent del navegador de Instagram en iPhone) y
 Chromium (1440 px): primer pantallazo, enlaces antes del formulario, CTA fijo,
 banner, formulario completo (también con "Otro" y solo con teclado), éxito
 aunque `/api/lead` falle, tarde o no haya red, reintento en la siguiente visita,
-texto de WhatsApp, consentimiento y `event_id` compartidos, y CLS con fuentes
-lentas. Necesita Playwright con WebKit y Chromium:
+texto de WhatsApp, consentimiento y `event_id` compartidos, CLS con fuentes
+lentas, validaciones de cada paso y prefijos (también con el idioma es-MX),
+borrador al recargar, doble clic, mínimo de 3 s, Contact una sola vez, flujo
+completo de "Configurar cookies", carruseles, vídeos, FAQ con su schema,
+"Leer más", saltar al formulario, sin JavaScript, movimiento reducido, móvil
+en horizontal y páginas legales. Necesita Playwright con WebKit y Chromium:
 
 ```bash
 npm i -D playwright && npx playwright install --with-deps webkit chromium
@@ -143,20 +147,24 @@ npm i -D playwright && npx playwright install --with-deps webkit chromium
 
 ## Rendimiento
 
-Medido con Lighthouse 13.5 (móvil, simulación de 4G lenta) sobre el build de
-producción servido en local con compresión, como en Vercel:
+Medido con Lighthouse 13.5 sobre el build de producción servido en local con
+compresión, como en Vercel:
 
-| Rendimiento | Accesibilidad | Buenas prácticas | SEO |
-|---|---|---|---|
-| 98-100 | 100 | 100 | 69* |
+| | Rendimiento | Accesibilidad | Buenas prácticas | SEO |
+|---|---|---|---|---|
+| Móvil (4G lenta simulada) | 99-100 | 100 | 100 | 69* |
+| Escritorio | 100 | 100 | 100 | 69* |
 
-FCP 1,1 s · LCP 1,7 s (el titular) · TBT 0-50 ms · CLS 0.
+Móvil: FCP 1,1-1,2 s · LCP 1,5-1,7 s (el titular) · TBT 20 ms · CLS 0.
+Escritorio: FCP 0,3 s · LCP 0,4 s · TBT 0 ms · CLS 0.
 \* El SEO baja solo por el `noindex` que pediste (página solo para anuncios).
 Es la única comprobación que falla; con indexación sería 100.
 
-Primera carga en móvil: unos 320 KB en total (HTML 19 KB, CSS 4,7 KB y JS
-7,8 KB comprimidos; dos fuentes 39 KB; el resto, imágenes AVIF). Los vídeos solo
-se descargan al pulsar.
+Primera carga en móvil: 323 KB en 25 peticiones (HTML 16 KB, CSS 5 KB, JS 8 KB
+comprimido y 19 KB sin comprimir, dos fuentes 40 KB e imágenes AVIF 243 KB). En
+escritorio, 265 KB. Los vídeos solo se descargan al pulsar. Accesibilidad
+revisada también con axe-core (WCAG 2.2 AA): sin incidencias en la landing, en
+cada paso del formulario, en el banner ni en las legales.
 
 Falta repetir Lighthouse sobre el despliegue de Vercel: no tengo acceso a tu
 cuenta de Vercel desde aquí.
@@ -210,7 +218,12 @@ la página publicada). Búscalos con `grep -rn "PENDIENTE\|REVISAR" src docs .en
 - **El enlace a las reseñas de Google** ("5,0 en Google", en testimonios) es el
   único enlace externo antes del formulario porque lo pediste expresamente; se
   abre en pestaña nueva. Antes del formulario no hay WhatsApp, teléfono, correo
-  ni Instagram.
+  ni Instagram. El banner de cookies enlaza a la política de cookies (primera
+  capa informativa).
+- **El banner de cookies sale al primer scroll o a los 3 segundos**, para que el
+  primer pantallazo del móvil muestre solo titular, CTA y línea de confianza.
+  Hasta que deciden no se instala ninguna cookie, así que esperar no cambia nada
+  legalmente; los eventos por servidor no dependen del banner.
 - **Perfil del formulario:** acepta @usuario, usuario o una URL de Instagram,
   TikTok o web. Si alguien escribe otra cosa (por ejemplo, el nombre del
   negocio o "no tengo"), se guarda tal cual en lugar de bloquear el envío.

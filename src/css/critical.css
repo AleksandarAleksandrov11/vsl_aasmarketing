@@ -125,7 +125,6 @@ html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   scroll-behavior: smooth;
-  scroll-padding-top: calc(var(--header-h) + 12px);
 }
 body {
   margin: 0;
@@ -284,8 +283,6 @@ button { cursor: pointer; }
 /* Hero */
 .hero { position: relative; padding-top: var(--header-h); }
 .hero-copy {
-  min-height: calc(100vh - var(--header-h));
-  min-height: calc(100svh - var(--header-h));
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -328,10 +325,11 @@ button { cursor: pointer; }
   .trust { gap: 6px 10px; font-size: 0.9375rem; }
 }
 .trust li { display: inline-flex; align-items: center; gap: 6px; }
-.trust li + li::before {
+/* El separador va al final de cada elemento: si la línea parte, no empieza por un punto. */
+.trust li:not(:last-child)::after {
   content: "";
   width: 3px; height: 3px;
-  margin-right: 4px;
+  margin-left: 4px;
   border-radius: 50%;
   background: var(--ink-faint);
 }
@@ -366,8 +364,21 @@ button { cursor: pointer; }
 .phone-side:last-child { margin-left: -7%; }
 .phone-main { z-index: 2; }
 
+/* En móvil el hero ocupa el primer pantallazo y los móviles empiezan justo debajo. */
+@media (max-width: 639.98px) {
+  .hero-copy {
+    min-height: calc(100vh - var(--header-h));
+    min-height: calc(100svh - var(--header-h));
+  }
+}
+@media (max-width: 359.98px) {
+  .hero h1 { font-size: 2.25rem; }
+}
 @media (min-width: 640px) {
   .hero-cta .btn { width: auto; }
+  .hero-copy { padding-block: 48px 40px; }
+  .phone-side { max-width: 200px; }
+  .phone { max-width: 260px; }
 }
 @media (min-width: 1024px) {
   .hero-grid {
@@ -412,6 +423,7 @@ button { cursor: pointer; }
 /* Banner de cookies: superpuesto, no mueve la página */
 .ck {
   position: fixed;
+  animation: ck-in 0.4s var(--ease) both;
   left: 10px; right: 10px;
   bottom: calc(10px + env(safe-area-inset-bottom));
   z-index: 60;
@@ -477,6 +489,10 @@ button { cursor: pointer; }
 .switch input:checked + i { background: var(--ink); }
 .switch input:checked + i::after { transform: translateX(20px); }
 .switch input:focus-visible + i { outline: 2px solid var(--ink); outline-offset: 3px; }
+@keyframes ck-in {
+  from { opacity: 0; translate: 0 16px; }
+  to { opacity: 1; translate: 0 0; }
+}
 @media (min-width: 1024px) {
   .ck { left: auto; right: 24px; bottom: 24px; transform: none; }
 }

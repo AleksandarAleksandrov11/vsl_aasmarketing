@@ -65,5 +65,16 @@ export function initConsent() {
     toggle.focus();
   });
 
-  if (!hasDecision()) open(false);
+  // Primer pantallazo limpio: el banner sale al primer scroll o a los 3 s.
+  // Hasta que decidan no se instala ninguna cookie, así que esperar no cambia nada.
+  if (!hasDecision()) {
+    let timer = 0;
+    const show = () => {
+      clearTimeout(timer);
+      window.removeEventListener('scroll', show);
+      if (!hasDecision() && box.hidden) open(false);
+    };
+    timer = setTimeout(show, 3000);
+    window.addEventListener('scroll', show, { passive: true, once: true });
+  }
 }

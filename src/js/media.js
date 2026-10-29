@@ -47,20 +47,26 @@ export function initVideos() {
   });
 }
 
-/** Testimonios largos: recortados con "Leer más". */
+/**
+ * Testimonios largos: recortados con "Leer más". Se recortan al arrancar (la
+ * sección aún está fuera de pantalla, así nada se mueve después) y, si un texto
+ * cabe entero, el botón se oculta sin perder su hueco. Sin JS se lee completo.
+ */
 export function initTestimonials() {
-  $$('.tcard.is-clamped').forEach((card) => {
-    const quote = $('blockquote', card);
+  const cards = $$('.tcard[data-long]');
+  for (const card of cards) {
     const btn = $('[data-more]', card);
-    if (!btn) return;
-    const check = () => {
-      if (card.classList.contains('is-clamped')) btn.hidden = quote.scrollHeight <= quote.clientHeight + 2;
-    };
+    card.classList.add('is-clamped');
+    btn.hidden = false;
     btn.addEventListener('click', () => {
       card.classList.remove('is-clamped');
       btn.hidden = true;
     });
-    // Se mide al acercarse (main.css ya está aplicado) y no al cargar.
-    whenNear(card, () => requestAnimationFrame(check));
-  });
+  }
+  whenNear($('.tcards') || document.body, () => requestAnimationFrame(() => {
+    for (const card of cards) {
+      const quote = $('blockquote', card);
+      if (quote.scrollHeight <= quote.clientHeight + 2) $('[data-more]', card).style.visibility = 'hidden';
+    }
+  }));
 }

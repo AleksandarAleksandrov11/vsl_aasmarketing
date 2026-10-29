@@ -116,7 +116,7 @@ async function open(browserType, ctxOptions, { url = base, before: setup } = {})
 
 async function fillForm(page, { otro = true } = {}) {
   await page.locator('#formulario').scrollIntoViewIfNeeded();
-  await page.getByText('Las dos', { exact: true }).click();
+  await page.locator('.lf-opt', { hasText: 'Las dos' }).click();
   await page.locator('[data-step="2"]').waitFor({ state: 'visible' });
   if (otro) {
     await page.locator('.lf-chip', { hasText: 'Otro' }).click();
@@ -150,9 +150,12 @@ test('móvil (WebKit, Instagram): primer pantallazo, enlaces y CTA fijo', { skip
       const b = await page.locator(sel).boundingBox();
       assert.ok(b.y >= 0 && b.y + b.height <= 664, `${sel} fuera del primer pantallazo (${b.y + b.height})`);
     }
-    const banner = await page.locator('#ck').boundingBox();
-    const trust = await page.locator('.trust').boundingBox();
-    assert.ok(banner.y >= trust.y + trust.height, 'el banner tapa la línea de confianza');
+    // Primer pantallazo limpio: el banner de cookies aún no ha salido.
+    assert.equal(await page.isVisible('#ck'), false, 'el banner tapa el primer pantallazo');
+    await page.waitForTimeout(3300);
+    assert.equal(await page.isVisible('#ck'), true, 'el banner sale a los 3 s');
+    const cta = await page.locator('[data-hero-cta]').boundingBox();
+    assert.ok((await page.locator('#ck').boundingBox()).y >= cta.y + cta.height, 'el banner tapa el CTA');
 
     // Ningún enlace a WhatsApp, teléfono, correo ni Instagram antes del formulario.
     const leaks = await page.evaluate(() => {
@@ -398,4 +401,229 @@ test('CLS con fuentes lentas y banner (Chromium a 390 px)', { skip, timeout: 600
   } finally {
     await browser.close();
   }
+});
+
+// ---------- Revisión a fondo: todos los caminos del formulario y del resto de componentes
+
+test('formulario: validaciones de cada paso y prefijos', { skip, timeout: 90000 }, async () => {
+  const { browser, page, log } = await open(pw.webkit, { ...MOBILE, locale: 'es-MX' });
+  try {
+    await page.locator('#formulario').scrollIntoViewIfNeeded();
+    // Prefijo detectado por el idioma del navegador (es-MX → +52).
+    assert.equal(await page.inputValue('#f-prefijo'), 'MX');
+    assert.equal(await page.textContent('[data-prefix-label]'), '+52');
+    // Paso 1 con Enter sin elegir: no avanza.
+    await page.focus('input[name="servicio"][value="redes"]');
+    await page.keyboard.press('Enter');
+    assert.equal(await page.isVisible('[data-step="1"]'), true);
+    await page.locator('.lf-opt', { hasText: 'Meta Ads' }).click();
+    // Paso 2: "Otro" obligatorio solo en ese caso, mínimo 2 letras.
+    await page.locator('.lf-chip', { hasText: 'Otro' }).click();
+    assert.equal(await page.isVisible('#f-otro'), true);
+    await page.locator('[data-step="2"] [data-next]').click();
+    assert.equal(await page.textContent('#e-otro'), 'Cuéntame a qué te dedicas.');
+    await page.fill('#f-otro', 'a');
+    assert.equal(await page.textContent('#e-otro'), 'Cuéntame a qué te dedicas.');
+    await page.fill('#f-otro', 'Academia');
+    assert.equal(await page.textContent('#e-otro'), '');
+    // Cambiar a un sector normal oculta "Otro" y avanza solo.
+    await page.locator('.lf-chip', { hasText: 'Belleza y estética' }).click();
+    await page.locator('[data-step="3"]').waitFor({ state: 'visible' });
+    // Paso 3: vacío no; "no tengo" sí (se guarda tal cual).
+    await page.locator('[data-step="3"] [data-next]').click();
+    assert.equal(await page.textContent('#e-perfil'), 'Escribe tu Instagram, tu TikTok o tu web.');
+    await page.fill('#f-perfil', 'no tengo');
+    await page.locator('[data-step="3"] [data-next]').click();
+    // Paso 4: mínimo 2 letras.
+    await page.fill('#f-nombre', 'A');
+    await page.locator('[data-step="4"] [data-next]').click();
+    assert.equal(await page.textContent('#e-nombre'), 'Escribe tu nombre.');
+    await page.fill('#f-nombre', 'PRUEBA');
+    await page.locator('[data-step="4"] [data-next]').click();
+    // Paso 5: México (10 cifras), España (móvil) y "Otro" (con prefijo).
+    await page.fill('#f-tel', '55 1234');
+    await page.click('[data-submit]');
+    assert.equal(await page.textContent('#e-tel'), 'Revisa el número: parece que le faltan o le sobran cifras.');
+    await page.selectOption('#f-prefijo', 'ES');
+    assert.equal(await page.textContent('[data-prefix-label]'), '+34');
+    await page.fill('#f-tel', '912 345 678');
+    assert.match(await page.textContent('#e-tel'), /empieza por 6 o 7/);
+    await page.selectOption('#f-prefijo', 'OTRO');
+    assert.equal(await page.textContent('[data-prefix-label]'), 'Otro');
+    assert.equal(await page.getAttribute('#f-tel', 'placeholder'), '+44 7911 123456');
+    await page.fill('#f-tel', '+44 7911 123456');
+    assert.equal(await page.textContent('#e-tel'), '');
+    await page.click('[data-ck="reject"]').catch(() => {});
+    await page.click('[data-submit]');
+    await page.locator('[data-done]').waitFor({ state: 'visible', timeout: 9000 });
+    const lead = log.leads.at(-1);
+    assert.deepEqual([lead.servicio, lead.sector, lead.sector_otro, lead.perfil, lead.prefijo], ['ads', 'belleza', '', 'no tengo', 'OTRO']);
+    const row = sheetState.calls.at(-1).lead;
+    assert.deepEqual([row.whatsapp, row.negocio, row.perfil, row.perfil_url], ['+447911123456', 'Belleza y estética', 'no tengo', '']);
+    assert.deepEqual(log.errors, []);
+  } finally {
+    await browser.close();
+  }
+});
+
+test('formulario: borrador al recargar, doble clic, mínimo de 3 s y Contact una sola vez', { skip, timeout: 90000 }, async () => {
+  const { browser, page, log } = await open(pw.chromium, DESKTOP);
+  try {
+    await page.locator('#formulario').scrollIntoViewIfNeeded();
+    await page.locator('.lf-opt', { hasText: 'Gestión de redes sociales' }).click();
+    await page.locator('.lf-chip', { hasText: 'Restauración' }).click();
+    await page.fill('#f-perfil', '@prueba');
+    await page.locator('[data-step="3"] [data-next]').click();
+    // Recargar a mitad: vuelve al mismo paso con las respuestas.
+    await page.reload();
+    await page.locator('[data-step="4"]').waitFor({ state: 'visible' });
+    assert.equal(await page.isChecked('input[name="sector"][value="restauracion"]'), true);
+    assert.equal(await page.inputValue('#f-perfil'), '@prueba');
+    await page.click('[data-back]');
+    await page.click('[data-back]');
+    assert.equal(await page.isVisible('[data-step="2"]'), true);
+    assert.equal(await page.isChecked('input[name="sector"][value="restauracion"]'), true);
+    await page.click('[data-back]');
+    await page.click('[data-back]').catch(() => {});
+    // Recorrido rápido: el envío espera al mínimo de 3 s desde que se abrió el formulario.
+    await page.evaluate(() => sessionStorage.clear());
+    await page.reload();
+    await page.locator('#formulario').scrollIntoViewIfNeeded();
+    await page.locator('.lf-opt', { hasText: 'Gestión de redes sociales' }).click();
+    await page.locator('.lf-chip', { hasText: 'Restauración' }).click();
+    await page.fill('#f-perfil', '@prueba');
+    await page.keyboard.press('Enter');
+    await page.fill('#f-nombre', 'PRUEBA');
+    await page.keyboard.press('Enter');
+    await page.fill('#f-tel', '600000000');
+    const before = log.leads.length;
+    // Momento en que la app dio el formulario por abierto (lo guarda en el borrador).
+    const t0 = await page.evaluate(() => JSON.parse(sessionStorage.getItem('aas_form')).t0);
+    const sent = page.waitForRequest('**/api/lead');
+    await page.locator('[data-submit]').dblclick();
+    await sent;
+    const sentAt = await page.evaluate(() => Date.now());
+    assert.ok(sentAt - t0 >= 3000, `se respeta el mínimo de 3 s (${sentAt - t0} ms)`);
+    await page.locator('[data-done]').waitFor({ state: 'visible', timeout: 9000 });
+    await page.waitForTimeout(2000); // redirección a WhatsApp
+    assert.equal(log.leads.length - before, 1, 'el doble clic no duplica el envío');
+    const contacts = () => log.events.filter((e) => e.event_name === 'Contact').length;
+    assert.equal(contacts(), 1);
+    await page.goBack();
+    await page.locator('[data-done]').waitFor({ state: 'visible' });
+    await page.click('[data-wa]');
+    await page.waitForTimeout(800);
+    assert.equal(contacts(), 1, 'Contact no se repite al volver y pulsar Abrir WhatsApp');
+    assert.ok(log.leads.at(-1).elapsed_ms >= 3000);
+  } finally {
+    await browser.close();
+  }
+});
+
+test('cookies: rechazar se recuerda, configurar activa y desactivar revoca', { skip, timeout: 60000 }, async () => {
+  const { browser, page } = await open(pw.chromium, DESKTOP);
+  try {
+    await page.evaluate(() => scrollTo(0, 300));
+    await page.click('[data-ck="reject"]');
+    await page.reload();
+    await page.evaluate(() => scrollTo(0, 300));
+    await page.waitForTimeout(3300);
+    assert.equal(await page.isVisible('#ck'), false, 'la decisión se recuerda');
+    await page.click('[data-open-cookies]');
+    assert.equal(await page.isVisible('#ck-panel'), true);
+    assert.equal(await page.isChecked('#ck-mkt'), false);
+    await page.check('#ck-mkt');
+    await page.click('[data-ck="save"]');
+    await page.waitForFunction(() => Array.isArray(window.__fbq));
+    assert.ok((await page.context().cookies()).some((c) => c.name === '_fbp'));
+    await page.click('[data-open-cookies]');
+    assert.equal(await page.isChecked('#ck-mkt'), true);
+    await page.uncheck('#ck-mkt');
+    await page.click('[data-ck="save"]');
+    await page.waitForTimeout(200);
+    assert.ok(!(await page.context().cookies()).some((c) => c.name.startsWith('_fb')), 'se borran _fbp y _fbc');
+    assert.ok((await page.evaluate(() => window.__fbq)).some((c) => c[0] === 'consent' && c[1] === 'revoke'));
+  } finally {
+    await browser.close();
+  }
+});
+
+test('componentes: carruseles, vídeos, FAQ con schema, "Leer más" y saltar al formulario', { skip, timeout: 60000 }, async () => {
+  const { browser, page, log } = await open(pw.chromium, DESKTOP);
+  try {
+    // Saltar al formulario: primer elemento con Tab.
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Enter');
+    // Espera a que termine el scroll suave.
+    let top = Infinity;
+    for (let i = 0, last = -1; i < 40; i++) {
+      top = await page.locator('#formulario').evaluate((el) => el.getBoundingClientRect().top);
+      if (top === last) break;
+      last = top;
+      await page.waitForTimeout(150);
+    }
+    assert.ok(Math.abs(top) < 120, `el formulario queda arriba (${top})`);
+    // Carrusel de opiniones con flechas.
+    const track = page.locator('[data-carousel="opiniones"]');
+    await track.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(300);
+    const prev = page.locator('[data-carousel-nav="opiniones"] [data-dir="-1"]');
+    assert.equal(await prev.isDisabled(), true);
+    await page.click('[data-carousel-nav="opiniones"] [data-dir="1"]');
+    await page.waitForTimeout(900);
+    assert.ok((await track.evaluate((el) => el.scrollLeft)) > 100);
+    assert.equal(await prev.isDisabled(), false);
+    // "Leer más" en un testimonio largo.
+    const more = page.locator('.tcard [data-more]:visible').first();
+    await more.click();
+    assert.equal(await page.locator('.tcard.is-clamped [data-more]:visible').count() < 4, true);
+    // Vídeo: solo póster hasta pulsar; al pulsar se crea el <video> y se pide por rangos.
+    assert.equal(await page.locator('video').count(), 0);
+    const reel = page.locator('[data-video]').first();
+    await reel.scrollIntoViewIfNeeded();
+    const videoReq = page.waitForResponse((r) => r.url().includes('/assets/video/') && r.url().endsWith('.mp4'));
+    await reel.click();
+    const res = await videoReq;
+    assert.ok([200, 206].includes(res.status()));
+    assert.equal(await page.locator('video[controls]').count(), 1);
+    // FAQ en acordeón y schema FAQPage con las mismas preguntas.
+    const first = page.locator('.faq-item').first();
+    await first.locator('summary').click();
+    assert.equal(await first.evaluate((d) => d.open), true);
+    const schema = JSON.parse(await page.textContent('script[type="application/ld+json"]'));
+    const visible = await page.$$eval('.faq-item summary', (s) => s.map((x) => x.textContent.trim()));
+    assert.equal(schema['@type'], 'FAQPage');
+    assert.deepEqual(schema.mainEntity.map((q) => q.name), visible);
+    assert.deepEqual(log.errors, []);
+  } finally {
+    await browser.close();
+  }
+});
+
+test('sin JavaScript, con movimiento reducido, en horizontal y en las páginas legales', { skip, timeout: 90000 }, async () => {
+  // Sin JS: se lee todo con estilos (main.css por <noscript>) y el formulario avisa.
+  let ctx = await open(pw.chromium, { ...DESKTOP, javaScriptEnabled: false });
+  assert.equal(await ctx.page.locator('.stats').evaluate((el) => getComputedStyle(el).display), 'grid');
+  assert.equal(await ctx.page.isVisible('#ck'), false);
+  assert.match(await ctx.page.textContent('[data-form]'), /activar JavaScript/);
+  await ctx.browser.close();
+  // Movimiento reducido: sin animaciones.
+  ctx = await open(pw.webkit, { ...MOBILE, reducedMotion: 'reduce' });
+  const dur = await ctx.page.locator('.btn').first().evaluate((el) => getComputedStyle(el).transitionDuration);
+  assert.ok(parseFloat(dur) < 0.01, dur);
+  await ctx.browser.close();
+  // Móvil en horizontal: sin scroll lateral.
+  ctx = await open(pw.webkit, { ...MOBILE, viewport: { width: 844, height: 390 } });
+  assert.equal(await ctx.page.evaluate(() => document.documentElement.scrollWidth - innerWidth), 0);
+  await ctx.browser.close();
+  // Legales: cargan, el header lleva al formulario de la landing y no hay CTA fijo.
+  ctx = await open(pw.webkit, MOBILE, { url: base + 'privacidad' });
+  assert.equal(await ctx.page.getAttribute('.hdr .btn', 'href'), '/#formulario');
+  assert.equal(await ctx.page.locator('[data-sticky]').count(), 0);
+  for (const href of await ctx.page.$$eval('a[href^="/"]', (as) => [...new Set(as.map((a) => a.getAttribute('href')))])) {
+    const r = await fetch(new URL(href, base));
+    assert.equal(r.status, 200, href);
+  }
+  assert.deepEqual(ctx.log.errors, []);
+  await ctx.browser.close();
 });

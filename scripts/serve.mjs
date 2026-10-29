@@ -101,6 +101,15 @@ const server = http.createServer(async (req, res) => {
     let body = await readFile(file);
     applyHeaders(res, urlPath);
     res.setHeader('content-type', type);
+    res.setHeader('accept-ranges', 'bytes');
+    // Safari pide los vídeos por rangos (Range: bytes=0-1); Vercel también lo hace así.
+    const range = String(req.headers.range || '').match(/^bytes=(\d*)-(\d*)$/);
+    if (range && status === 200) {
+      const start = range[1] ? Number(range[1]) : Math.max(0, body.length - Number(range[2]));
+      const end = range[1] && range[2] ? Math.min(Number(range[2]), body.length - 1) : body.length - 1;
+      res.writeHead(206, { 'content-range': `bytes ${start}-${end}/${body.length}`, 'content-length': end - start + 1 });
+      return res.end(req.method === 'HEAD' ? undefined : body.subarray(start, end + 1));
+    }
     const accept = String(req.headers['accept-encoding'] || '');
     if (COMPRESS.test(type) && body.length > 1024) {
       if (accept.includes('br')) {

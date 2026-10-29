@@ -74,7 +74,7 @@ async function results(ctx) {
   return `<section class="sec" aria-labelledby="t-resultados">
   <div class="wrap">
     <div class="sec-head"><h2 class="h2" id="t-resultados">Más de 10 millones de <span class="serif">visitas</span>.</h2></div>
-    <div class="scroller results">
+    <div class="scroller results" tabindex="0" role="region" aria-label="Capturas de reels de clientes con sus visitas">
       ${cards.join('\n      ')}
     </div>
     <div class="cta-row">${ctaBtn()}</div>
@@ -236,7 +236,7 @@ async function accounts(ctx) {
   return `<section class="sec" id="cuentas" aria-labelledby="t-cuentas">
   <div class="wrap">
     <div class="sec-head"><h2 class="h2" id="t-cuentas">Únete a las más de 25 cuentas que ya confían en nosotros.</h2></div>
-    <div class="scroller accounts" data-carousel="cuentas">
+    <div class="scroller accounts" data-carousel="cuentas" tabindex="0" role="region" aria-label="Perfiles de Instagram de clientes">
       ${items.join('\n      ')}
     </div>
     <div class="car-nav" data-carousel-nav="cuentas">
@@ -248,17 +248,18 @@ async function accounts(ctx) {
 }
 
 function testimonials() {
-  const cards = TESTIMONIALS.map((t) => `<figure class="tcard${t.text.length > 300 ? ' is-clamped' : ''}">
+  const long = (t) => t.text.length > 240;
+  const cards = TESTIMONIALS.map((t) => `<figure class="tcard"${long(t) ? ' data-long' : ''}>
         <span class="stars" role="img" aria-label="5 de 5 estrellas">${stars(16)}</span>
         <blockquote>${esc(t.text)}</blockquote>
-        ${t.text.length > 300 ? '<button type="button" class="more" data-more hidden>Leer más</button>' : ''}
+        ${long(t) ? '<button type="button" class="more" data-more hidden>Leer más</button>' : ''}
         <figcaption><span class="avatar" aria-hidden="true">${esc(initials(t.name))}</span><span><b>${esc(t.name)}</b><span>${esc(t.role)}</span></span></figcaption>
       </figure>`);
   return `<section class="sec sec-soft" id="opiniones" aria-labelledby="t-opiniones">
   <div class="wrap">
     <div class="sec-head">
       <h2 class="h2" id="t-opiniones">5,0 en Google.</h2>
-      <a class="g-link" href="${SITE.reviews}" target="_blank" rel="noopener"><span class="stars">${stars(17)}</span> <u>5,0 en Google</u> · ver reseñas ${icon.arrow({ size: 16 })}</a>
+      <a class="g-link" href="${SITE.reviews}" target="_blank" rel="noopener"><span class="stars">${stars(17)}</span> <u>5,0 en Google</u> <span class="g-more">Ver reseñas ${icon.arrow({ size: 16 })}</span></a>
     </div>
     <div class="scroller tcards" data-carousel="opiniones">
       ${cards.join('\n      ')}
