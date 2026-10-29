@@ -1,0 +1,206 @@
+// Todos los textos y datos de la landing en un solo sitio.
+// Cifras: solo las confirmadas (web aasmarketing.com y alt de las capturas).
+// Reglas: tuteo, frases cortas, sin guiones largos ni medios y sin emojis.
+
+export const SITE = {
+  url: 'https://vsl.aasmarketing.com',
+  name: 'AAS Marketing',
+  whatsapp: '34695850590',
+  whatsappDisplay: '+34 695 850 590',
+  email: 'aaswebmarketing@gmail.com',
+  instagram: 'https://www.instagram.com/aas_webmarketing/',
+  instagramHandle: '@aas_webmarketing',
+  reviews: 'https://share.google/XqEnxlBCnqPrfpFHi',
+  updated: 'octubre de 2026',
+};
+
+export const CTA = 'Quiero mi estrategia gratis';
+export const HEADER_CTA = 'Estrategia gratis';
+
+export const META = {
+  title: 'Estrategia gratis para tus redes en 24 h · AAS Marketing',
+  description:
+    'Analizo tu perfil y en menos de 24 horas te mando gratis la estrategia que seguiría, con los cambios concretos para conseguir más clientes. Sin llamadas y sin compromiso.',
+  ogTitle: 'Tu estrategia gratis de redes sociales y Meta Ads en menos de 24 horas',
+  ogDescription:
+    'Analizo tu perfil y te mando gratis por WhatsApp la estrategia que seguiría para conseguir más clientes. Sin llamadas y sin compromiso.',
+};
+
+export const HERO = {
+  // Alternativas más cortas para el titular (pendientes de que Aleks elija):
+  //   1. "Redes y anuncios que llenan tu agenda."
+  //   2. "Más clientes desde tus redes."
+  titleBefore: 'Redes sociales y Meta Ads que llenan tu agenda de ',
+  titleSerif: 'clientes',
+  titleAfter: '.',
+  sub: 'Voy a tu negocio a grabar, edito los vídeos, gestiono tus redes y lanzo tus anuncios. Tú atiendes a los clientes.',
+  note: 'Gratis y sin compromiso. Te la mando por WhatsApp en menos de 24 horas.',
+  phones: [
+    { src: 'img/results/exoneris-106mil.webp', alt: 'Primer reel de Javier Núñez, de Exoneris Consulting, con 106 mil visualizaciones' },
+    { src: 'img/results/tatuajes-946mil.webp', alt: 'Reel de un estudio de tatuajes con 946 mil visualizaciones' },
+    { src: 'img/results/michel-tobias-80mil.webp', alt: 'Reel de Míchel Tobías, psicólogo deportivo, con 80,3 mil visualizaciones' },
+  ],
+};
+
+export const STATS = [
+  { value: '+10 M', label: 'visitas en vídeos de clientes' },
+  { value: '+2.500', label: 'leads con Meta Ads en 2 meses' },
+  { value: '+300', label: 'vídeos editados' },
+  { value: '+25', label: 'cuentas gestionadas' },
+];
+
+export const PAINS = [
+  'Publicas y no te llegan clientes.',
+  'No tienes tiempo para las redes.',
+  'Has pagado anuncios que no traían nada.',
+];
+
+// Cifra exacta de cada captura sacada del alt de index.html del origen.
+export const RESULTS = [
+  { src: 'img/results/tatuajes-946mil.webp', views: '946 mil', who: 'Estudio de tatuajes', alt: 'Reel de un estudio de tatuajes con 946 mil visualizaciones' },
+  { src: 'img/results/vdn-performance-406mil.webp', views: '+406 mil', who: 'VDN Performance', alt: 'Reel de VDN Performance sobre los mejores coches por menos de 3.000 euros, con más de 406 mil visualizaciones' },
+  { src: 'img/results/vdn-performance-307mil.webp', views: '306,9 mil', who: 'VDN Performance', alt: 'Reel de VDN Performance sobre los mejores coches por menos de 5.000 euros, con 306,9 mil visualizaciones' },
+  { src: 'img/results/tatuajes-250mil.webp', views: '257 mil', who: 'Estudio de tatuajes', alt: 'Reel de un estudio de tatuajes sobre las zonas que más duelen al tatuarse, con 257 mil visualizaciones' },
+  { src: 'img/results/wash-go-detailing-110mil.webp', views: '110 mil', who: 'Wash & Go Detailing', alt: 'Reel de presentación de Wash & Go Detailing con 110 mil visualizaciones' },
+  { src: 'img/results/exoneris-106mil.webp', views: '106 mil', who: 'Exoneris Consulting', alt: 'Primer reel de Javier Núñez, de Exoneris Consulting, con 106 mil visualizaciones' },
+  { src: 'img/results/michel-tobias-80mil.webp', views: '80,3 mil', who: 'Míchel Tobías, psicólogo deportivo', alt: 'Reel de Míchel Tobías, psicólogo deportivo, con 80,3 mil visualizaciones' },
+  { src: 'img/results/vdn-performance-54mil.webp', views: '53,8 mil', who: 'VDN Performance', alt: 'Reel de VDN Performance con 53,8 mil visualizaciones' },
+  { src: 'img/results/wash-go-detailing-52mil.webp', views: '52,4 mil', who: 'Wash & Go Detailing', alt: 'Reel de Wash & Go Detailing con un Volvo XC40, con 52,4 mil visualizaciones' },
+  { src: 'img/results/psicologia-gloria-37mil.webp', views: '37,1 mil', who: 'Gloria Díaz, psicóloga', alt: 'Reel de la psicóloga Gloria Díaz con 37,1 mil visualizaciones' },
+  { src: 'img/results/psicologia-33mil.webp', views: '33,2 mil', who: 'Consulta de psicología', alt: 'Reel de una consulta de psicología con 33,2 mil visualizaciones' },
+];
+
+export const VDN = {
+  title: '2,5 millones de visitas en menos de 3 meses.',
+  client: 'VDN Performance',
+  sector: 'Reprogramaciones de coches en Madrid',
+  text: 'Vídeos con gancho publicados con constancia en Instagram y TikTok, y anuncios en Meta para convertir esas visitas en clientes.',
+  stats: [
+    { value: '+5.000', label: 'seguidores entre todas las plataformas' },
+    { value: '+2,5 M', label: 'visitas en sus vídeos' },
+    { value: '<3', label: 'meses de trabajo' },
+    { value: '+2.500', label: 'leads con Meta Ads en 2 meses' },
+  ],
+};
+
+export const EXONERIS = {
+  titleA: 'Su primer vídeo.',
+  titleB: '+600 seguidores en 24 horas.',
+  text: 'Javier Núñez, de Exoneris Consulting, ayuda a inversores en subastas, NPL y REO. Fue el primer vídeo que subimos a su cuenta.',
+  stats: [
+    { value: '106 mil', label: 'visitas del primer vídeo' },
+    { value: '+600', label: 'seguidores en 24 horas' },
+  ],
+};
+
+export const SERVICES = [
+  {
+    title: 'Gestión de redes',
+    items: ['Estrategia', 'Guiones', 'Grabación en tu negocio', 'Edición', 'Publicación', 'Comunidad', 'Informe mensual'],
+  },
+  {
+    title: 'Meta Ads',
+    items: ['Campañas en Instagram y Facebook', 'Creatividades en vídeo', 'Optimización semanal', 'Leads directos a tu WhatsApp'],
+  },
+];
+
+export const COMPARE = [
+  ['Te piden que grabes tú.', 'Voy yo a grabar a tu negocio.'],
+  ['Publicar por publicar.', 'Estrategia mensual.'],
+  ['Vídeos sin gancho.', 'Gancho en 3 segundos y subtítulos.'],
+  ['Anuncios sin contenido detrás.', 'Contenido y anuncios juntos.'],
+  ['Nadie te explica nada.', 'Informe y reunión cada mes.'],
+  ['Seguidores comprados.', 'Crecimiento real.'],
+];
+
+export const STEPS = [
+  'Me dejas tu perfil en 30 segundos.',
+  'Lo analizo y preparo tu estrategia nueva con los cambios que haría.',
+  'Te la mando por WhatsApp en menos de 24 horas, gratis. Si quieres que la ejecute yo, te doy un precio cerrado.',
+];
+
+export const VIDEOS = [
+  { file: 'reel-entrenador', title: 'Entrenador personal', text: 'Contenido educativo de fitness' },
+  { file: 'reel-fisioterapia', title: 'Fisioterapia deportiva', text: 'Divulgación con rótulos y b-roll' },
+  { file: 'reel-instagram-musica', title: 'Trucos de Instagram', text: 'Marca personal y edición dinámica' },
+  { file: 'reel-perfil-seo', title: 'SEO para tu perfil', text: 'Motion graphics y grabación de pantalla' },
+];
+
+// Nombre, sector y seguidores salen del alt de cada imagen en el origen.
+export const ACCOUNTS = [
+  ['alex-zsurzs', 'Alex Zsurzs', '', '59,1 mil'],
+  ['david-archilla', 'David Archilla', 'nutrición', '19 mil'],
+  ['gerard-rehabilitywod', 'Gerard', 'fisioterapeuta en CrossFit', '8.975'],
+  ['paula-martinez', 'Paula Martínez', '', '7.772'],
+  ['daniel-pueyo', 'Daniel Pueyo', 'entrenador online', '5.784'],
+  ['marisa-le-fay', 'Marisa Le Fay', 'tarot y guía del alma', '4.878'],
+  ['javier-ruiz-vytalgroup', 'Javier Ruiz', 'fisio y equipos médicos', '4.784'],
+  ['pao-guarino', 'Pao Guarino', 'registros akáshicos y tarot', '3.878'],
+  ['wash-go-detailing', 'Wash & Go Detailing', '', '3.159'],
+  ['logolea', 'LogoLEA', 'logopedia y psicología en Madrid', '2.616'],
+  ['maram-psicologia', 'MARAM Psicología', '', '1.777'],
+  ['vdn-performance', 'VDN Performance', 'reprogramaciones en Madrid', '1.768'],
+  ['carlos-sanchez', 'Carlos Sánchez', 'entrenador online', '1.377'],
+  ['creaciones-jmc', 'Creaciones JMC', 'regalos personalizados', '1.368'],
+  ['monica-baena', 'Mónica Baena', 'terapeuta en Málaga', '1.267'],
+  ['vanessa', 'Vanessa', 'facilitadora de Kundalini', '1.057'],
+  ['gloria', 'Gloria Díaz', 'psicóloga', '1.046'],
+  ['programa-mujeres-30', 'Programa de entrenamiento para mujeres de más de 30', '', '863'],
+  ['psiquekarolina', 'Karolina Cieliczka', 'psicóloga', '790'],
+  ['aniitatellootattoo', 'Ana Tello', 'tatuadora en Málaga', '732'],
+  ['brandon-palate', 'Brandon', 'nutricionista online', '716'],
+  ['javier-nunez-exoneris', 'Javier Núñez', 'subastas y NPL', '658'],
+  ['laura-dominguez', 'Laura Domínguez Partia', '', '583'],
+  ['michel-tobias', 'Míchel Tobías', 'psicólogo deportivo', '543'],
+  ['yallah-viajes', 'Yallah Viajes', 'viajes a Marruecos', '148'],
+  ['crearte', 'CreArte', 'talleres de personalización', '128'],
+].map(([file, name, sector, followers]) => ({ file, name, sector, followers }));
+
+// Copiados tal cual de index.html del origen, en el orden pedido. Al final,
+// reseñas de Google genéricas (las de diseño web se dejan fuera a propósito).
+export const TESTIMONIALS = [
+  { name: 'Adrián López', role: 'Meta Ads', text: 'Después de probar con otras personas para la publicidad de mi negocio, decidí confiar en Aleks para llevar las campañas de Meta Ads. La diferencia ha sido enorme. Me explicó cómo iba a trabajar, fue transparente en todo momento y empezamos a recibir muchos más contactos. Muy profesional y siempre disponible para cualquier duda.' },
+  { name: 'Aleks Nikolaev Antonov', role: 'Gestión de redes', text: 'Contraté a Aleks para gestionar nuestras redes sociales porque apenas teníamos tiempo para publicar. En pocas semanas empezamos a tener una imagen mucho más profesional y un contenido mucho más cuidado. Lo que más me gustó es que todo tenía una estrategia detrás y no eran publicaciones hechas por hacer. Muy recomendable.' },
+  { name: 'AeroFlex', role: 'Landing + Ads', text: 'Lo que más me gustó fue el trato. Aleks no intenta venderte cosas que no necesitas, sino que busca la mejor solución para tu negocio. Me hizo una landing para captar clientes con anuncios y está funcionando realmente bien. Muy contento con el trabajo.' },
+  { name: 'Esther Argibay Martín', role: 'Edición de vídeo', text: 'La edición de vídeo ha sido espectacular. Le envié varias grabaciones que parecían imposibles de aprovechar y consiguió transformarlas en vídeos muy dinámicos para Instagram y TikTok. Los resultados han sido muy buenos y la calidad es muchísimo mejor de lo que esperaba.' },
+  { name: 'Adriana Aleksandrova', role: 'Edición de vídeo', text: 'Encargué varios vídeos para Instagram y TikTok y el cambio ha sido enorme. La edición es muy profesional, con subtítulos, buen ritmo y un estilo moderno que engancha mucho más. Sin duda volveré a trabajar con Aleks.' },
+  { name: 'Silvia Koeva', role: 'Reseña en Google', text: 'Lo que más valoro de Aleks es la cercanía. No solo hace un buen trabajo, sino que se implica de verdad en que tu proyecto salga adelante. Siempre aporta ideas nuevas, escucha cualquier sugerencia y busca soluciones cuando aparece algún problema. Es difícil encontrar profesionales así.' },
+  { name: 'Alex Zsurzs', role: 'Z Solutions · Formación', text: 'Estaba buscando un informático, pero no quería cualquiera, ni mucho menos una empresa donde ser un número más en la cola de sus proyectos. Aleks fue el primero en enseñarme algo real, algo que yo podía ver, y cuadraba exactamente con lo que tenía en la cabeza: mismo estilo y acabado. Después de entrevistar a otros que solo me pasaban presupuestos, sin una imagen, decidí seguir con Aleks por su rapidez al contestar y proponer. El precio nunca fue lo decisivo; me guié por las sensaciones y no me equivoqué. Me presta atención, me escucha, no me presiona cuando me tomo mis tiempos, y cuando vuelvo a aparecer está al 100% como si nada. Siempre voy a recomendar a Aleks en cualquier proyecto: sé que nunca me dejará mal. Destaca muchísimo por su seriedad y su compromiso constante.' },
+  { name: 'Cookie Cup', role: 'Web y redes', text: 'Gran profesional y experto en todo lo relacionado con la creación de páginas web y el conocimiento de redes.' },
+  { name: 'Mari Trini Cruz', role: 'Reseña en Google', text: 'Profesional que entiende las necesidades del cliente, encuentra soluciones y está siempre disponible.' },
+  { name: 'Juan José Sánchez', role: 'Reseña en Google', text: 'Estupendo profesional, muy recomendable y de toda confianza.' },
+  { name: 'Miguel C.', role: 'Reseña en Google', text: 'Muy profesional y trabajador. Altamente recomendado para todo tipo de públicos, un 10/10.' },
+  { name: 'Comunidad Herederos', role: 'Reseña en Google', text: 'Buen profesional, de confianza y recomendable 100%.' },
+];
+
+export const ABOUT = {
+  title: 'Soy Aleks.',
+  lines: [
+    'Llevo las redes y los anuncios de más de 25 cuentas y voy yo a grabar a cada negocio.',
+    'Trabajo con un número limitado de plazas para que cada cuenta tenga resultados.',
+  ],
+};
+
+export const FORM = {
+  title: 'Te mando tu estrategia gratis.',
+  sub: 'En menos de 24 horas. Plazas limitadas. Sin llamadas y sin compromiso.',
+  intro: 'Analizo tu perfil y te mando la estrategia que seguiría, con los cambios concretos para conseguir más clientes.',
+};
+
+// `review` marca respuestas redactadas o adaptadas que Aleks debe confirmar.
+export const FAQS = [
+  { q: '¿De verdad es gratis?', a: 'Sí. Analizo tu perfil y te mando la estrategia sin coste y sin compromiso. Si te sirve y la aplicas tú, perfecto.' },
+  { q: '¿Qué recibo exactamente?', a: 'Un análisis de tu perfil y la estrategia que seguiría: qué cambiar en tu perfil, qué vídeos hacer y cómo convertir seguidores en clientes.', review: 'REVISAR: confírmame este contenido' },
+  { q: '¿Tengo que hacer una llamada?', a: 'No. Me dejas tus datos, analizo tu perfil y te mando la estrategia por WhatsApp. Si tienes dudas, me escribes.' },
+  { q: '¿Tengo que grabar yo los vídeos?', a: 'No. Voy yo a tu negocio a grabar, estés en cualquier parte de España o de Europa, y me encargo de la edición y la publicación. Si prefieres grabar tú, te paso los guiones y te guío para que salga bien a la primera.' },
+  { q: '¿Vienes a mi ciudad?', a: 'Sí. Me desplazo por toda España y Europa. Lo vemos cuando te mande la estrategia.', review: 'REVISAR: adaptada a la oferta nueva (antes terminaba en otro paso que ya no existe)' },
+  { q: '¿Cuánto cuesta?', a: 'Depende de lo que necesites. Junto con la estrategia te mando un precio cerrado, sin sorpresas.' },
+  { q: '¿Hay plazas?', a: 'Trabajo con un número limitado de cuentas a la vez para que cada una tenga resultados. Si ahora no hay hueco, te lo digo al mandarte la estrategia.' },
+  { q: '¿Cuándo se notan los resultados con Meta Ads?', a: 'Depende del sector y del presupuesto, pero una campaña bien montada suele traer contactos desde la primera semana. Con VDN Performance superamos los 2.500 leads en 2 meses.' },
+  { q: '¿Qué necesito para empezar?', a: 'Con saber a qué te dedicas y tener tu Instagram, tu TikTok o tu web es suficiente. Con eso preparo tu estrategia. Del resto te guío yo paso a paso.', review: 'REVISAR: adaptada de la respuesta de la web a la oferta nueva' },
+];
+
+export const CLOSING = {
+  title: 'Tus redes pueden traerte clientes.',
+  sub: 'Estrategia gratis. Precio cerrado si quieres que la ejecute yo.',
+};
