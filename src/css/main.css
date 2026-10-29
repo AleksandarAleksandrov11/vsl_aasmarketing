@@ -518,10 +518,16 @@
   .about { grid-template-columns: 1fr 1fr; gap: clamp(32px, 5vw, 64px); }
 }
 
-/* Formulario */
+/* Formulario. En móvil, al llegar desde un CTA se ven ya las opciones:
+   título y frase corta arriba; la explicación larga solo en pantallas grandes. */
 .form-head .lead { margin-inline: auto; max-width: 560px; }
+@media (max-width: 767.98px) {
+  .form-sec { padding-top: 28px; }
+  .form-sec .sec-head { margin-bottom: 20px; }
+  .form-intro { display: none; }
+}
 .form-meta {
-  margin-top: 14px;
+  margin-top: 12px;
   font-size: 0.9375rem;
   font-weight: 600;
   color: var(--ink);

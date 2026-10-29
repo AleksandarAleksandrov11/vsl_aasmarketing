@@ -294,11 +294,11 @@ function form() {
   const prefixes = COUNTRIES.map((c) => `<option value="${c.iso}"${c.iso === 'ES' ? ' selected' : ''}>${esc(c.name)} +${c.code}</option>`).join('')
     + `<option value="${OTHER}">Otro país (escribe el prefijo)</option>`;
   const next = `<button type="button" class="btn lf-next" data-next>Continuar ${icon.arrow()}</button>`;
-  return `<section class="sec sec-soft" id="formulario" aria-labelledby="t-form">
+  return `<section class="sec sec-soft form-sec" id="formulario" aria-labelledby="t-form">
   <div class="wrap">
     <div class="sec-head center form-head">
       <h2 class="h2" id="t-form">Te mando tu estrategia <span class="serif">gratis</span>.</h2>
-      <p class="lead">${esc(FORM.intro)}</p>
+      <p class="lead form-intro">${esc(FORM.intro)}</p>
       <p class="form-meta">${esc(FORM.sub)}</p>
     </div>
     <div class="lead-card" data-lead>
