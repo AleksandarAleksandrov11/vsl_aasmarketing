@@ -60,7 +60,11 @@ Abre http://localhost:3000. Para probar el formulario contra un Sheet, copia
 - **Poner tu foto en "Soy Aleks":** guarda la foto como
   `assets/img/aleks/foto.jpg` (también vale .png, .webp o .avif) y despliega. El
   build la optimiza y sustituye al logo (vertical 4:5, mejor de 1000 px de ancho
-  o más). Si la borras, vuelve el logo.
+  o más). Si la borras, vuelve el logo. La actual salió de un selfie de 400 px:
+  se amplió a 1600 px con superresolución EDSR (OpenCV, en local, sin servicios
+  externos), mezclada con una ampliación normal para que la piel no quede
+  plástica, y con un enfoque y un contraste muy suaves. Si tienes una foto
+  original más grande, sustitúyela y quedará mejor.
 - **Capturas de reels:** todas se recortan en el build a 4:5 con el mismo
   encuadre (`crop` en `src/data/content.mjs`, en píxeles del original). Fuera
   queda la franja de abajo con el contador de Instagram o TikTok; la página pone
@@ -89,7 +93,7 @@ y con una sola tipografía.
 6. **¿Te suena? + Así trabajo:** los tres problemas y cuatro puntos (grabo en
    tu negocio, edito y publico, lanzo tus anuncios, te lo explico cada mes).
 7. **Cuentas y opiniones:** perfiles de clientes, enlace a Google y testimonios.
-8. **Soy Aleks** (logo hasta que haya foto), **preguntas frecuentes** y **cierre**.
+8. **Soy Aleks** (con tu foto), **preguntas frecuentes** y **cierre**.
 9. **Pie oscuro:** marca, servicios, contacto, legal y "Configurar cookies".
 
 Todos los botones bajan a `#formulario` (también el CTA fijo del móvil). Lo que
@@ -297,7 +301,6 @@ la página publicada). Búscalos con `grep -rn "PENDIENTE\|REVISAR" src docs .en
 - Titular: con el rediseño pasa a "Más clientes desde tus redes." (una de las
   alternativas cortas). El anterior era "Redes sociales y Meta Ads que llenan tu
   agenda de clientes."; se cambia en `HERO.title` de `src/data/content.mjs`.
-- Tu foto para "Soy Aleks" (`assets/img/aleks/foto.jpg`).
 - Decidir si activas la base de datos propia (opcional).
 - Crear el proyecto de Vercel en un equipo con plan Pro (el plan Hobby no admite
   webs comerciales) y activar Web Analytics en el panel (Speed Insights gratis no

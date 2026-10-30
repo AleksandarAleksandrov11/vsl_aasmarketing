@@ -159,7 +159,7 @@ async function proof(ctx) {
 async function about(ctx) {
   // Para poner la foto: deja assets/img/aleks/foto.jpg (o .png/.webp/.avif) y vuelve a desplegar.
   const media = ctx.aleksPhoto
-    ? await picture(ctx.assets, ctx.aleksPhoto, { alt: 'Aleks, de AAS Marketing', widths: [400, 600, 800], sizes: '(min-width: 768px) 360px, min(320px, calc(100vw - 40px))' })
+    ? await picture(ctx.assets, ctx.aleksPhoto, { alt: 'Aleks, de AAS Marketing', widths: [400, 640, 800, 1080, 1200], sizes: '(min-width: 768px) 360px, min(320px, calc(100vw - 40px))' })
     : '<span class="brand-mark" role="img" aria-label="AAS Marketing"></span>';
   return `<section class="sec" id="sobre-aleks" aria-labelledby="t-aleks">
   <div class="wrap about${ctx.aleksPhoto ? ' has-photo' : ''}">
