@@ -1,10 +1,16 @@
 # Medición con Meta: guía desde cero
 
-Esta guía es para dejar el píxel y la API de conversiones funcionando sin tener
-nada creado todavía. La landing ya está preparada: en cuanto rellenes
-`META_PIXEL_ID` y `META_CAPI_TOKEN` en Vercel y hagas **Redeploy**, todo se
-activa sin tocar código. Mientras estén vacías, la landing funciona igual y el
-formulario sigue guardando en el Sheet.
+Esta guía es para dejar el píxel y la API de conversiones funcionando. El píxel
+de AAS Marketing (`1137027092146077`) ya está en el código (`lib/meta.js`) y se
+usa solo en Producción: no hace falta poner `META_PIXEL_ID` en Vercel. Para que
+también salgan los eventos por servidor falta `META_CAPI_TOKEN` (paso 6) y un
+**Redeploy**. Mientras falte el token, la landing funciona igual, el píxel mide
+a quien acepta las cookies de marketing y el formulario sigue guardando en el Sheet.
+
+> No pegues el código del píxel que da Meta (`fbq('init', …)` y la imagen
+> `noscript`) en el HTML: dispararía antes de que acepten las cookies, mandaría
+> un PageView sin `event_id` (Meta lo contaría dos veces) y contradiría la
+> política de cookies. La landing ya lo carga así, pero con consentimiento.
 
 > Los nombres de los menús de Meta cambian a menudo. Si algo no aparece con el
 > mismo nombre, busca la opción equivalente en el buscador de la configuración.
@@ -70,7 +76,8 @@ una cuenta personal, Meta no deja generar el token de la API de conversiones.
 2. Nombre: `AAS Marketing landing`. Crear.
 3. Asigna la cuenta publicitaria del paso 2 al conjunto de datos y date acceso a ti.
 4. Abre el conjunto de datos en el **Administrador de eventos** y copia su
-   **ID** (solo cifras). Ese es tu `META_PIXEL_ID`.
+   **ID** (solo cifras). El de AAS Marketing es `1137027092146077` y ya está en
+   `lib/meta.js`; si algún día cambias de píxel, ponlo en `META_PIXEL_ID`.
 
 ## 4. Verificar el dominio aasmarketing.com
 
@@ -85,13 +92,16 @@ una cuenta personal, Meta no deja generar el token de la API de conversiones.
    - Si el DNS está en tu registrador: crea allí el mismo registro TXT en la raíz.
 4. Vuelve a Meta y pulsa **Verificar** (puede tardar desde minutos hasta 72 horas).
 
-## 5. Poner el ID del píxel en Vercel
+## 5. El ID del píxel (ya hecho)
 
-1. Vercel > proyecto de la landing > Settings > **Environment Variables**.
-2. `META_PIXEL_ID` = el ID del paso 3, tipo Config, entorno **Production** (en
-   Preview déjala vacía: la landing funciona igual y tus visitas de prueba no se
-   mezclan con los datos reales).
-3. Guarda. Todavía no hagas Redeploy si vas a añadir el token ahora.
+No hay que hacer nada: el build usa `1137027092146077` en Producción. En Preview
+(ramas que no son `main`) y en local no hay píxel, para que tus visitas de
+prueba no se mezclen con los datos reales.
+
+- Otro píxel: `META_PIXEL_ID` = su ID en Vercel (tipo Config, entorno
+  Production) y Redeploy.
+- Quitarlo sin tocar código: `META_PIXEL_ID` = `off` y Redeploy. El aviso de
+  cookies y los textos legales dejan de hablar de Meta.
 
 ## 6. Generar el token de la API de conversiones
 
@@ -141,7 +151,7 @@ una cuenta personal, Meta no deja generar el token de la API de conversiones.
 ## Dónde mirar si algo falla
 
 - **Vercel > Logs**: los avisos llevan prefijo `[meta]`, `[sheet]` o `[lead]`.
-  - `[meta] Falta META_PIXEL_ID o META_CAPI_TOKEN`: faltan variables o no se hizo Redeploy.
+  - `[meta] Falta META_CAPI_TOKEN (o el píxel)`: falta el token o no se hizo Redeploy.
   - `[meta] Lead rechazado (400)`: token caducado o de otro conjunto de datos.
 - La versión de la Graph API está en `lib/meta.js` (`GRAPH_VERSION = 'v26.0'`).
   Meta retira cada versión unos dos años después; cuando avise, sube el número y

@@ -3,8 +3,9 @@
 // Uso: npm run build   (Vercel lo ejecuta en cada despliegue)
 //
 // Variables de entorno que lee en el build (las mismas de Vercel):
-//   META_PIXEL_ID     ID del píxel. Si falta, la página no carga el píxel y los
-//                     textos legales y el aviso de cookies no hablan de Meta.
+//   META_PIXEL_ID     Otro ID de píxel, u "off" para quitarlo. Vacía: en Producción,
+//                     el de AAS Marketing (lib/meta.js); en Preview y en local, sin
+//                     píxel, y los textos legales y el aviso de cookies no hablan de Meta.
 //   CAPI_WITHOUT_CONSENT  Medición por servidor sin consentimiento (por defecto sí).
 //                     Cambia el aviso de cookies y la política de privacidad.
 //   VERCEL_ANALYTICS  Vercel Web Analytics y Speed Insights (por defecto sí; "false" los quita).
@@ -21,6 +22,7 @@ import * as esbuild from 'esbuild';
 import { Assets } from './lib/assets.mjs';
 import { minifyHtml } from './lib/html.mjs';
 import { envFlag } from '../lib/http.js';
+import { pixelId } from '../lib/meta.js';
 import { landing } from '../src/templates/landing.mjs';
 import { legalPages, notFound } from '../src/templates/legal.mjs';
 
@@ -28,16 +30,6 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const out = path.resolve(root, process.env.OUT_DIR || 'dist');
 const started = Date.now();
 
-
-function pixelIdFromEnv() {
-  const id = String(process.env.META_PIXEL_ID || '').trim();
-  if (!id) return '';
-  if (!/^\d{5,20}$/.test(id)) {
-    console.warn(`[build] META_PIXEL_ID="${id}" no parece un ID de píxel (solo cifras). Se ignora.`);
-    return '';
-  }
-  return id;
-}
 
 async function buildCss(assets, file) {
   let src = await readFile(path.join(root, 'src/css', file), 'utf8');
@@ -95,7 +87,7 @@ async function main() {
   const ctx = {
     assets,
     criticalCss,
-    pixelId: pixelIdFromEnv(),
+    pixelId: pixelId((msg) => console.warn(`[build] ${msg}`)),
     // Mismo criterio que las funciones de /api (vacía = valor por defecto).
     capiWithoutConsent: envFlag('CAPI_WITHOUT_CONSENT', true),
     analytics: envFlag('VERCEL_ANALYTICS', true),
@@ -149,7 +141,7 @@ async function report(ctx) {
   console.log(line('index.html', html));
   console.log(line('main.css', css));
   console.log(line('app.js', js));
-  console.log(`  Píxel de Meta: ${ctx.pixelId ? ctx.pixelId : 'no configurado (META_PIXEL_ID vacío)'}`);
+  console.log(`  Píxel de Meta: ${ctx.pixelId ? ctx.pixelId : 'sin píxel (fuera de Producción sin META_PIXEL_ID, o META_PIXEL_ID=off)'}`);
   if (ctx.pixelId) console.log(`  Medición por servidor: ${ctx.capiWithoutConsent ? 'acepten o no las cookies, salvo oposición (CAPI_WITHOUT_CONSENT=true)' : 'solo con las cookies de marketing aceptadas (CAPI_WITHOUT_CONSENT=false)'}`);
   console.log(`  Vercel Analytics: ${ctx.analytics ? 'sí (tras el consentimiento de analítica)' : 'no'}  ·  Foto de Aleks: ${ctx.aleksPhoto || 'no (se muestra el logo)'}`);
 }

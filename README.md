@@ -81,7 +81,9 @@ Abre http://localhost:3000. Para probar el formulario contra un Sheet, copia
 2. **Variables de entorno** (Settings > Environment Variables). Ver `.env.example`:
    - `SHEET_WEBHOOK_URL` y `SHEET_SECRET` (después de desplegar el Apps Script, paso 4).
    - `CAPI_WITHOUT_CONSENT` = `true`.
-   - `META_PIXEL_ID` y `META_CAPI_TOKEN` cuando los tengas ([docs/meta.md](docs/meta.md)).
+   - `META_CAPI_TOKEN` cuando lo tengas ([docs/meta.md](docs/meta.md)). El ID del
+     píxel (`1137027092146077`) ya está en el código y solo se usa en Production;
+     `META_PIXEL_ID` solo hace falta para cambiarlo (o `off` para quitarlo).
    - `META_TEST_EVENT_CODE` solo mientras pruebas eventos; en producción, vacío.
    - Elige el tipo al crearlas: **Secret** (no se puede volver a leer) para
      `META_CAPI_TOKEN`, `SHEET_SECRET` y `UPSTASH_REDIS_REST_TOKEN`; **Config**
@@ -247,7 +249,7 @@ Los `[PENDIENTE]` y `[REVISAR]` están como comentarios en el código (no se ven
 la página publicada). Búscalos con `grep -rn "PENDIENTE\|REVISAR" src docs .env.example`.
 
 **[PENDIENTE]**
-- `META_PIXEL_ID` y `META_CAPI_TOKEN`: crear portfolio, píxel y token ([docs/meta.md](docs/meta.md)).
+- `META_CAPI_TOKEN`: generar el token del píxel 1137027092146077 ([docs/meta.md](docs/meta.md)).
 - `SHEET_WEBHOOK_URL` y `SHEET_SECRET`: desplegar el Apps Script.
 - Lighthouse sobre la URL de Vercel y prueba en un iPhone real desde Instagram.
 - Elegir titular: se mantiene el tuyo. Alternativas más cortas (comentario en
@@ -285,8 +287,8 @@ la página publicada). Búscalos con `grep -rn "PENDIENTE\|REVISAR" src docs .en
   jurídica, analítica de Vercel (datos según su documentación), destinatarios,
   Meta como corresponsable, WhatsApp con el mensaje ya escrito, transferencias,
   hash que no es anónimo, envío por servidor y cómo oponerse, conservación,
-  derechos y seguridad. Se adapta sola a las variables de Vercel: sin
-  `META_PIXEL_ID` no habla de Meta y con `CAPI_WITHOUT_CONSENT=false` explica
+  derechos y seguridad. Se adapta sola a las variables de Vercel: sin píxel
+  (Preview, local o `META_PIXEL_ID=off`) no habla de Meta y con `CAPI_WITHOUT_CONSENT=false` explica
   que solo se mide con consentimiento.
 - Política de cookies: almacenamiento necesario, `aas_attr` solo con
   consentimiento, analítica de Vercel, cookies de Meta Pixel, medición desde el
