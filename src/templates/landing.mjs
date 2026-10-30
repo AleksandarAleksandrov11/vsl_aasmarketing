@@ -6,7 +6,7 @@
 
 import { esc, icon, picture, sprite, stars } from '../../scripts/lib/html.mjs';
 import {
-  SITE, CTA, RATING_LONG, META, HERO, HEADLINES, STATS, PAINS, RESULTS, VDN, EXONERIS, WORK, ACCOUNTS, TESTIMONIALS,
+  SITE, CTA, RATING, META, HERO, HEADLINES, STATS, PAINS, RESULTS, VDN, EXONERIS, WORK, ACCOUNTS, TESTIMONIALS,
   ABOUT, FORM, FAQS, CLOSING,
 } from '../data/content.mjs';
 import { SERVICIOS, SECTORES } from '../../shared/options.js';
@@ -51,7 +51,7 @@ async function hero(ctx) {
 // Bucle infinito: la lista se repite una vez para que no haya corte. La copia
 // no se lee dos veces (aria-hidden) y sus botones no reciben el foco con el
 // tabulador. Con "reducir movimiento" se queda quieto y se desliza con el dedo.
-const loop = (tag, items, cls = '') => `<div class="mq${cls ? ` ${cls}` : ''}" data-marquee>
+const loop = (tag, items, cls = '', attrs = '') => `<div class="mq${cls ? ` ${cls}` : ''}" data-marquee${attrs}>
     <${tag} class="mq-track">${items}</${tag}>
     <${tag} class="mq-track" aria-hidden="true">${items.replace(/<button /g, '<button tabindex="-1" ')}</${tag}>
   </div>`;
@@ -133,24 +133,33 @@ async function proof(ctx) {
         ${long(t) ? '<button type="button" class="more" data-more hidden>Leer más</button>' : ''}
         <figcaption><span class="avatar" aria-hidden="true">${esc(initials(t.name))}</span><span><b>${esc(t.name)}</b><span>${esc(t.role)}</span></span></figcaption>
       </figure>`);
-  // Cuentas en bucle hacia la izquierda y opiniones hacia la derecha; se paran
-  // al pasar el ratón, con el foco o mientras se tocan, para poder leer.
+  // Cuentas en bucle hacia la izquierda (empezando por las de más seguidores) y
+  // opiniones hacia la derecha (empezando por la primera). Arrancan al llegar a
+  // la sección, se pueden arrastrar con el dedo o el ratón y vuelven a moverse
+  // solas a los 5 s. "Leer más" abre la opinión entera en una ventana, así todas
+  // las tarjetas miden lo mismo.
   return `<section class="sec sec-soft" id="opiniones" aria-labelledby="t-cuentas">
   <div class="wrap">
     <div class="sec-head">
       <h2 class="h2" id="t-cuentas">${esc(HEADLINES.accounts)}</h2>
-      <p class="g-rating"><span class="stars">${stars(17)}</span> ${esc(RATING_LONG)}</p>
+      <p class="g-rating">${esc(RATING)}</p>
     </div>
   </div>
   <div class="loop-accounts" role="region" aria-label="Perfiles de Instagram de clientes">
-  ${loop('div', accounts.join(''), 'mq-pause')}
+  ${loop('div', accounts.join(''), 'mq-pause', ' data-speed="45"')}
   </div>
   <div class="loop-reviews" role="region" aria-label="Opiniones de clientes">
-  ${loop('div', reviews.join(''), 'mq-pause mq-rev')}
+  ${loop('div', reviews.join(''), 'mq-pause mq-rev', ' data-speed="30"')}
   </div>
   <div class="wrap">
     <div class="cta-row">${ctaBtn()}</div>
   </div>
+  <dialog class="tdialog" id="tdialog" aria-labelledby="tdialog-name">
+    <button type="button" class="tdialog-close" data-close aria-label="Cerrar">${icon.x({ size: 22 })}</button>
+    <span class="stars" role="img" aria-label="5 de 5 estrellas">${stars(16)}</span>
+    <blockquote data-quote></blockquote>
+    <p class="tdialog-who"><b id="tdialog-name" data-name></b> <span data-role></span></p>
+  </dialog>
 </section>`;
 }
 

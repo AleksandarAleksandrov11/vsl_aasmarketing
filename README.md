@@ -87,6 +87,9 @@ sin punto final y con una sola tipografía.
    solo se queda quieta si el móvil tiene activado "reducir movimiento"
    (entonces se desliza con el dedo).
 3. **Formulario** (`#formulario`): mismas preguntas, opciones, orden y textos.
+   Al enviar no espera al servidor: la solicitud sale en segundo plano (y se
+   guarda en el navegador para reenviarla si no llega), la pantalla de éxito
+   sale al momento y WhatsApp se abre a los 0,15 s con el mensaje escrito.
 4. **Casos reales:** VDN Performance y Exoneris en dos tarjetas iguales
    (cliente, titular, cifras y capturas de perfil o estadísticas).
 5. **Más de 10 millones de visitas generadas:** las once capturas de reels, de
@@ -94,10 +97,14 @@ sin punto final y con una sola tipografía.
 6. **¿Te suena? + Así trabajo:** los tres problemas en rojo y cinco pasos
    (estudio tu sector, escribo tus guiones, voy a grabar a tu negocio, edito y
    publico y, a todo el ancho, optimización mensual).
-7. **Cuentas y opiniones:** "5 estrellas en Google" (sin enlace), los perfiles
-   de clientes en bucle hacia la izquierda y los testimonios hacia la derecha.
-   Se paran con el ratón encima, con el foco o mientras se tocan, y al abrir
-   "Leer más" se quedan quietos hasta que la sección sale de la pantalla.
+7. **Cuentas y opiniones:** "5,0 en Google" (sin estrellas ni enlace), los
+   perfiles de clientes en bucle hacia la izquierda (empezando por los de más
+   seguidores) y las opiniones hacia la derecha (empezando por la primera).
+   Están quietos hasta que se ve la sección; se pueden arrastrar con el dedo o
+   con el ratón y vuelven a moverse solos 5 s después. Con el ratón encima se
+   paran. Todas las opiniones miden lo mismo: las largas se cortan con "Leer
+   más", que abre la opinión entera en una ventana. Fuera las opiniones de
+   "Aleks Nikolaev Antonov" y "Adriana Aleksandrova" (podían parecer tuyas).
 8. **Soy Aleks** (con tu foto), **preguntas frecuentes** y **cierre**.
 9. **Pie oscuro:** marca, servicios, contacto, legal y "Configurar cookies".
 
@@ -240,7 +247,9 @@ con el ratón encima, copia oculta a lectores de pantalla y quietos con
 movimiento reducido), estructura en móvil (formulario antes
 de 2,5 pantallas y página de 10 como mucho a 390x844; CTA, nota y reels del hero
 en el primer pantallazo a 390x844 y 375x667; capturas con el mismo recorte), FAQ con su schema,
-"Leer más", saltar al formulario, sin JavaScript, movimiento reducido, móvil
+"Leer más" en una ventana, tarjetas de opiniones iguales, bucles que arrancan
+al llegar, se arrastran y vuelven solos a los 5 s, WhatsApp al momento aunque
+el servidor tarde, saltar al formulario, sin JavaScript, movimiento reducido, móvil
 en horizontal y páginas legales. Necesita Playwright con WebKit y Chromium:
 
 ```bash

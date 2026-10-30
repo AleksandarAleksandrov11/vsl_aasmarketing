@@ -17,7 +17,6 @@ export const SITE = {
 
 export const CTA = 'Quiero mi estrategia gratis';
 export const RATING = '5,0 en Google';
-export const RATING_LONG = '5 estrellas en Google';
 export const HEADER_CTA = 'Estrategia gratis';
 
 export const META = {
@@ -42,7 +41,7 @@ const EXONERIS_REEL = {
 // Cifra exacta de cada captura sacada del alt de index.html del origen. De más a menos visitas.
 export const RESULTS = [
   { src: 'img/results/tatuajes-946mil.webp', views: '946 mil', who: 'Estudio de tatuajes', alt: 'Reel de un estudio de tatuajes con 946 mil visualizaciones', crop: { left: 0, top: 200, width: 800, height: 1000 } },
-  { src: 'img/results/vdn-performance-406mil.webp', views: '+406 mil', who: 'VDN Performance', alt: 'Reel de VDN Performance sobre los mejores coches por menos de 3.000 euros, con más de 406 mil visualizaciones', crop: { left: 44, top: 0, width: 712, height: 890 } },
+  { src: 'img/results/vdn-performance-406mil.webp', views: '406 mil', who: 'VDN Performance', alt: 'Reel de VDN Performance sobre los mejores coches por menos de 3.000 euros, con más de 406 mil visualizaciones', crop: { left: 44, top: 0, width: 712, height: 890 } },
   { src: 'img/results/vdn-performance-307mil.webp', views: '306,9 mil', who: 'VDN Performance', alt: 'Reel de VDN Performance sobre los mejores coches por menos de 5.000 euros, con 306,9 mil visualizaciones', crop: { left: 19, top: 0, width: 762, height: 952 } },
   { src: 'img/results/tatuajes-250mil.webp', views: '257 mil', who: 'Estudio de tatuajes', alt: 'Reel de un estudio de tatuajes sobre las zonas que más duelen al tatuarse, con 257 mil visualizaciones', crop: { left: 0, top: 255, width: 800, height: 1000 } },
   { ...EXONERIS_REEL, views: '151 mil', who: 'Exoneris Consulting' },
@@ -70,7 +69,7 @@ export const STATS = [
   { value: '+2.500', label: 'leads con Meta Ads en 2 meses' },
   { value: '946 mil', label: 'visitas en un solo reel' },
   { value: '+25', label: 'cuentas gestionadas' },
-  { value: '+2,5 M', label: 'visitas en menos de 3 meses' },
+  { value: '+2,5 M', label: 'visitas en menos de 2 meses' },
   { value: '+300', label: 'vídeos editados' },
   { value: '24 h', label: 'para mandarte tu estrategia' },
   { value: '1.058', label: 'seguidores nuevos con un primer vídeo' },
@@ -91,7 +90,7 @@ export const HEADLINES = {
 };
 
 export const VDN = {
-  title: '2,5 millones de visitas en menos de 3 meses',
+  title: '2,5 millones de visitas en menos de 2 meses',
   client: 'VDN Performance',
   sector: 'Reprogramaciones de coches en Madrid',
   logo: 'img/cases/vdn-logo.webp',
@@ -165,12 +164,12 @@ export const ACCOUNTS = [
 
 // Copiados tal cual de index.html del origen, en el orden pedido. Al final,
 // reseñas de Google genéricas (las de diseño web se dejan fuera a propósito).
+// Fuera también las que podían parecer de Aleks por el nombre (Aleks Nikolaev
+// Antonov y Adriana Aleksandrova), por petición suya.
 export const TESTIMONIALS = [
   { name: 'Adrián López', role: 'Meta Ads', text: 'Después de probar con otras personas para la publicidad de mi negocio, decidí confiar en Aleks para llevar las campañas de Meta Ads. La diferencia ha sido enorme. Me explicó cómo iba a trabajar, fue transparente en todo momento y empezamos a recibir muchos más contactos. Muy profesional y siempre disponible para cualquier duda.' },
-  { name: 'Aleks Nikolaev Antonov', role: 'Gestión de redes', text: 'Contraté a Aleks para gestionar nuestras redes sociales porque apenas teníamos tiempo para publicar. En pocas semanas empezamos a tener una imagen mucho más profesional y un contenido mucho más cuidado. Lo que más me gustó es que todo tenía una estrategia detrás y no eran publicaciones hechas por hacer. Muy recomendable.' },
   { name: 'AeroFlex', role: 'Landing + Ads', text: 'Lo que más me gustó fue el trato. Aleks no intenta venderte cosas que no necesitas, sino que busca la mejor solución para tu negocio. Me hizo una landing para captar clientes con anuncios y está funcionando realmente bien. Muy contento con el trabajo.' },
   { name: 'Esther Argibay Martín', role: 'Edición de vídeo', text: 'La edición de vídeo ha sido espectacular. Le envié varias grabaciones que parecían imposibles de aprovechar y consiguió transformarlas en vídeos muy dinámicos para Instagram y TikTok. Los resultados han sido muy buenos y la calidad es muchísimo mejor de lo que esperaba.' },
-  { name: 'Adriana Aleksandrova', role: 'Edición de vídeo', text: 'Encargué varios vídeos para Instagram y TikTok y el cambio ha sido enorme. La edición es muy profesional, con subtítulos, buen ritmo y un estilo moderno que engancha mucho más. Sin duda volveré a trabajar con Aleks.' },
   { name: 'Silvia Koeva', role: 'Reseña en Google', text: 'Lo que más valoro de Aleks es la cercanía. No solo hace un buen trabajo, sino que se implica de verdad en que tu proyecto salga adelante. Siempre aporta ideas nuevas, escucha cualquier sugerencia y busca soluciones cuando aparece algún problema. Es difícil encontrar profesionales así.' },
   { name: 'Alex Zsurzs', role: 'Z Solutions · Formación', text: 'Estaba buscando un informático, pero no quería cualquiera, ni mucho menos una empresa donde ser un número más en la cola de sus proyectos. Aleks fue el primero en enseñarme algo real, algo que yo podía ver, y cuadraba exactamente con lo que tenía en la cabeza: mismo estilo y acabado. Después de entrevistar a otros que solo me pasaban presupuestos, sin una imagen, decidí seguir con Aleks por su rapidez al contestar y proponer. El precio nunca fue lo decisivo; me guié por las sensaciones y no me equivoqué. Me presta atención, me escucha, no me presiona cuando me tomo mis tiempos, y cuando vuelvo a aparecer está al 100% como si nada. Siempre voy a recomendar a Aleks en cualquier proyecto: sé que nunca me dejará mal. Destaca muchísimo por su seriedad y su compromiso constante.' },
   { name: 'Cookie Cup', role: 'Web y redes', text: 'Gran profesional y experto en todo lo relacionado con la creación de páginas web y el conocimiento de redes.' },

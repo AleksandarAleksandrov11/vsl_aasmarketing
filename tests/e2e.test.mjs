@@ -89,12 +89,30 @@ after(() => {
   sheet?.close();
 });
 
+/**
+ * WhatsApp simulado. Responde tarde a propósito: mientras tanto la página sigue
+ * viva (la navegación no se completa) y se puede comprobar la pantalla de éxito,
+ * lo guardado y el píxel. `log.wa` apunta la hora en que se pidió WhatsApp.
+ */
+const routeWa = (context, log = { wa: [], waAt: [] }, delay = 4000) => context.route('https://wa.me/**', async (route) => {
+  log.wa.push(route.request().url());
+  log.waAt?.push(Date.now());
+  await new Promise((r) => setTimeout(r, delay));
+  route.fulfill({ contentType: 'text/html', body: '<!doctype html><title>WhatsApp</title><p>WhatsApp</p>' }).catch(() => {});
+});
+
+/** Pantalla de éxito a la vista (sin esperar a que termine la navegación a WhatsApp). */
+const doneVisible = (page, timeout = 9000) => page.waitForFunction(() => {
+  const d = document.querySelector('[data-done]');
+  return d && !d.hidden;
+}, null, { timeout });
+
 /** Abre una página con registro de errores, eventos y peticiones a Meta simuladas. */
 async function open(browserType, ctxOptions, { url = base, before: setup } = {}) {
   const browser = await browserType.launch();
   const context = await browser.newContext(ctxOptions);
   const page = await context.newPage();
-  const log = { errors: [], events: [], leads: [], wa: [] };
+  const log = { errors: [], events: [], leads: [], wa: [], waAt: [] };
   page.on('console', (m) => m.type() === 'error' && log.errors.push(m.text()));
   page.on('pageerror', (e) => log.errors.push(e.message));
   page.on('request', (r) => {
@@ -108,10 +126,7 @@ async function open(browserType, ctxOptions, { url = base, before: setup } = {})
     body: 'window.__fbq=[];(window.fbq.queue||[]).forEach(function(a){window.__fbq.push([].slice.call(a))});window.fbq.queue=[];window.fbq.callMethod=function(){window.__fbq.push([].slice.call(arguments))};',
   }));
   await context.route('https://www.facebook.com/**', (route) => route.fulfill({ status: 204, body: '' }));
-  await context.route('https://wa.me/**', (route) => {
-    log.wa.push(route.request().url());
-    return route.fulfill({ contentType: 'text/html', body: '<!doctype html><title>WhatsApp</title><p>WhatsApp</p>' });
-  });
+  await routeWa(context, log);
   if (setup) await setup(page, context);
   await page.goto(url, { waitUntil: 'load' });
   return { browser, context, page, log };
@@ -238,7 +253,7 @@ test('móvil (WebKit): formulario completo con "Otro", éxito y WhatsApp bien co
     if (SHOTS) await page.locator('[data-lead]').screenshot({ path: `${SHOTS}/390-formulario-paso5.png` });
     const waRequest = page.waitForRequest('https://wa.me/**', { timeout: 15000 });
     await page.click('[data-submit]');
-    await page.locator('[data-done]').waitFor({ state: 'visible', timeout: 9000 });
+    await doneVisible(page);
     assert.equal(await page.textContent('[data-done-title]'), '¡Listo, PRUEBA!');
     if (SHOTS) await page.locator('[data-lead]').screenshot({ path: `${SHOTS}/390-exito.png` });
     const url = new URL((await waRequest).url());
@@ -265,6 +280,7 @@ test('móvil (WebKit): formulario completo con "Otro", éxito y WhatsApp bien co
     assert.match(log.leads[0].event_id, /^[0-9a-f-]{36}$/);
 
     // Al volver de WhatsApp sigue la pantalla de éxito.
+    await page.waitForURL(/wa\.me/, { timeout: 10000 });
     await page.goBack();
     await page.locator('[data-done]').waitFor({ state: 'visible' });
     assert.equal(await page.isVisible('[data-form]'), false);
@@ -288,7 +304,7 @@ test('éxito aunque /api/lead falle, tarde o no haya red; reintento en la próxi
   await ctx.page.click('[data-ck="reject"]');
   await fillForm(ctx.page, { otro: false });
   await ctx.page.click('[data-submit]');
-  await ctx.page.locator('[data-done]').waitFor({ state: 'visible', timeout: 9000 });
+  await doneVisible(ctx.page);
   const copy = await ctx.page.evaluate(() => JSON.parse(localStorage.getItem('aas_pending')));
   assert.equal(copy.length, 1);
   // Sin consentimiento de marketing, la copia del navegador no guarda identificadores
@@ -300,17 +316,21 @@ test('éxito aunque /api/lead falle, tarde o no haya red; reintento en la próxi
   assert.deepEqual([sent.utm_source, sent.fbclid], ['ig', 'IwAR0prueba'], 'y los datos de campaña');
   await ctx.browser.close();
 
-  // b) Respuesta lenta: éxito antes de 7 s.
+  // b) El servidor tarda 12 s: la pantalla de éxito y WhatsApp salen al momento,
+  // sin esperar la respuesta (pasados los 3 s mínimos desde que se abrió el formulario).
   ctx = await open(pw.webkit, MOBILE, { before: (page) => page.route('**/api/lead', async (r) => {
     await new Promise((res) => setTimeout(res, 12000));
     r.fulfill({ status: 200, body: '{"ok":true}' }).catch(() => {});
   }) });
   await ctx.page.click('[data-ck="reject"]');
   await fillForm(ctx.page, { otro: false });
+  await ctx.page.waitForTimeout(3100);
   const t0 = Date.now();
   await ctx.page.click('[data-submit]');
-  await ctx.page.locator('[data-done]').waitFor({ state: 'visible', timeout: 9000 });
-  assert.ok(Date.now() - t0 < 7500, `tardó ${Date.now() - t0} ms`);
+  await doneVisible(ctx.page, 3000);
+  for (let i = 0; i < 40 && !ctx.log.waAt.length; i++) await ctx.page.waitForTimeout(50);
+  assert.ok(ctx.log.waAt.length === 1, 'no abre WhatsApp');
+  assert.ok(ctx.log.waAt[0] - t0 < 1000, `WhatsApp tardó ${ctx.log.waAt[0] - t0} ms en abrirse`);
   await ctx.browser.close();
 
   // c) Sin red: éxito, guardado en localStorage y reenviado en la siguiente visita.
@@ -318,14 +338,14 @@ test('éxito aunque /api/lead falle, tarde o no haya red; reintento en la próxi
   sheetState.calls.length = 0;
   const browser = await pw.webkit.launch();
   const context = await browser.newContext(MOBILE);
-  await context.route('https://wa.me/**', (r) => r.fulfill({ contentType: 'text/html', body: 'wa' }));
+  await routeWa(context);
   const page = await context.newPage();
   await page.route('**/api/lead', (r) => r.abort('internetdisconnected'));
   await page.goto(base);
   await page.click('[data-ck="reject"]');
   await fillForm(page, { otro: false });
   await page.click('[data-submit]');
-  await page.locator('[data-done]').waitFor({ state: 'visible', timeout: 9000 });
+  await doneVisible(page);
   assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('aas_pending')).length), 1);
   await page.unroute('**/api/lead');
   const next = await context.newPage();
@@ -340,16 +360,19 @@ test('éxito aunque /api/lead falle, tarde o no haya red; reintento en la próxi
   const b2 = await pw.webkit.launch();
   try {
   const c2 = await b2.newContext(MOBILE);
-  await c2.route('https://wa.me/**', (r) => r.fulfill({ contentType: 'text/html', body: 'wa' }));
+  await routeWa(c2, undefined, 15000);
   const p2 = await c2.newPage();
-  const status = [];
-  p2.on('response', (r) => r.url().endsWith('/api/lead') && status.push(r.status()));
+  sheetState.calls.length = 0;
   await p2.goto(base);
   await p2.click('[data-ck="reject"]');
   await fillForm(p2, { otro: false });
   await p2.click('[data-submit]');
-  await p2.locator('[data-done]').waitFor({ state: 'visible', timeout: 9000 });
-  assert.deepEqual(status, [503]);
+  await doneVisible(p2);
+  // El servidor lo intenta 4 veces con el Sheet caído y contesta 503 (la página
+  // ya está abriendo WhatsApp y no espera la respuesta): la copia sigue guardada.
+  for (let i = 0; i < 80 && sheetState.calls.length < 4; i++) await p2.waitForTimeout(100);
+  assert.equal(sheetState.calls.length, 4, 'el servidor reintenta el Sheet');
+  await p2.waitForTimeout(500);
   assert.equal(await p2.evaluate(() => JSON.parse(localStorage.getItem('aas_pending')).length), 1);
   sheetState.mode = 'ok';
   sheetState.calls.length = 0;
@@ -395,7 +418,7 @@ test('escritorio (Chromium 1440): formulario solo con teclado y sin errores', { 
     await page.keyboard.type('345678');
     if (SHOTS) await page.locator('[data-lead]').screenshot({ path: `${SHOTS}/1440-formulario-paso5.png` });
     await page.keyboard.press('Enter');
-    await page.locator('[data-done]').waitFor({ state: 'visible', timeout: 9000 });
+    await doneVisible(page);
     if (SHOTS) await page.locator('[data-lead]').screenshot({ path: `${SHOTS}/1440-exito.png` });
     assert.equal(log.leads[0].servicio, 'ads');
     assert.equal(log.leads[0].sector, 'entrenamiento');
@@ -445,7 +468,7 @@ test('cookies: el píxel solo carga con consentimiento y usa los mismos event_id
     await page.click('[data-ck="save"]');
     await fillForm(page, { otro: false });
     await page.click('[data-submit]');
-    await page.locator('[data-done]').waitFor({ state: 'visible', timeout: 9000 });
+    await doneVisible(page);
     const lead = (await page.evaluate(() => window.__fbq)).find((c) => c[0] === 'track' && c[1] === 'Lead');
     assert.equal(lead[3].eventID, log.leads.at(-1).event_id);
     assert.equal(log.leads.at(-1).consent, true);
@@ -584,7 +607,7 @@ test('formulario: validaciones de cada paso y prefijos', { skip, timeout: 90000 
     assert.equal(await page.textContent('#e-tel'), '');
     await page.click('[data-ck="reject"]').catch(() => {});
     await page.click('[data-submit]');
-    await page.locator('[data-done]').waitFor({ state: 'visible', timeout: 9000 });
+    await doneVisible(page);
     const lead = log.leads.at(-1);
     assert.deepEqual([lead.servicio, lead.sector, lead.sector_otro, lead.perfil, lead.prefijo], ['ads', 'belleza', '', 'no tengo', 'OTRO']);
     const row = sheetState.calls.at(-1).lead;
@@ -633,8 +656,8 @@ test('formulario: borrador al recargar, doble clic, mínimo de 3 s y Contact una
     await sent;
     const sentAt = await page.evaluate(() => Date.now());
     assert.ok(sentAt - t0 >= 3000, `se respeta el mínimo de 3 s (${sentAt - t0} ms)`);
-    await page.locator('[data-done]').waitFor({ state: 'visible', timeout: 9000 });
-    await page.waitForTimeout(2000); // redirección a WhatsApp
+    await doneVisible(page);
+    await page.waitForURL(/wa\.me/, { timeout: 10000 }); // WhatsApp abierto
     assert.equal(log.leads.length - before, 1, 'el doble clic no duplica el envío');
     const contacts = () => log.events.filter((e) => e.event_name === 'Contact').length;
     assert.equal(contacts(), 1);
@@ -700,7 +723,7 @@ test('cookies: rechazar se recuerda, configurar activa y desactivar revoca', { s
   }
 });
 
-test('componentes: bucles de cifras, cuentas y opiniones, FAQ con schema, "Leer más" y saltar al formulario', { skip, timeout: 60000 }, async () => {
+test('componentes: bucles de cifras, cuentas y opiniones, FAQ con schema, "Leer más" y saltar al formulario', { skip, timeout: 90000 }, async () => {
   const { browser, page, log } = await open(pw.chromium, DESKTOP);
   try {
     // Saltar al formulario: primer elemento con Tab.
@@ -715,40 +738,69 @@ test('componentes: bucles de cifras, cuentas y opiniones, FAQ con schema, "Leer 
       await page.waitForTimeout(150);
     }
     assert.ok(Math.abs(top) < 120, `el formulario queda arriba (${top})`);
-    // Bucles: cifras y cuentas hacia la izquierda, opiniones hacia la derecha.
-    // Sin botón de pausa ni flechas; la copia que cierra el bucle no se lee
-    // dos veces ni mete botones en el orden del tabulador.
+    // Bucles. Sin botón de pausa ni flechas; la copia que cierra el bucle no se
+    // lee dos veces ni mete botones en el orden del tabulador.
     assert.equal(await page.locator('video').count(), 0);
     assert.equal(await page.locator('[data-marquee-toggle], .car-nav, [data-carousel]').count(), 0);
-    const x = (sel) => page.locator(`${sel} .mq-track`).first().evaluate((el) => new DOMMatrix(getComputedStyle(el).transform).m41);
-    await page.locator('.loop-reviews').scrollIntoViewIfNeeded();
-    await page.mouse.move(5, 5); // sin el ratón encima
-    const x0 = { band: await x('.band'), acc: await x('.loop-accounts'), rev: await x('.loop-reviews') };
-    await page.waitForTimeout(800);
-    assert.ok((await x('.band')) < x0.band, 'las cifras no van a la izquierda');
-    assert.ok((await x('.loop-accounts')) < x0.acc, 'las cuentas no van a la izquierda');
-    assert.ok((await x('.loop-reviews')) > x0.rev, 'las opiniones no van a la derecha');
     for (const sel of ['.band', '.loop-accounts', '.loop-reviews']) {
       assert.equal(await page.locator(`${sel} .mq-track`).nth(1).getAttribute('aria-hidden'), 'true', sel);
     }
     assert.equal(await page.locator('.mq-track[aria-hidden] button:not([tabindex="-1"])').count(), 0);
-    // Con el ratón encima, las opiniones se paran y "Leer más" abre el texto entero.
-    const more = await page.evaluate(() => {
-      const btn = [...document.querySelectorAll('.loop-reviews [data-more]')].find((b) => {
-        const r = b.getBoundingClientRect();
-        return !b.hidden && getComputedStyle(b).visibility !== 'hidden' && r.left > 40 && r.right < innerWidth - 40 && r.top > 0 && r.bottom < innerHeight;
-      });
-      if (!btn) return null;
-      const r = btn.getBoundingClientRect();
-      return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+    // "5,0 en Google", sin estrellas ni enlace.
+    assert.equal((await page.textContent('#opiniones .g-rating')).trim(), '5,0 en Google');
+    assert.equal(await page.locator('#opiniones .sec-head a').count(), 0);
+    const x = (sel) => page.locator(`${sel} .mq-track`).first().evaluate((el) => new DOMMatrix(getComputedStyle(el).transform).m41);
+    // Antes de llegar, quietos y empezando por la cuenta con más seguidores y la primera opinión.
+    const firstLeft = (sel, child) => page.evaluate(([s, c]) => {
+      const lefts = [...document.querySelectorAll(`${s} .mq-track`)].map((t) => t.querySelector(c).getBoundingClientRect().left);
+      return Math.min(...lefts.filter((l) => l > -1));
+    }, [sel, child]);
+    const acc0 = await x('.loop-accounts');
+    await page.waitForTimeout(600);
+    assert.equal(await x('.loop-accounts'), acc0, 'las cuentas se mueven antes de llegar a la sección');
+    assert.ok(Math.abs((await firstLeft('.loop-accounts', '.acc')) - 32) < 2, 'no empieza por la cuenta con más seguidores');
+    assert.ok(Math.abs((await firstLeft('.loop-reviews', '.tcard')) - 32) < 2, 'no empieza por la primera opinión');
+    assert.match(await page.locator('.loop-accounts .acc img').first().getAttribute('alt'), /Alex Zsurzs.*59,1 mil/);
+    // Al llegar, se mueven solos: cifras y cuentas a la izquierda, opiniones a la derecha.
+    await page.locator('#opiniones').evaluate((el) => el.scrollIntoView({ block: 'start' }));
+    await page.mouse.move(5, 5); // sin el ratón encima
+    await page.waitForTimeout(1300);
+    const x0 = { band: await x('.band'), acc: await x('.loop-accounts'), rev: await x('.loop-reviews') };
+    await page.waitForTimeout(700);
+    assert.ok((await x('.band')) < x0.band, 'las cifras no van a la izquierda');
+    assert.ok((await x('.loop-accounts')) < x0.acc, 'las cuentas no van a la izquierda');
+    assert.ok((await x('.loop-reviews')) > x0.rev, 'las opiniones no van a la derecha');
+    // Todas las opiniones miden lo mismo.
+    const heights = await page.$$eval('.loop-reviews .mq-track:first-child .tcard', (cs) => [...new Set(cs.map((c) => c.offsetHeight))]);
+    assert.equal(heights.length, 1, `tarjetas de alturas distintas: ${heights}`);
+    // Arrastrar con el ratón: se mueve con el gesto, se queda quieto y a los 5 s sigue solo.
+    const box = await page.locator('.loop-reviews').boundingBox();
+    const y = box.y + 40;
+    const before = await x('.loop-reviews');
+    await page.mouse.move(box.x + 300, y);
+    await page.mouse.down();
+    await page.mouse.move(box.x + 160, y, { steps: 8 });
+    await page.mouse.move(box.x + 100, y, { steps: 4 });
+    await page.mouse.up();
+    await page.mouse.move(5, 5);
+    await page.waitForTimeout(1300); // fin de la inercia
+    const dragged = await x('.loop-reviews');
+    assert.ok(dragged < before - 150, `el arrastre no lo mueve (${before} → ${dragged})`);
+    await page.waitForTimeout(1500);
+    assert.equal(await x('.loop-reviews'), dragged, 'después de arrastrar sigue moviéndose solo');
+    await page.waitForTimeout(3200); // 5 s desde que se soltó
+    assert.ok((await x('.loop-reviews')) > dragged, 'no vuelve a moverse solo a los 5 s');
+    // "Leer más" abre la opinión entera en una ventana; Escape la cierra.
+    const text = await page.evaluate(() => {
+      const btn = [...document.querySelectorAll('.loop-reviews .mq-track:first-child [data-more]')].find((b) => !b.hidden && getComputedStyle(b).visibility !== 'hidden');
+      btn.click();
+      return btn.closest('.tcard').querySelector('blockquote').textContent;
     });
-    assert.ok(more, 'no hay ningún "Leer más" a la vista');
-    await page.mouse.move(more.x, more.y);
-    const held = await x('.loop-reviews');
-    await page.waitForTimeout(500);
-    assert.equal(await x('.loop-reviews'), held, 'con el ratón encima siguen moviéndose');
-    await page.mouse.click(more.x, more.y);
-    assert.ok((await page.locator('.tcard[data-long]:not(.is-clamped)').count()) >= 1, '"Leer más" no abre el texto');
+    await page.locator('#tdialog[open]').waitFor({ state: 'visible', timeout: 3000 });
+    assert.equal(await page.textContent('#tdialog [data-quote]'), text);
+    assert.equal(await page.locator('.loop-reviews.is-reading, .loop-reviews .is-reading').count(), 1, 'con la opinión abierta, quietas');
+    await page.keyboard.press('Escape');
+    assert.equal(await page.locator('#tdialog[open]').count(), 0);
     // FAQ en acordeón y schema FAQPage con las mismas preguntas.
     const first = page.locator('.faq-item').first();
     await first.locator('summary').click();
@@ -791,24 +843,6 @@ test('sin JavaScript, con movimiento reducido, en horizontal y en las páginas l
   }
   assert.deepEqual(ctx.log.errors, []);
   await ctx.browser.close();
-});
-
-test('"Enviar otra solicitud" antes de 1,5 s cancela la apertura de WhatsApp', { skip, timeout: 60000 }, async () => {
-  const { browser, page, log } = await open(pw.webkit, MOBILE);
-  try {
-    await page.evaluate(() => scrollTo(0, 300));
-    await page.click('[data-ck="reject"]');
-    await fillForm(page, { otro: false });
-    await page.click('[data-submit]');
-    await page.locator('[data-done]').waitFor({ state: 'visible', timeout: 9000 });
-    await page.click('[data-again]');
-    await page.waitForTimeout(2500);
-    assert.deepEqual(log.wa, [], 'no debe abrir WhatsApp');
-    assert.equal(await page.isVisible('[data-step="1"]'), true);
-    assert.equal(log.events.filter((e) => e.event_name === 'Contact').length, 0);
-  } finally {
-    await browser.close();
-  }
 });
 
 test('cookies: panel con «Rechazar todo», «Aceptar todo» y «Guardar selección», foco y Escape', { skip, timeout: 60000 }, async () => {
@@ -868,7 +902,7 @@ test('oposición a la medición por servidor: nada a Meta hasta que acepten', { 
     await page.keyboard.press('Escape');
     assert.equal(await page.evaluate(() => document.activeElement.closest('.lf-legal') !== null), true, 'el foco vuelve al enlace');
     await page.click('[data-submit]');
-    await page.locator('[data-done]').waitFor({ state: 'visible', timeout: 9000 });
+    await doneVisible(page);
     const lead = log.leads.at(-1);
     assert.deepEqual([lead.optout, lead.consent, lead.fbp, lead.fbc, lead.fbclid, lead.utm_source], [true, false, '', '', '', 'ig']);
     assert.equal(log.events.filter((e) => e.event_name === 'Contact').length, 0);
@@ -943,7 +977,7 @@ test('reintento con la decisión vigente: si se opone después de enviar, el ree
   const browser = await pw.chromium.launch();
   const context = await browser.newContext(DESKTOP);
   await context.route('https://connect.facebook.net/**', (r) => r.fulfill({ contentType: 'text/javascript', body: '' }));
-  await context.route('https://wa.me/**', (r) => r.fulfill({ contentType: 'text/html', body: 'wa' }));
+  await routeWa(context, undefined, 20000); // la página sigue viva mientras "se abre" WhatsApp
   try {
     const page = await context.newPage();
     await page.route('**/api/lead', (r) => r.abort('internetdisconnected'));
@@ -952,13 +986,13 @@ test('reintento con la decisión vigente: si se opone después de enviar, el ree
     await page.click('[data-ck="accept"]');
     await fillForm(page, { otro: false });
     await page.click('[data-submit]');
-    await page.locator('[data-done]').waitFor({ state: 'visible', timeout: 9000 });
-    await page.click('[data-again]'); // antes de 1,5 s: no abre WhatsApp y seguimos en la página
+    await doneVisible(page);
     let copy = await page.evaluate(() => JSON.parse(localStorage.getItem('aas_pending'))[0].p);
     assert.deepEqual([copy.consent, copy.optout, !!copy.fbp, copy.utm_source], [true, false, true, 'ig'], 'con consentimiento la copia va completa');
-    // Después de enviar, se opone y retira el marketing: la copia guardada se recorta al momento.
-    await page.click('.ftr [data-open-cookies]');
-    await page.click('[data-ck="reject"]'); // «Rechazar todo»
+    // Después de enviar (mientras se abre WhatsApp), se opone y retira el marketing:
+    // la copia guardada se recorta al momento.
+    await page.evaluate(() => document.querySelector('.ftr [data-open-cookies]').click());
+    await page.evaluate(() => document.querySelector('[data-ck="reject"]').click()); // «Rechazar todo»
     copy = await page.evaluate(() => JSON.parse(localStorage.getItem('aas_pending'))[0].p);
     assert.deepEqual([copy.consent, copy.optout, copy.fbp, copy.fbc, copy.fbclid, copy.utm_source, copy.page_url], [false, true, '', '', '', '', base]);
     // Siguiente visita con red: el reenvío lleva la oposición.

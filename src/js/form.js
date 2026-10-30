@@ -1,7 +1,9 @@
 // Formulario de 5 preguntas, una por pantalla.
-// "Guarda primero, avisa después": el envío se guarda en localStorage antes de
-// mandarlo; pase lo que pase (ok, error o 6 s sin respuesta) se muestra la
-// pantalla de éxito y a los 1,5 s se abre WhatsApp con las respuestas.
+// "Guarda primero, avisa después": el envío se guarda en localStorage y se manda
+// en segundo plano (keepalive: sigue aunque se abra WhatsApp). Sin esperar a la
+// respuesta se muestra la pantalla de éxito y WhatsApp se abre al momento. Si
+// el servidor no lo confirma, se reenvía (en esta visita o en la siguiente; el
+// Sheet, la base de datos y Meta descartan los repetidos).
 
 import { $, $$, uuid, sleep, session, local, withoutClickIds, pageOnly } from './util.js';
 import { servicioLabel, negocioLabel, clean } from '../../shared/options.js';
@@ -18,8 +20,9 @@ const DONE = 'aas_done'; // sessionStorage: pantalla de éxito al volver de What
 const PENDING = 'aas_pending'; // localStorage: envíos sin confirmar por el servidor
 const TOTAL = 5;
 const MIN_MS = 3000; // antispam: tiempo mínimo entre abrir el formulario y enviarlo
-const WAIT_MS = 6000; // espera máxima de la respuesta de /api/lead
-const REDIRECT_MS = 1500;
+// Lo justo para que se pinte la pantalla de éxito y salgan las peticiones del
+// píxel antes de abrir WhatsApp.
+const REDIRECT_MS = 150;
 
 const ERR = {
   choose: 'Elige una opción para continuar.',
@@ -362,13 +365,12 @@ export function initForm() {
     // 2. Guardar primero: si la red falla o se cierra la página, se reenvía después.
     // Sin consentimiento de marketing, la copia del navegador va sin datos de campaña.
     savePending([...pending(), { p: restrict(payload), n: 1, at: Date.now() }]);
-    // 3. Enviar y esperar como mucho 6 s. El Lead por servidor no depende del Sheet.
-    const request = postLead(payload).then((ok) => {
+    // 3. Enviar sin esperar la respuesta. El Lead por servidor no depende del Sheet.
+    postLead(payload).then((ok) => {
       if (ok) dropPending(payload.event_id);
       else scheduleRetry();
     });
-    await Promise.race([request, sleep(WAIT_MS)]);
-    // 4. Pase lo que pase, pantalla de éxito.
+    // 4. Pantalla de éxito y WhatsApp al momento.
     submitting = false;
     submitBtn.disabled = false;
     submitBtn.removeAttribute('aria-busy');

@@ -61,7 +61,7 @@
   color: var(--inv-ink);
   box-shadow: var(--shadow-m);
 }
-.case-who { display: flex; align-items: center; gap: 12px; }
+.case-who { display: flex; justify-content: center; align-items: center; gap: 12px; }
 .case-who img {
   flex: none;
   width: 48px;
@@ -75,6 +75,7 @@
 .case-who span { display: block; font-size: 0.875rem; line-height: 1.35; color: var(--inv-soft); }
 .case-title {
   margin-top: 18px;
+  text-align: center;
   font-size: clamp(1.5rem, 1.2rem + 1.3vw, 2.125rem);
   font-weight: 800;
   line-height: 1.12;
@@ -192,19 +193,14 @@
    opiniones a la derecha). Se paran con el ratón encima, con el foco y
    mientras se tocan, para poder leer. */
 .g-rating {
-  display: inline-flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  margin-top: 14px;
-  font-weight: 650;
+  margin-top: 12px;
+  font-size: 1.0625rem;
+  font-weight: 700;
   color: var(--ink);
 }
-.g-rating .stars { display: inline-flex; }
 .loop-accounts, .loop-reviews {
-  -webkit-mask-image: linear-gradient(to right, transparent, #000 4%, #000 96%, transparent);
-  mask-image: linear-gradient(to right, transparent, #000 4%, #000 96%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 16px, #000 calc(100% - 16px), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 16px, #000 calc(100% - 16px), transparent);
 }
 .loop-accounts .mq-track {
   --mq-time: 90s;
@@ -216,11 +212,12 @@
   padding: 4px 10px 8px 0;
 }
 .loop-reviews { margin-top: 18px; }
-.loop-reviews .mq-track { --mq-time: 150s; align-items: flex-start; gap: 12px; padding: 4px 12px 12px 0; }
-@media (hover: hover) {
-  .mq-pause:hover .mq-track { animation-play-state: paused; }
-}
-.mq-pause:focus-within .mq-track, .mq-pause.is-held .mq-track, .mq-pause.is-reading .mq-track { animation-play-state: paused; }
+/* Opiniones: la primera (en el HTML) va a la izquierda y entran por la izquierda
+   las siguientes; todas las tarjetas a la altura de la más alta. */
+.loop-reviews .mq-track { --mq-time: 150s; flex-direction: row-reverse; align-items: stretch; gap: 12px; padding: 4px 12px 12px 0; }
+.mq-pause.is-js { touch-action: pan-y; cursor: grab; -webkit-user-select: none; user-select: none; }
+.mq-pause.is-dragging { cursor: grabbing; }
+.mq-pause.is-js img { -webkit-user-drag: none; }
 .acc {
   display: flex;
   align-items: center;
@@ -287,6 +284,37 @@
 }
 .tcard figcaption b { display: block; font-size: 1.125rem; font-weight: 750; line-height: 1.25; letter-spacing: -0.01em; }
 .tcard figcaption span span { display: block; font-size: 0.875rem; color: var(--ink-mute); }
+/* "Leer más": la opinión entera en una ventana */
+.tdialog {
+  width: min(560px, calc(100vw - 32px));
+  max-height: min(85vh, 720px);
+  padding: 28px 24px 24px;
+  border: 0;
+  border-radius: var(--r-l);
+  background: #fff;
+  color: var(--ink);
+  box-shadow: var(--shadow-l);
+  overscroll-behavior: contain;
+}
+.tdialog::backdrop { background: rgba(12, 12, 13, 0.55); }
+.tdialog .stars { display: flex; }
+.tdialog blockquote { margin-top: 14px; font-size: 1.0625rem; line-height: 1.65; color: var(--ink-soft); }
+.tdialog-who { margin-top: 18px; }
+.tdialog-who b { display: block; font-size: 1.125rem; font-weight: 750; }
+.tdialog-who span { display: block; font-size: 0.9375rem; color: var(--ink-mute); }
+.tdialog-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--bg-soft);
+  color: var(--ink);
+}
 @media (min-width: 1024px) {
   .loop-accounts .mq-track { grid-auto-columns: 340px; gap: 14px; padding-right: 14px; }
   .loop-reviews { margin-top: 28px; }

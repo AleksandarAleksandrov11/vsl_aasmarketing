@@ -389,6 +389,8 @@ button { cursor: pointer; }
 .mq { display: flex; overflow: hidden; }
 .mq-track { flex: none; display: flex; animation: mq var(--mq-time, 70s) linear infinite; }
 .mq-rev .mq-track { animation-direction: reverse; }
+/* Cuentas y opiniones: los mueve el JS (arrastrables); sin JS, la animación CSS. */
+.mq.is-js .mq-track { animation: none; will-change: transform; }
 @keyframes mq {
   to { transform: translateX(-100%); }
 }
