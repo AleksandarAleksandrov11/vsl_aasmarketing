@@ -60,12 +60,6 @@ async function findAleksPhoto() {
   return photo ? `img/aleks/${photo}` : null;
 }
 
-async function svgSize(rel) {
-  const svg = await readFile(path.join(root, 'assets', rel), 'utf8');
-  const [, , width, height] = svg.match(/viewBox="([\d.\s-]+)"/)[1].trim().split(/\s+/).map(Number);
-  return { width: Math.round(width), height: Math.round(height) };
-}
-
 async function writeOut(rel, content) {
   const dest = path.join(out, rel);
   await mkdir(path.dirname(dest), { recursive: true });
@@ -93,17 +87,14 @@ async function main() {
     analytics: envFlag('VERCEL_ANALYTICS', true),
     leadsDb: envFlag('LEADS_DB_ENABLED', false),
     aleksPhoto: await findAleksPhoto(),
-    mapSize: await svgSize('img/mapa-europa.svg'),
     asset: {
       css: '/' + cssName,
       js: '/' + jsName,
       manrope: await assets.file('fonts/manrope-var-latin.woff2'),
-      serif: await assets.file('fonts/instrument-serif-italic-latin.woff2'),
       favicon: await assets.file('img/favicon.svg'),
       favicon16: await assets.file('img/favicon-16x16.png'),
       favicon32: await assets.file('img/favicon-32x32.png'),
       appleTouch: await assets.file('img/apple-touch-icon.png'),
-      map: await assets.file('img/mapa-europa.svg'),
     },
   };
 

@@ -12,8 +12,8 @@ export const cx = (...list) => list.filter(Boolean).join(' ');
  * <picture> con AVIF + WebP, srcset, medidas fijas y carga diferida.
  * `widths`: anchos a generar. `sizes`: ancho real en pantalla.
  */
-export async function picture(assets, rel, { alt, widths, sizes, className, eager = false, priority = false }) {
-  const img = await assets.image(rel, widths);
+export async function picture(assets, rel, { alt, widths, sizes, className, eager = false, priority = false, crop = null }) {
+  const img = await assets.image(rel, widths, crop);
   const loading = eager || priority ? 'eager' : 'lazy';
   return `<picture>`
     + `<source type="image/avif" srcset="${img.avif}" sizes="${sizes}">`
@@ -46,6 +46,12 @@ const SYMBOLS = {
   chevronL: ['stroke', '<path d="M15 6l-6 6 6 6"/>'],
   chevronR: ['stroke', '<path d="M9 6l6 6-6 6"/>'],
   play: ['fill', '<path d="M8 5.5v13l11-6.5z"/>'],
+  pause: ['fill', '<path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/>'],
+  camera: ['stroke', '<path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2l1.5-2h6l1.5 2h2A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z"/><circle cx="12" cy="13" r="3.5"/>'],
+  film: ['stroke', '<rect x="4" y="4" width="16" height="16" rx="2.5"/><path d="M10 9.2v5.6l4.6-2.8z"/>'],
+  target: ['stroke', '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r=".6"/>'],
+  chart: ['stroke', '<path d="M4 20h16M7 16v-4M12 16V8M17 16v-7"/>'],
+  pin: ['stroke', '<path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/>'],
   star: ['fill', `<path d="${STAR}"/>`],
 };
 

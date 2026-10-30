@@ -57,12 +57,15 @@ export class Assets {
     return this.meta.get(rel);
   }
 
-  async #variant(buf, rel, width, format) {
-    const key = hashOf(Buffer.concat([buf, Buffer.from(`${width}|${format}|${JSON.stringify(QUALITY[format])}`)]), 16);
+  async #variant(buf, rel, width, format, crop) {
+    const key = hashOf(Buffer.concat([buf, Buffer.from(`${width}|${format}|${JSON.stringify(QUALITY[format])}|${crop ? JSON.stringify(crop) : ''}`)]), 16);
     const cached = path.join(this.cache, `${key}.${format}`);
     if (!(await exists(cached))) {
       await mkdir(this.cache, { recursive: true });
-      const out = await sharp(buf).resize({ width, withoutEnlargement: true })[format](QUALITY[format]).toBuffer();
+      // El recorte va en la misma pasada que el redimensionado: una sola compresión.
+      const img = sharp(buf);
+      if (crop) img.extract(crop);
+      const out = await img.resize({ width, withoutEnlargement: true })[format](QUALITY[format]).toBuffer();
       await writeFile(cached, out);
     }
     const ext = path.extname(rel);
@@ -73,19 +76,22 @@ export class Assets {
     return '/' + name;
   }
 
-  /** Genera las variantes de una imagen y devuelve { width, height, avif, webp, fallback }. */
-  async image(rel, widths) {
-    const key = `${rel}|${widths.join(',')}`;
+  /**
+   * Genera las variantes de una imagen y devuelve { width, height, avif, webp, fallback }.
+   * `crop` ({ left, top, width, height } en píxeles del original) recorta antes de redimensionar.
+   */
+  async image(rel, widths, crop = null) {
+    const key = `${rel}|${widths.join(',')}|${crop ? JSON.stringify(crop) : ''}`;
     if (!this.pictures.has(key)) {
       this.pictures.set(key, (async () => {
         const buf = await readFile(path.join(this.root, 'assets', rel));
-        const { width: W, height: H } = await this.size(rel);
+        const { width: W, height: H } = crop || await this.size(rel);
         const list = [...new Set(widths.map((w) => Math.min(w, W)))].sort((a, b) => a - b);
         const avif = [];
         const webp = [];
         for (const w of list) {
-          avif.push(`${await this.#variant(buf, rel, w, 'avif')} ${w}w`);
-          webp.push(`${await this.#variant(buf, rel, w, 'webp')} ${w}w`);
+          avif.push(`${await this.#variant(buf, rel, w, 'avif', crop)} ${w}w`);
+          webp.push(`${await this.#variant(buf, rel, w, 'webp', crop)} ${w}w`);
         }
         const big = list[list.length - 1];
         return {

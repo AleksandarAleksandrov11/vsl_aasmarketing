@@ -1,7 +1,7 @@
 // Estructura común: <head>, header, footer, CTA fijo y banner de cookies.
 
-import { esc, icon } from '../../scripts/lib/html.mjs';
-import { SITE, CTA, HEADER_CTA } from '../data/content.mjs';
+import { esc, icon, stars } from '../../scripts/lib/html.mjs';
+import { SITE, CTA, HEADER_CTA, RATING, FOOTER } from '../data/content.mjs';
 
 export function head(ctx, { title, description, path = '/', ogTitle, ogDescription, jsonLd = '', robots = 'noindex, follow' }) {
   const url = SITE.url + path;
@@ -38,7 +38,6 @@ export function head(ctx, { title, description, path = '/', ogTitle, ogDescripti
 <link rel="apple-touch-icon" href="${ctx.asset.appleTouch}">
 <link rel="manifest" href="/site.webmanifest">
 <link rel="preload" href="${ctx.asset.manrope}" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="${ctx.asset.serif}" as="font" type="font/woff2" crossorigin>
 <style>${ctx.criticalCss}</style>
 <link rel="preload" href="${ctx.asset.css}" as="style">
 <noscript><link rel="stylesheet" href="${ctx.asset.css}"></noscript>
@@ -61,22 +60,47 @@ export function header({ legal = false } = {}) {
 </header>`;
 }
 
-export function footer(ctx) {
+// Pie oscuro en todas las páginas: marca, servicios, contacto y legal. Va
+// después del formulario, así que aquí sí hay enlaces a WhatsApp e Instagram.
+export function footer(ctx, { legal = false } = {}) {
   return `<footer class="ftr">
-  <div class="wrap ftr-in">
-    <a class="brand" href="/" aria-label="AAS Marketing, ir al inicio"><span class="brand-mark" aria-hidden="true"></span></a>
-    <ul class="ftr-contact">
-      <li><a href="https://wa.me/${SITE.whatsapp}" rel="noopener">${icon.whatsapp()} WhatsApp ${SITE.whatsappDisplay}</a></li>
-      <li><a href="mailto:${SITE.email}">${icon.mail()} ${SITE.email}</a></li>
-      <li><a href="${SITE.instagram}" rel="noopener">${icon.instagram()} Instagram ${SITE.instagramHandle}</a></li>
-    </ul>
-    <nav class="ftr-legal" aria-label="Legal">
-      <a href="/aviso-legal">Aviso legal</a>
-      <a href="/privacidad">Privacidad</a>
-      <a href="/cookies">Cookies</a>
-      ${hasBanner(ctx) ? '<button type="button" data-open-cookies>Configurar cookies</button>' : ''}
-    </nav>
-    <p class="ftr-copy">© 2026 AAS Marketing</p>
+  <div class="wrap">
+    <div class="ftr-grid">
+      <div class="ftr-brand">
+        <a class="brand" href="/" aria-label="AAS Marketing, ir al inicio"><span class="brand-mark" aria-hidden="true"></span></a>
+        <p>${esc(FOOTER.about)}</p>
+        <a class="ftr-rating" href="${SITE.reviews}" target="_blank" rel="noopener"><span class="stars">${stars(15)}</span> ${esc(RATING)}</a>
+      </div>
+      <div class="ftr-col">
+        <h2 class="ftr-h">Servicios</h2>
+        <ul>
+          ${FOOTER.services.map((s) => `<li>${esc(s)}</li>`).join('\n          ')}
+          <li><a href="${legal ? '/' : ''}#formulario">${HEADER_CTA}</a></li>
+        </ul>
+      </div>
+      <div class="ftr-col ftr-wide">
+        <h2 class="ftr-h">Contacto</h2>
+        <ul class="ftr-contact">
+          <li><a href="https://wa.me/${SITE.whatsapp}" rel="noopener">${icon.whatsapp()} ${SITE.whatsappDisplay}</a></li>
+          <li><a href="mailto:${SITE.email}">${icon.mail()} ${SITE.email}</a></li>
+          <li><a href="${SITE.instagram}" rel="noopener">${icon.instagram()} ${SITE.instagramHandle}</a></li>
+          <li><span>${icon.pin({ size: 20 })} ${esc(FOOTER.area)}</span></li>
+        </ul>
+      </div>
+      <nav class="ftr-col" aria-label="Legal">
+        <h2 class="ftr-h">Legal</h2>
+        <ul>
+          <li><a href="/aviso-legal">Aviso legal</a></li>
+          <li><a href="/privacidad">Política de privacidad</a></li>
+          <li><a href="/cookies">Política de cookies</a></li>
+          ${hasBanner(ctx) ? '<li><button type="button" data-open-cookies>Configurar cookies</button></li>' : ''}
+        </ul>
+      </nav>
+    </div>
+    <div class="ftr-bottom">
+      <p>© 2026 AAS Marketing. Todos los derechos reservados.</p>
+      <p>Actualizado en ${esc(SITE.updated)}</p>
+    </div>
   </div>
 </footer>`;
 }

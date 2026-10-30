@@ -25,25 +25,17 @@ export function initCarousels() {
   });
 }
 
-/** Vídeos: solo el póster al cargar; el vídeo se descarga y suena al pulsar. */
-export function initVideos() {
-  document.addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-video]');
-    if (!btn) return;
-    $$('video[data-playing]').forEach((v) => v.pause());
-    const video = document.createElement('video');
-    video.src = btn.dataset.video;
-    video.controls = true;
-    video.playsInline = true;
-    video.setAttribute('playsinline', '');
-    video.preload = 'auto';
-    video.dataset.playing = '';
-    video.setAttribute('aria-label', btn.getAttribute('aria-label').replace('Reproducir vídeo: ', ''));
-    btn.replaceWith(video);
-    video.play().catch(() => {});
-    video.addEventListener('play', () => {
-      $$('video[data-playing]').forEach((v) => v !== video && v.pause());
-    });
+/**
+ * Cifras en bucle: el botón las para y las vuelve a mover (se mueven más de 5 s
+ * junto a otro contenido, WCAG 2.2.2). Sin JS se mueven y el botón no aparece.
+ */
+export function initMarquee() {
+  const band = $('[data-marquee]');
+  const btn = band && $('[data-marquee-toggle]', band);
+  if (!btn) return;
+  btn.hidden = false;
+  btn.addEventListener('click', () => {
+    btn.setAttribute('aria-pressed', String(band.classList.toggle('is-paused')));
   });
 }
 
