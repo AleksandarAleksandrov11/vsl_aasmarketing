@@ -1,11 +1,13 @@
 // Landing: una sola página con un único objetivo, que rellenen el formulario.
 // Antes del formulario no hay enlaces a WhatsApp, teléfono, correo ni
 // Instagram: todos los CTA bajan a #formulario.
+// Orden: hero, cifras, formulario, casos, resultados, ¿Te suena? + Así trabajo,
+// cuentas y opiniones, Soy Aleks, preguntas y cierre.
 
 import { esc, icon, picture, sprite, stars } from '../../scripts/lib/html.mjs';
 import {
-  SITE, CTA, RATING, META, HERO, HEADLINES, STATS, PAINS, RESULTS, VDN, EXONERIS, SERVICES, COMPARE, STEPS,
-  VIDEOS, ACCOUNTS, TESTIMONIALS, ABOUT, FORM, FAQS, CLOSING,
+  SITE, CTA, RATING, META, HERO, HEADLINES, STATS, PAINS, RESULTS, VDN, EXONERIS, WORK, ACCOUNTS, TESTIMONIALS,
+  ABOUT, FORM, FAQS, CLOSING,
 } from '../data/content.mjs';
 import { SERVICIOS, SECTORES } from '../../shared/options.js';
 import { COUNTRIES, OTHER } from '../../shared/phone.js';
@@ -14,18 +16,22 @@ import { head, header, footer, stickyCta, cookieBanner, serverMeasurement } from
 const ctaBtn = (cls = 'btn', attrs = '') => `<a class="${cls}" href="#formulario"${attrs}>${CTA} ${icon.arrow()}</a>`;
 const initials = (name) => name.replace(/[^\p{L}\s]/gu, '').split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join('');
 
+// Captura de un reel: todas con el mismo recorte 4:5 y el contador de visitas igual.
+async function reelCard(ctx, r, { sizes, widths = [300, 450, 600], priority = false, eager = false, caption = true, cls = '' }) {
+  const img = await picture(ctx.assets, r.src, { alt: r.alt, widths, sizes, crop: r.crop, priority, eager });
+  return `<figure class="rc${cls ? ` ${cls}` : ''}">
+        <div class="rc-img">${img}<span class="rc-views" aria-hidden="true">${icon.play({ size: 14 })}${esc(r.views)}</span></div>
+        ${caption ? `<figcaption><b>${esc(r.views)} visitas</b><span>${esc(r.who)}</span></figcaption>` : ''}
+      </figure>`;
+}
+
 async function hero(ctx) {
-  const [left, main, right] = HERO.phones;
-  const phone = async (p, cls, priority) => `<figure class="phone ${cls}">${await picture(ctx.assets, p.src, {
-    alt: p.alt,
-    widths: [270, 400, 540, 800],
-    sizes: cls === 'phone-main' ? '(min-width: 1024px) 220px, calc((100vw - 40px) * 0.44 - 10px)' : '(min-width: 1024px) 168px, calc((100vw - 40px) * 0.34 - 10px)',
-    priority,
-  })}</figure>`;
+  const [left, main, right] = HERO.cards;
+  const side = '(min-width: 1024px) 230px, calc((100vw - 40px) * 0.35)';
   return `<section class="hero" aria-labelledby="hero-title">
   <div class="wrap hero-grid">
     <div class="hero-copy">
-      <h1 id="hero-title">${esc(HERO.titleBefore)}<span class="serif">${esc(HERO.titleSerif)}</span>${esc(HERO.titleAfter)}</h1>
+      <h1 class="hero-title" id="hero-title">${HERO.title.map((l) => `<span>${esc(l)}</span>`).join(' ')}</h1>
       <p class="hero-sub">${esc(HERO.sub)}</p>
       <div class="hero-cta">${ctaBtn('btn', ' data-hero-cta')}</div>
       <p class="hero-note">${esc(HERO.note)}</p>
@@ -34,44 +40,61 @@ async function hero(ctx) {
       </ul>
     </div>
     <div class="hero-visual">
-      ${await phone(left, 'phone-side', false)}
-      ${await phone(main, 'phone-main', true)}
-      ${await phone(right, 'phone-side', false)}
+      ${await reelCard(ctx, left, { sizes: side, eager: true, caption: false, cls: 'rc-side' })}
+      ${await reelCard(ctx, main, { sizes: '(min-width: 1024px) 300px, calc((100vw - 40px) * 0.48)', widths: [270, 400, 540, 800], priority: true, caption: false, cls: 'rc-main' })}
+      ${await reelCard(ctx, right, { sizes: side, eager: true, caption: false, cls: 'rc-side' })}
     </div>
   </div>
 </section>`;
 }
 
+// Cifras en bucle hacia la izquierda: la lista se repite una vez (oculta a los
+// lectores de pantalla) para que el bucle no tenga corte. Se para con el botón,
+// al pasar el ratón y con "reducir movimiento".
 function stats() {
-  return `<section class="sec-tight" aria-label="Resultados en cifras">
-  <div class="wrap">
-    <ul class="stats">
-      ${STATS.map((s) => `<li class="stat"><b>${esc(s.value)}</b><span>${esc(s.label)}</span></li>`).join('\n      ')}
-    </ul>
+  const items = STATS.map((s) => `<li class="mq-item"><b>${s.star ? icon.star({ size: 22 }) : ''}${esc(s.value)}</b><span>${esc(s.label)}</span></li>`).join('');
+  return `<section class="band" aria-label="Resultados en cifras" data-marquee>
+  <div class="mq">
+    <ul class="mq-track">${items}</ul>
+    <ul class="mq-track" aria-hidden="true">${items}</ul>
   </div>
+  <button type="button" class="mq-toggle" data-marquee-toggle aria-label="Pausar las cifras" aria-pressed="false" hidden>${icon.pause({ size: 16, cls: 'i-pause' })}${icon.play({ size: 16, cls: 'i-play' })}</button>
 </section>`;
 }
 
-function pains() {
-  return `<section class="sec sec-soft" aria-labelledby="t-suena">
+async function caseCard(ctx, c, { id, avatar }) {
+  const shots = await Promise.all(c.shots.map((s) => picture(ctx.assets, s.src, { alt: s.alt, widths: [450, 900, 1206], sizes: '(min-width: 1024px) 520px, calc(100vw - 72px)' })));
+  return `<article class="case" id="caso-${id}" aria-labelledby="t-${id}">
+        <div class="case-who">${avatar}<p><b>${esc(c.client)}</b><span>${esc(c.sector)}</span></p></div>
+        <h3 class="case-title" id="t-${id}">${esc(c.title)}</h3>
+        <dl class="case-kpis">
+          ${c.kpis.map((k) => `<div><dt>${esc(k.value)}</dt><dd>${esc(k.label)}</dd></div>`).join('\n          ')}
+        </dl>
+        <div class="case-proof">${shots.join('')}</div>
+      </article>`;
+}
+
+async function cases(ctx) {
+  const logo = await ctx.assets.image(VDN.logo, [104]);
+  const vdnAvatar = `<img src="${logo.fallback}" width="48" height="48" alt="" loading="lazy" decoding="async">`;
+  const exAvatar = await picture(ctx.assets, EXONERIS.avatar.src, { alt: '', widths: [96], sizes: '48px', crop: EXONERIS.avatar.crop });
+  return `<section class="sec" id="casos" aria-labelledby="t-casos">
   <div class="wrap">
-    <div class="sec-head"><h2 class="h2" id="t-suena">¿Te <span class="serif">suena</span>?</h2></div>
-    <ul class="pains">
-      ${PAINS.map((p) => `<li><span class="ico">${icon.x()}</span>${esc(p)}</li>`).join('\n      ')}
-    </ul>
+    <div class="sec-head"><h2 class="h2" id="t-casos">Casos reales.</h2></div>
+    <div class="cases">
+      ${await caseCard(ctx, VDN, { id: 'vdn', avatar: vdnAvatar })}
+      ${await caseCard(ctx, EXONERIS, { id: 'exoneris', avatar: exAvatar })}
+    </div>
     <div class="cta-row">${ctaBtn()}</div>
   </div>
 </section>`;
 }
 
 async function results(ctx) {
-  const cards = await Promise.all(RESULTS.map(async (r) => `<figure class="rcard">
-        <div class="rcard-img">${await picture(ctx.assets, r.src, { alt: r.alt, widths: [300, 450, 600], sizes: '(min-width: 1024px) 280px, calc((100vw - 40px) * 0.62)' })}</div>
-        <figcaption><b>${esc(r.views)} visitas</b><span>${esc(r.who)}</span></figcaption>
-      </figure>`));
-  return `<section class="sec" aria-labelledby="t-resultados">
+  const cards = await Promise.all(RESULTS.map((r) => reelCard(ctx, r, { sizes: '(min-width: 1024px) 280px, (min-width: 640px) 34vw, calc((100vw - 40px) * 0.58)' })));
+  return `<section class="sec sec-soft" id="resultados" aria-labelledby="t-resultados">
   <div class="wrap">
-    <div class="sec-head"><h2 class="h2" id="t-resultados">${esc(HEADLINES.results.before)}<span class="serif">${esc(HEADLINES.results.serif)}</span>${esc(HEADLINES.results.after)}</h2></div>
+    <div class="sec-head"><h2 class="h2" id="t-resultados">${esc(HEADLINES.results)}</h2></div>
     <div class="scroller results" tabindex="0" role="region" aria-label="Capturas de reels de clientes con sus visitas">
       ${cards.join('\n      ')}
     </div>
@@ -80,203 +103,66 @@ async function results(ctx) {
 </section>`;
 }
 
-async function vdn(ctx) {
-  const shot = async (src, alt, caption, widths, sizes, cls = '') => `<figure class="shot ${cls}">
-          <div class="shot-img">${await picture(ctx.assets, src, { alt, widths, sizes })}</div>
-          <figcaption>${caption}</figcaption>
-        </figure>`;
-  const logo = await ctx.assets.image('img/cases/vdn-logo.webp', [104]);
-  return `<section class="sec sec-dark" id="caso-vdn" aria-labelledby="t-vdn">
+function work() {
+  return `<section class="sec" id="como-trabajo" aria-labelledby="t-suena t-trabajo">
   <div class="wrap">
-    <div class="case-head">
-      <h2 class="h2" id="t-vdn">${esc(VDN.title)}</h2>
-      <div class="case-client">
-        <img src="${logo.fallback}" width="52" height="52" alt="Logotipo de VDN Performance" loading="lazy" decoding="async">
-        <div><b>${esc(VDN.client)}</b><span>${esc(VDN.sector)}</span></div>
-      </div>
-      <p class="lead">${esc(VDN.text)}</p>
-    </div>
-    <dl class="case-stats">
-      ${VDN.stats.map((s) => `<div><dt>${esc(s.value)}</dt><dd>${esc(s.label)}</dd></div>`).join('\n      ')}
-    </dl>
-    <div class="case-media">
-      <div class="case-side">
-        ${await shot('img/cases/vdn-perfil-instagram.webp', VDN.profiles.instagram, 'Instagram', [450, 900], '(min-width: 900px) 420px, 92vw', 'shot-wide')}
-        ${await shot('img/cases/vdn-perfil-tiktok.webp', VDN.profiles.tiktok, 'TikTok', [450, 900], '(min-width: 900px) 420px, 92vw', 'shot-wide')}
-        <figure class="shot shot-wide">
-          <div class="shot-pair">
-            <div class="shot-img">${await picture(ctx.assets, 'img/cases/vdn-anuncio-meta-1.webp', { alt: 'Anuncio de VDN Performance en Meta Ads sobre la reprogramación Stage 1', widths: [220, 396], sizes: '(min-width: 900px) 200px, 45vw' })}</div>
-            <div class="shot-img">${await picture(ctx.assets, 'img/cases/vdn-anuncio-meta-2.webp', { alt: 'Anuncio de VDN Performance en Meta Ads sobre los motores más fiables', widths: [220, 396], sizes: '(min-width: 900px) 200px, 45vw' })}</div>
-          </div>
-          <figcaption>Anuncios en Meta Ads</figcaption>
-        </figure>
-      </div>
-      ${await shot('img/cases/vdn-videos-instagram.webp', 'Cuadrícula de vídeos de VDN Performance en Instagram con sus visualizaciones', 'Vídeos en Instagram', [350, 700], '(min-width: 900px) 360px, 45vw')}
-      ${await shot('img/cases/vdn-videos-tiktok.webp', 'Cuadrícula de vídeos de VDN Performance en TikTok con sus visualizaciones', 'Vídeos en TikTok', [350, 700], '(min-width: 900px) 360px, 45vw')}
-    </div>
-    <div class="cta-row">${ctaBtn('btn btn-light')}</div>
-  </div>
-</section>`;
-}
-
-async function exoneris(ctx) {
-  const shot = async (s) => `<figure class="shot"><div class="shot-img">${await picture(ctx.assets, s.src, { alt: s.alt, widths: [450, 900, 1206], sizes: '(min-width: 900px) 330px, (min-width: 640px) 45vw, 92vw' })}</div></figure>`;
-  return `<section class="sec" id="caso-exoneris" aria-labelledby="t-exoneris">
-  <div class="wrap ex-grid">
-    <figure class="phone ex-phone">${await picture(ctx.assets, EXONERIS.reel.src, {
-      alt: EXONERIS.reel.alt, widths: [280, 405], sizes: '(min-width: 900px) 320px, 62vw',
-    })}</figure>
-    <div>
-      <h2 class="h2 ex-title" id="t-exoneris"><b>${esc(EXONERIS.titleA)}</b> <span>${esc(EXONERIS.titleB)}</span></h2>
-      <p class="lead">${esc(EXONERIS.text)}</p>
-      <dl class="ex-stats">
-        ${EXONERIS.stats.map((s) => `<div><dt>${esc(s.value)}</dt><dd>${esc(s.label)}</dd></div>`).join('\n        ')}
-      </dl>
-      <div class="ex-shots">
-        ${(await Promise.all(EXONERIS.shots.map(shot))).join('\n        ')}
-      </div>
-    </div>
-  </div>
-</section>`;
-}
-
-function services() {
-  const card = (s) => `<article class="svc-card">
-        <h3 class="h3">${esc(s.title)}</h3>
-        <ul class="checks">${s.items.map((i) => `<li>${icon.check()}${esc(i)}</li>`).join('')}</ul>
-      </article>`;
-  return `<section class="sec sec-soft" id="servicios" aria-labelledby="t-servicios">
-  <div class="wrap">
-    <div class="sec-head"><h2 class="h2" id="t-servicios">Qué hacemos.</h2></div>
-    <div class="svc-grid">
-      ${card(SERVICES[0])}
-      <span class="svc-plus" aria-hidden="true">${icon.plus()}</span>
-      ${card(SERVICES[1])}
-    </div>
-    <p class="svc-both">Las dos juntas funcionan mejor: contenido para que te conozcan, anuncios para que te elijan.</p>
-    <p class="svc-web">Y si hace falta, también tu web.</p>
-  </div>
-</section>`;
-}
-
-function filming(ctx) {
-  return `<section class="sec" id="grabacion" aria-labelledby="t-grabacion">
-  <div class="wrap">
-    <div class="film">
-      <div>
-        <h2 class="h2" id="t-grabacion">Voy a grabar a tu <span class="serif">negocio</span>.</h2>
-        <p class="lead">Me desplazo a cualquier parte de España y de Europa. Tú solo pones el negocio: yo grabo, edito y publico.</p>
-        <p class="film-alt">¿Prefieres grabar tú? Te paso los guiones y las indicaciones para que salga bien.</p>
-        <div class="cta-row">${ctaBtn()}</div>
-      </div>
-      <figure class="film-map"><img src="${ctx.asset.map}" width="${ctx.mapSize.width}" height="${ctx.mapSize.height}" alt="Mapa de España y Europa" loading="lazy" decoding="async"></figure>
-    </div>
-  </div>
-</section>`;
-}
-
-function compare() {
-  return `<section class="sec sec-soft" id="comparativa" aria-labelledby="t-cmp">
-  <div class="wrap">
-    <div class="sec-head"><h2 class="h2" id="t-cmp">Lo de siempre vs AAS.</h2></div>
-    <table class="cmp">
-      <caption class="sr-only">Comparativa entre lo habitual y cómo trabaja AAS Marketing</caption>
-      <thead><tr><th scope="col">Lo de siempre</th><th scope="col">AAS</th></tr></thead>
-      <tbody>
-        ${COMPARE.map(([a, b]) => `<tr><td><span class="cell">${icon.x()}<span>${esc(a)}</span></span></td><td><span class="cell">${icon.check()}<span>${esc(b)}</span></span></td></tr>`).join('\n        ')}
-      </tbody>
-    </table>
+    <div class="sec-head"><h2 class="h2" id="t-suena">¿Te suena?</h2></div>
+    <ul class="pains">
+      ${PAINS.map((p) => `<li>${icon.x({ size: 18 })}${esc(p)}</li>`).join('\n      ')}
+    </ul>
+    <div class="sec-head work-head"><h2 class="h2" id="t-trabajo">Así trabajo.</h2></div>
+    <ul class="work">
+      ${WORK.map((w) => `<li><span class="work-ico">${icon[w.icon]({ size: 22 })}</span><b>${esc(w.title)}</b><span>${esc(w.text)}</span></li>`).join('\n      ')}
+    </ul>
     <div class="cta-row">${ctaBtn()}</div>
   </div>
 </section>`;
 }
 
-function steps() {
-  return `<section class="sec" id="como-funciona" aria-labelledby="t-pasos">
-  <div class="wrap">
-    <div class="sec-head">
-      <h2 class="h2" id="t-pasos">Así de <span class="serif">fácil</span>.</h2>
-      <p class="lead">Sin llamadas y sin compromiso.</p>
-    </div>
-    <ol class="steps">
-      ${STEPS.map((s, i) => `<li><span class="step-n" aria-hidden="true">${i + 1}</span><p>${esc(s)}</p></li>`).join('\n      ')}
-    </ol>
-  </div>
-</section>`;
-}
-
-async function videos(ctx) {
-  const items = await Promise.all(VIDEOS.map(async (v) => {
-    const src = await ctx.assets.file(`video/${v.file}.mp4`);
-    const poster = await picture(ctx.assets, `video/${v.file}.webp`, { alt: '', widths: [270, 405, 540], sizes: '(min-width: 1024px) 270px, calc((100vw - 40px) * 0.64 - 10px)' });
-    return `<figure class="reel">
-        <div class="phone">
-          <button type="button" class="reel-play" data-video="${src}" aria-label="Reproducir vídeo: ${esc(v.title)}">${poster}<span class="play">${icon.play()}</span></button>
-        </div>
-        <figcaption><b>${esc(v.title)}</b><span>${esc(v.text)}</span></figcaption>
-      </figure>`;
-  }));
-  return `<section class="sec sec-soft" id="videos" aria-labelledby="t-videos">
-  <div class="wrap">
-    <div class="sec-head"><h2 class="h2" id="t-videos">Vídeos que se ven hasta el <span class="serif">final</span>.</h2></div>
-    <div class="scroller reels">
-      ${items.join('\n      ')}
-    </div>
-  </div>
-</section>`;
-}
-
-async function accounts(ctx) {
-  const items = await Promise.all(ACCOUNTS.map(async (a) => {
+async function proof(ctx) {
+  const accounts = await Promise.all(ACCOUNTS.map(async (a) => {
     const alt = `Perfil de Instagram de ${a.name}${a.sector ? `, ${a.sector}` : ''}, con ${a.followers} seguidores`;
     return `<figure class="acc">${await picture(ctx.assets, `img/accounts/${a.file}.webp`, { alt, widths: [500, 1000], sizes: '(min-width: 1024px) 340px, min(300px, 78vw)' })}</figure>`;
   }));
-  return `<section class="sec" id="cuentas" aria-labelledby="t-cuentas">
-  <div class="wrap">
-    <div class="sec-head"><h2 class="h2" id="t-cuentas">${esc(HEADLINES.accounts)}</h2></div>
-    <div class="scroller accounts" data-carousel="cuentas" tabindex="0" role="region" aria-label="Perfiles de Instagram de clientes">
-      ${items.join('\n      ')}
-    </div>
-    <div class="car-nav" data-carousel-nav="cuentas">
-      <button type="button" class="car-btn" data-dir="-1" aria-label="Ver cuentas anteriores" disabled>${icon.chevronL()}</button>
-      <button type="button" class="car-btn" data-dir="1" aria-label="Ver más cuentas">${icon.chevronR()}</button>
-    </div>
-  </div>
-</section>`;
-}
-
-function testimonials() {
   const long = (t) => t.text.length > 240;
-  const cards = TESTIMONIALS.map((t) => `<figure class="tcard"${long(t) ? ' data-long' : ''}>
+  const reviews = TESTIMONIALS.map((t) => `<figure class="tcard"${long(t) ? ' data-long' : ''}>
         <span class="stars" role="img" aria-label="5 de 5 estrellas">${stars(16)}</span>
         <blockquote>${esc(t.text)}</blockquote>
         ${long(t) ? '<button type="button" class="more" data-more hidden>Leer más</button>' : ''}
         <figcaption><span class="avatar" aria-hidden="true">${esc(initials(t.name))}</span><span><b>${esc(t.name)}</b><span>${esc(t.role)}</span></span></figcaption>
       </figure>`);
-  return `<section class="sec sec-soft" id="opiniones" aria-labelledby="t-opiniones">
+  return `<section class="sec sec-soft" id="opiniones" aria-labelledby="t-cuentas">
   <div class="wrap">
     <div class="sec-head">
-      <h2 class="h2" id="t-opiniones">${esc(RATING)}.</h2>
+      <h2 class="h2" id="t-cuentas">${esc(HEADLINES.accounts)}</h2>
       <a class="g-link" href="${SITE.reviews}" target="_blank" rel="noopener"><span class="stars">${stars(17)}</span> <u>${esc(RATING)}</u> <span class="g-more">Ver reseñas ${icon.arrow({ size: 16 })}</span></a>
     </div>
-    <div class="scroller tcards" data-carousel="opiniones">
-      ${cards.join('\n      ')}
+    <div class="scroller accounts" data-carousel="cuentas" tabindex="0" role="region" aria-label="Perfiles de Instagram de clientes">
+      ${accounts.join('\n      ')}
+    </div>
+    <div class="car-nav" data-carousel-nav="cuentas">
+      <button type="button" class="car-btn" data-dir="-1" aria-label="Ver cuentas anteriores" disabled>${icon.chevronL()}</button>
+      <button type="button" class="car-btn" data-dir="1" aria-label="Ver más cuentas">${icon.chevronR()}</button>
+    </div>
+    <div class="scroller tcards" data-carousel="opiniones" role="region" aria-label="Opiniones de clientes">
+      ${reviews.join('\n      ')}
     </div>
     <div class="car-nav" data-carousel-nav="opiniones">
       <button type="button" class="car-btn" data-dir="-1" aria-label="Opiniones anteriores" disabled>${icon.chevronL()}</button>
       <button type="button" class="car-btn" data-dir="1" aria-label="Más opiniones">${icon.chevronR()}</button>
     </div>
+    <div class="cta-row">${ctaBtn()}</div>
   </div>
 </section>`;
 }
 
 async function about(ctx) {
-  // Para poner una foto: deja assets/img/aleks/foto.jpg (o .png/.webp) y vuelve a desplegar.
+  // Para poner la foto: deja assets/img/aleks/foto.jpg (o .png/.webp/.avif) y vuelve a desplegar.
   const media = ctx.aleksPhoto
-    ? await picture(ctx.assets, ctx.aleksPhoto, { alt: 'Aleks, de AAS Marketing', widths: [480, 720, 960], sizes: '(min-width: 900px) 560px, 92vw' })
+    ? await picture(ctx.assets, ctx.aleksPhoto, { alt: 'Aleks, de AAS Marketing', widths: [400, 640, 800, 1080, 1200], sizes: '(min-width: 768px) 360px, min(320px, calc(100vw - 40px))' })
     : '<span class="brand-mark" role="img" aria-label="AAS Marketing"></span>';
   return `<section class="sec" id="sobre-aleks" aria-labelledby="t-aleks">
-  <div class="wrap about">
+  <div class="wrap about${ctx.aleksPhoto ? ' has-photo' : ''}">
     <div class="about-media">${media}</div>
     <div class="about-copy">
       <h2 class="h2" id="t-aleks">${esc(ABOUT.title)}</h2>
@@ -305,8 +191,8 @@ function form(ctx) {
   const next = `<button type="button" class="btn lf-next" data-next>Continuar ${icon.arrow()}</button>`;
   return `<section class="sec sec-soft form-sec" id="formulario" aria-labelledby="t-form">
   <div class="wrap">
-    <div class="sec-head center form-head">
-      <h2 class="h2" id="t-form">Te mando tu estrategia <span class="serif">gratis</span>.</h2>
+    <div class="sec-head form-head">
+      <h2 class="h2" id="t-form">${esc(FORM.title)}</h2>
       <p class="lead form-intro">${esc(FORM.intro)}</p>
       <p class="form-meta">${esc(FORM.sub)}</p>
     </div>
@@ -403,7 +289,7 @@ function faq() {
 function closing() {
   return `<section class="sec sec-dark closing" aria-labelledby="t-cierre">
   <div class="wrap">
-    <h2 class="h2" id="t-cierre">Tus redes pueden traerte <span class="serif">clientes</span>.</h2>
+    <h2 class="h2" id="t-cierre">${esc(CLOSING.title)}</h2>
     <p class="lead">${esc(CLOSING.sub)}</p>
     <div class="cta-row">${ctaBtn('btn btn-light')}</div>
   </div>
@@ -429,19 +315,12 @@ ${header()}
 <main id="main">
 ${await hero(ctx)}
 ${stats()}
-${pains()}
-${await results(ctx)}
-${await vdn(ctx)}
-${await exoneris(ctx)}
-${services()}
-${filming(ctx)}
-${compare()}
-${steps()}
-${await videos(ctx)}
-${await accounts(ctx)}
-${testimonials()}
-${await about(ctx)}
 ${form(ctx)}
+${await cases(ctx)}
+${await results(ctx)}
+${work()}
+${await proof(ctx)}
+${await about(ctx)}
 ${faq()}
 ${closing()}
 </main>

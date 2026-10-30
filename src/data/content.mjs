@@ -29,34 +29,53 @@ export const META = {
     'Analizo tu perfil y te mando gratis por WhatsApp la estrategia que seguiría para conseguir más clientes. Sin llamadas y sin compromiso.',
 };
 
-// Primer reel de Exoneris: sale en el hero, en el muro de resultados y en el caso.
+// Todas las capturas de reels se recortan a 4:5 con el mismo encuadre (`crop`,
+// en píxeles del original): fuera queda la franja de abajo con el contador de
+// Instagram o TikTok, que la página pone igual en todas, y no hay franjas negras.
+// Primer reel de Exoneris: sale en el muro de resultados.
 const EXONERIS_REEL = {
   src: 'img/cases/exoneris-primer-video.jpg',
   alt: 'Primer reel de Javier Núñez, de Exoneris Consulting, sobre dónde comprar pisos baratos, con 151 mil visualizaciones',
+  crop: { left: 0, top: 60, width: 405, height: 506 },
 };
+
+// Cifra exacta de cada captura sacada del alt de index.html del origen. De más a menos visitas.
+export const RESULTS = [
+  { src: 'img/results/tatuajes-946mil.webp', views: '946 mil', who: 'Estudio de tatuajes', alt: 'Reel de un estudio de tatuajes con 946 mil visualizaciones', crop: { left: 0, top: 200, width: 800, height: 1000 } },
+  { src: 'img/results/vdn-performance-406mil.webp', views: '+406 mil', who: 'VDN Performance', alt: 'Reel de VDN Performance sobre los mejores coches por menos de 3.000 euros, con más de 406 mil visualizaciones', crop: { left: 44, top: 0, width: 712, height: 890 } },
+  { src: 'img/results/vdn-performance-307mil.webp', views: '306,9 mil', who: 'VDN Performance', alt: 'Reel de VDN Performance sobre los mejores coches por menos de 5.000 euros, con 306,9 mil visualizaciones', crop: { left: 19, top: 0, width: 762, height: 952 } },
+  { src: 'img/results/tatuajes-250mil.webp', views: '257 mil', who: 'Estudio de tatuajes', alt: 'Reel de un estudio de tatuajes sobre las zonas que más duelen al tatuarse, con 257 mil visualizaciones', crop: { left: 0, top: 255, width: 800, height: 1000 } },
+  { ...EXONERIS_REEL, views: '151 mil', who: 'Exoneris Consulting' },
+  { src: 'img/results/wash-go-detailing-110mil.webp', views: '110 mil', who: 'Wash & Go Detailing', alt: 'Reel de presentación de Wash & Go Detailing con 110 mil visualizaciones', crop: { left: 0, top: 200, width: 800, height: 1000 } },
+  { src: 'img/results/michel-tobias-80mil.webp', views: '80,3 mil', who: 'Míchel Tobías, psicólogo deportivo', alt: 'Reel de Míchel Tobías, psicólogo deportivo, con 80,3 mil visualizaciones', crop: { left: 0, top: 0, width: 800, height: 1000 } },
+  { src: 'img/results/vdn-performance-54mil.webp', views: '53,8 mil', who: 'VDN Performance', alt: 'Reel de VDN Performance con 53,8 mil visualizaciones', crop: { left: 29, top: 0, width: 742, height: 927 } },
+  { src: 'img/results/wash-go-detailing-52mil.webp', views: '52,4 mil', who: 'Wash & Go Detailing', alt: 'Reel de Wash & Go Detailing con un Volvo XC40, con 52,4 mil visualizaciones', crop: { left: 0, top: 200, width: 800, height: 1000 } },
+  { src: 'img/results/psicologia-gloria-37mil.webp', views: '37,1 mil', who: 'Gloria Díaz, psicóloga', alt: 'Reel de la psicóloga Gloria Díaz con 37,1 mil visualizaciones', crop: { left: 0, top: 100, width: 800, height: 1000 } },
+  { src: 'img/results/psicologia-33mil.webp', views: '33,2 mil', who: 'Consulta de psicología', alt: 'Reel de una consulta de psicología con 33,2 mil visualizaciones', crop: { left: 0, top: 267, width: 800, height: 1000 } },
+];
 
 export const HERO = {
-  // Alternativas más cortas para el titular (pendientes de que Aleks elija):
-  //   1. "Redes y anuncios que llenan tu agenda."
-  //   2. "Más clientes desde tus redes."
-  titleBefore: 'Redes sociales y Meta Ads que llenan tu agenda de ',
-  titleSerif: 'clientes',
-  titleAfter: '.',
-  sub: 'Voy a tu negocio a grabar, edito los vídeos, gestiono tus redes y lanzo tus anuncios. Tú atiendes a los clientes.',
-  note: 'Gratis y sin compromiso. Te la mando por WhatsApp en menos de 24 horas.',
+  // Una línea por elemento: el titular corta siempre igual (sin saltos al cargar la fuente).
+  title: ['Más clientes', 'desde tus', 'redes.'],
+  sub: 'Grabo, edito y publico tus vídeos y lanzo tus anuncios en Meta.',
+  note: 'Gratis, sin compromiso y en menos de 24 horas.',
   trust: [RATING, '+25 cuentas', '+10 M de visitas'], // la primera lleva la estrella
-  phones: [
-    EXONERIS_REEL,
-    { src: 'img/results/tatuajes-946mil.webp', alt: 'Reel de un estudio de tatuajes con 946 mil visualizaciones' },
-    { src: 'img/results/michel-tobias-80mil.webp', alt: 'Reel de Míchel Tobías, psicólogo deportivo, con 80,3 mil visualizaciones' },
-  ],
+  // Los tres reels con más visitas: el del centro, el de más.
+  cards: [RESULTS[1], RESULTS[0], RESULTS[2]],
 };
 
+// Banda de cifras en bucle (solo cifras confirmadas: web, casos y capturas).
 export const STATS = [
   { value: '+10 M', label: 'visitas en vídeos de clientes' },
   { value: '+2.500', label: 'leads con Meta Ads en 2 meses' },
-  { value: '+300', label: 'vídeos editados' },
+  { value: '946 mil', label: 'visitas en un solo reel' },
   { value: '+25', label: 'cuentas gestionadas' },
+  { value: '+2,5 M', label: 'visitas en menos de 3 meses' },
+  { value: '+300', label: 'vídeos editados' },
+  { value: '24 h', label: 'para mandarte tu estrategia' },
+  { value: '1.058', label: 'seguidores nuevos con un primer vídeo' },
+  { value: '+5.000', label: 'seguidores para un solo cliente' },
+  { value: '5,0', label: 'en Google', star: true },
 ];
 
 export const PAINS = [
@@ -67,92 +86,51 @@ export const PAINS = [
 
 // Titulares con cifras (los demás titulares de sección están en la plantilla).
 export const HEADLINES = {
-  results: { before: 'Más de 10 millones de ', serif: 'visitas', after: '.' },
-  accounts: 'Únete a las más de 25 cuentas que ya confían en nosotros.',
+  results: 'Más de 10 millones de visitas.',
+  accounts: 'Más de 25 cuentas confían en nosotros.',
 };
-
-// Cifra exacta de cada captura sacada del alt de index.html del origen.
-export const RESULTS = [
-  { src: 'img/results/tatuajes-946mil.webp', views: '946 mil', who: 'Estudio de tatuajes', alt: 'Reel de un estudio de tatuajes con 946 mil visualizaciones' },
-  { src: 'img/results/vdn-performance-406mil.webp', views: '+406 mil', who: 'VDN Performance', alt: 'Reel de VDN Performance sobre los mejores coches por menos de 3.000 euros, con más de 406 mil visualizaciones' },
-  { src: 'img/results/vdn-performance-307mil.webp', views: '306,9 mil', who: 'VDN Performance', alt: 'Reel de VDN Performance sobre los mejores coches por menos de 5.000 euros, con 306,9 mil visualizaciones' },
-  { src: 'img/results/tatuajes-250mil.webp', views: '257 mil', who: 'Estudio de tatuajes', alt: 'Reel de un estudio de tatuajes sobre las zonas que más duelen al tatuarse, con 257 mil visualizaciones' },
-  { ...EXONERIS_REEL, views: '151 mil', who: 'Exoneris Consulting' },
-  { src: 'img/results/wash-go-detailing-110mil.webp', views: '110 mil', who: 'Wash & Go Detailing', alt: 'Reel de presentación de Wash & Go Detailing con 110 mil visualizaciones' },
-  { src: 'img/results/michel-tobias-80mil.webp', views: '80,3 mil', who: 'Míchel Tobías, psicólogo deportivo', alt: 'Reel de Míchel Tobías, psicólogo deportivo, con 80,3 mil visualizaciones' },
-  { src: 'img/results/vdn-performance-54mil.webp', views: '53,8 mil', who: 'VDN Performance', alt: 'Reel de VDN Performance con 53,8 mil visualizaciones' },
-  { src: 'img/results/wash-go-detailing-52mil.webp', views: '52,4 mil', who: 'Wash & Go Detailing', alt: 'Reel de Wash & Go Detailing con un Volvo XC40, con 52,4 mil visualizaciones' },
-  { src: 'img/results/psicologia-gloria-37mil.webp', views: '37,1 mil', who: 'Gloria Díaz, psicóloga', alt: 'Reel de la psicóloga Gloria Díaz con 37,1 mil visualizaciones' },
-  { src: 'img/results/psicologia-33mil.webp', views: '33,2 mil', who: 'Consulta de psicología', alt: 'Reel de una consulta de psicología con 33,2 mil visualizaciones' },
-];
 
 export const VDN = {
   title: '2,5 millones de visitas en menos de 3 meses.',
   client: 'VDN Performance',
   sector: 'Reprogramaciones de coches en Madrid',
-  text: 'Vídeos con gancho publicados con constancia en Instagram y TikTok, y anuncios en Meta para convertir esas visitas en clientes.',
-  stats: [
-    { value: '+5.000', label: 'seguidores entre todas las plataformas' },
-    { value: '+2,5 M', label: 'visitas en sus vídeos' },
-    { value: '<3', label: 'meses de trabajo' },
+  logo: 'img/cases/vdn-logo.webp',
+  kpis: [
     { value: '+2.500', label: 'leads con Meta Ads en 2 meses' },
+    { value: '+5.000', label: 'seguidores entre todas las plataformas' },
   ],
-  profiles: {
-    instagram: 'Perfil de Instagram de VDN Performance con 1.768 seguidores',
-    tiktok: 'Perfil de TikTok de VDN Performance con 3.541 seguidores y 74,2 mil me gusta',
-  },
+  shots: [
+    { src: 'img/cases/vdn-perfil-instagram.webp', alt: 'Perfil de Instagram de VDN Performance con 1.768 seguidores' },
+    { src: 'img/cases/vdn-perfil-tiktok.webp', alt: 'Perfil de TikTok de VDN Performance con 3.541 seguidores y 74,2 mil me gusta' },
+  ],
 };
 
 // Cifras actualizadas con las capturas de octubre de 2026 (estadísticas del
 // primer vídeo y perfil): 151.155 reproducciones, 126.433 espectadores,
 // 1.058 seguidores nuevos y 1.032 seguidores en la cuenta.
 export const EXONERIS = {
-  titleA: 'Su primer vídeo.',
-  titleB: '+1.000 seguidores nuevos.',
-  text: 'Javier Núñez, de Exoneris Consulting, ayuda a inversores en subastas, NPL y REO. Ese vídeo fue el primero que subimos a su cuenta.',
-  reel: EXONERIS_REEL,
-  stats: [
+  title: 'Su primer vídeo: +1.000 seguidores nuevos.',
+  client: 'Javier Núñez',
+  sector: 'Exoneris Consulting, subastas y NPL',
+  // La foto de su perfil, recortada de la captura.
+  avatar: { src: 'img/cases/exoneris-perfil.jpg', crop: { left: 36, top: 22, width: 280, height: 280 } },
+  kpis: [
     { value: '151 mil', label: 'visitas' },
     { value: '126 mil', label: 'personas lo vieron' },
     { value: '1.058', label: 'seguidores nuevos' },
   ],
   shots: [
     { src: 'img/cases/exoneris-estadisticas.jpg', alt: 'Estadísticas del primer vídeo: 151.155 reproducciones, 126.433 espectadores, 15 segundos de tiempo medio de reproducción y 1.058 seguidores nuevos' },
-    { src: 'img/cases/exoneris-perfil.jpg', alt: 'Perfil de Instagram de Javier Núñez (Subastas y NPL), de Exoneris Consulting, con 4 publicaciones y 1.032 seguidores' },
   ],
 };
 
-export const SERVICES = [
-  {
-    title: 'Gestión de redes',
-    items: ['Estrategia', 'Guiones', 'Grabación en tu negocio', 'Edición', 'Publicación', 'Comunidad', 'Informe mensual'],
-  },
-  {
-    title: 'Meta Ads',
-    items: ['Campañas en Instagram y Facebook', 'Creatividades en vídeo', 'Optimización semanal', 'Leads directos a tu WhatsApp'],
-  },
-];
-
-export const COMPARE = [
-  ['Te piden que grabes tú.', 'Voy yo a grabar a tu negocio.'],
-  ['Publicar por publicar.', 'Estrategia mensual.'],
-  ['Vídeos sin gancho.', 'Gancho en 3 segundos y subtítulos.'],
-  ['Anuncios sin contenido detrás.', 'Contenido y anuncios juntos.'],
-  ['Nadie te explica nada.', 'Informe y reunión cada mes.'],
-  ['Seguidores comprados.', 'Crecimiento real.'],
-];
-
-export const STEPS = [
-  'Me dejas tu perfil en 30 segundos.',
-  'Lo analizo y preparo tu estrategia nueva con los cambios que haría.',
-  'Te la mando por WhatsApp en menos de 24 horas, gratis. Si quieres que la ejecute yo, te doy un precio cerrado.',
-];
-
-export const VIDEOS = [
-  { file: 'reel-entrenador', title: 'Entrenador personal', text: 'Contenido educativo de fitness' },
-  { file: 'reel-fisioterapia', title: 'Fisioterapia deportiva', text: 'Divulgación con rótulos y b-roll' },
-  { file: 'reel-instagram-musica', title: 'Trucos de Instagram', text: 'Marca personal y edición dinámica' },
-  { file: 'reel-perfil-seo', title: 'SEO para tu perfil', text: 'Motion graphics y grabación de pantalla' },
+// Así trabajo: lo que antes eran "Qué hacemos", "Voy a grabar a tu negocio" y
+// "Lo de siempre vs AAS", en cuatro puntos.
+export const WORK = [
+  { icon: 'camera', title: 'Voy a grabar a tu negocio', text: 'A cualquier parte de España y de Europa.' },
+  { icon: 'film', title: 'Edito y publico', text: 'Guiones, gancho en 3 segundos y subtítulos.' },
+  { icon: 'target', title: 'Lanzo tus anuncios', text: 'Meta Ads con los leads directos a tu WhatsApp.' },
+  { icon: 'chart', title: 'Te lo explico cada mes', text: 'Informe y reunión mensual. Crecimiento real.' },
 ];
 
 // Nombre, sector y seguidores salen del alt de cada imagen en el origen.
@@ -233,4 +211,10 @@ export const FAQS = [
 export const CLOSING = {
   title: 'Tus redes pueden traerte clientes.',
   sub: 'Estrategia gratis. Precio cerrado si quieres que la ejecute yo.',
+};
+
+export const FOOTER = {
+  about: 'Redes sociales y Meta Ads para negocios. Grabo en tu negocio, edito, publico y lanzo tus anuncios.',
+  services: ['Gestión de redes sociales', 'Meta Ads', 'Grabación en tu negocio', 'Edición de vídeo'],
+  area: 'Grabo en toda España y Europa',
 };

@@ -205,7 +205,8 @@ test('móvil (WebKit, Instagram): primer pantallazo, enlaces y CTA fijo', { skip
     // CTA fijo: oculto arriba, visible al pasar el hero, oculto con el formulario a la vista.
     const sticky = () => page.evaluate(() => document.documentElement.classList.contains('has-sticky'));
     assert.equal(await sticky(), false);
-    await page.evaluate(() => window.scrollTo(0, 1400));
+    // Pasado el formulario (que ahora va justo después de las cifras).
+    await page.evaluate(() => window.scrollTo(0, document.getElementById('casos').offsetTop + 200));
     await page.waitForTimeout(500);
     assert.equal(await sticky(), true);
     // Con el banner abierto, el banner queda encima del CTA fijo sin solaparlo.
@@ -480,6 +481,57 @@ test('CLS con fuentes lentas y banner (Chromium a 390 px)', { skip, timeout: 600
   }
 });
 
+// ---------- Estructura de la página en móvil (rediseño): formulario arriba, página corta, hero sin hueco
+
+test('móvil: formulario antes de 2,5 pantallas, página de 10 pantallas como mucho y reels del hero a la vista', { skip, timeout: 60000 }, async () => {
+  // 390x844 (iPhone con Safari) y 375x667 (iPhone SE), con el user agent de Instagram.
+  for (const viewport of [{ width: 390, height: 844 }, { width: 375, height: 667 }]) {
+    const { browser, page, log } = await open(pw.webkit, { ...MOBILE, viewport });
+    try {
+      const m = await page.evaluate(() => {
+        const box = (sel) => {
+          const r = document.querySelector(sel).getBoundingClientRect();
+          return { top: r.top + scrollY, bottom: r.bottom + scrollY };
+        };
+        return {
+          height: document.documentElement.scrollHeight,
+          form: box('#formulario').top,
+          cta: box('[data-hero-cta]'),
+          note: box('.hero-note'),
+          reels: box('.hero-visual'),
+          main: box('.hero-visual .rc-main'),
+          band: box('.band').top,
+          heroEnd: box('.hero').bottom,
+        };
+      });
+      const H = viewport.height;
+      const where = `${viewport.width}x${H}`;
+      if (H === 844) {
+        assert.ok(m.form < 2.5 * H, `${where}: el formulario empieza en ${m.form} (más de 2,5 pantallas)`);
+        assert.ok(m.height <= 10 * H, `${where}: la página mide ${(m.height / H).toFixed(2)} pantallas`);
+      }
+      // CTA y nota enteros en el primer pantallazo, y la parte de arriba de los reels también.
+      assert.ok(m.cta.bottom <= H && m.note.bottom <= H, `${where}: CTA o nota fuera del primer pantallazo`);
+      assert.ok(m.main.top < H - 40, `${where}: los reels del hero empiezan en ${m.main.top}`);
+      // Sin hueco: las cifras empiezan donde acaba el hero.
+      assert.ok(Math.abs(m.band - m.heroEnd) < 1, `${where}: hueco entre el hero y las cifras`);
+      // Todas las capturas de reels con el mismo recorte 4:5.
+      const ratios = await page.$$eval('.rc-img img', (imgs) => imgs.map((i) => Number(i.getAttribute('width')) / Number(i.getAttribute('height'))));
+      assert.ok(ratios.length >= 14 && ratios.every((r) => Math.abs(r - 0.8) < 0.01), `recortes distintos: ${ratios}`);
+      // A los 3 s el banner no tapa el CTA ni la nota.
+      await page.waitForTimeout(3300);
+      if (await page.isVisible('#ck')) {
+        const ck = await page.locator('#ck').boundingBox();
+        const note = await page.locator('.hero-note').boundingBox();
+        assert.ok(note.y + note.height <= ck.y, `${where}: el banner tapa el CTA o la nota`);
+      }
+      assert.deepEqual(log.errors, []);
+    } finally {
+      await browser.close();
+    }
+  }
+});
+
 // ---------- Revisión a fondo: todos los caminos del formulario y del resto de componentes
 
 test('formulario: validaciones de cada paso y prefijos', { skip, timeout: 90000 }, async () => {
@@ -648,7 +700,7 @@ test('cookies: rechazar se recuerda, configurar activa y desactivar revoca', { s
   }
 });
 
-test('componentes: carruseles, vídeos, FAQ con schema, "Leer más" y saltar al formulario', { skip, timeout: 60000 }, async () => {
+test('componentes: carruseles, cifras en bucle, FAQ con schema, "Leer más" y saltar al formulario', { skip, timeout: 60000 }, async () => {
   const { browser, page, log } = await open(pw.chromium, DESKTOP);
   try {
     // Saltar al formulario: primer elemento con Tab.
@@ -677,15 +729,25 @@ test('componentes: carruseles, vídeos, FAQ con schema, "Leer más" y saltar al 
     const more = page.locator('.tcard [data-more]:visible').first();
     await more.click();
     assert.equal(await page.locator('.tcard.is-clamped [data-more]:visible').count() < 4, true);
-    // Vídeo: solo póster hasta pulsar; al pulsar se crea el <video> y se pide por rangos.
+    // Cifras en bucle: se mueven solas, el botón las para (y las vuelve a mover)
+    // y la copia que cierra el bucle no se lee dos veces.
     assert.equal(await page.locator('video').count(), 0);
-    const reel = page.locator('[data-video]').first();
-    await reel.scrollIntoViewIfNeeded();
-    const videoReq = page.waitForResponse((r) => r.url().includes('/assets/video/') && r.url().endsWith('.mp4'));
-    await reel.click();
-    const res = await videoReq;
-    assert.ok([200, 206].includes(res.status()));
-    assert.equal(await page.locator('video[controls]').count(), 1);
+    const mqX = () => page.locator('.mq-track').first().evaluate((el) => new DOMMatrix(getComputedStyle(el).transform).m41);
+    await page.locator('.band').scrollIntoViewIfNeeded();
+    await page.mouse.move(5, 5); // sin el ratón encima (al pasarlo se paran)
+    const x0 = await mqX();
+    await page.waitForTimeout(600);
+    assert.ok((await mqX()) < x0, 'las cifras no se mueven');
+    assert.equal(await page.locator('.mq-track').nth(1).getAttribute('aria-hidden'), 'true');
+    const toggle = page.locator('[data-marquee-toggle]');
+    await toggle.click();
+    await page.mouse.move(5, 5);
+    assert.equal(await toggle.getAttribute('aria-pressed'), 'true');
+    const x1 = await mqX();
+    await page.waitForTimeout(600);
+    assert.equal(await mqX(), x1, 'pausadas siguen moviéndose');
+    await toggle.click();
+    assert.equal(await toggle.getAttribute('aria-pressed'), 'false');
     // FAQ en acordeón y schema FAQPage con las mismas preguntas.
     const first = page.locator('.faq-item').first();
     await first.locator('summary').click();
@@ -703,14 +765,17 @@ test('componentes: carruseles, vídeos, FAQ con schema, "Leer más" y saltar al 
 test('sin JavaScript, con movimiento reducido, en horizontal y en las páginas legales', { skip, timeout: 90000 }, async () => {
   // Sin JS: se lee todo con estilos (main.css por <noscript>) y el formulario avisa.
   let ctx = await open(pw.chromium, { ...DESKTOP, javaScriptEnabled: false });
-  assert.equal(await ctx.page.locator('.stats').evaluate((el) => getComputedStyle(el).display), 'grid');
+  assert.equal(await ctx.page.locator('.mq-track').first().evaluate((el) => getComputedStyle(el).display), 'flex');
+  assert.equal(await ctx.page.isVisible('[data-marquee-toggle]'), false, 'sin JS el botón de pausa no sirve: oculto');
   assert.equal(await ctx.page.isVisible('#ck'), false);
   assert.match(await ctx.page.textContent('[data-form]'), /activar JavaScript/);
   await ctx.browser.close();
-  // Movimiento reducido: sin animaciones.
+  // Movimiento reducido: sin animaciones y las cifras quietas (se deslizan con el dedo).
   ctx = await open(pw.webkit, { ...MOBILE, reducedMotion: 'reduce' });
   const dur = await ctx.page.locator('.btn').first().evaluate((el) => getComputedStyle(el).transitionDuration);
   assert.ok(parseFloat(dur) < 0.01, dur);
+  assert.equal(await ctx.page.locator('.mq-track').first().evaluate((el) => getComputedStyle(el).animationName), 'none');
+  assert.equal(await ctx.page.isVisible('.mq-track[aria-hidden]'), false);
   await ctx.browser.close();
   // Móvil en horizontal: sin scroll lateral.
   ctx = await open(pw.webkit, { ...MOBILE, viewport: { width: 844, height: 390 } });

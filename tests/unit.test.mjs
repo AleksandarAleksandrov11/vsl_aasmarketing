@@ -6,7 +6,7 @@ import { createHash } from 'node:crypto';
 import { normalizePhone, detectCountry, OTHER } from '../shared/phone.js';
 import { normalizeProfile } from '../shared/profile.js';
 import { buildLead, pageOnly, countryFor } from '../lib/lead.js';
-import { leadUserData, normalizeName, eventTime, cleanFbc, cleanFbp, sendEvent, capiAllowed } from '../lib/meta.js';
+import { leadUserData, normalizeName, eventTime, cleanFbc, cleanFbp, sendEvent, capiAllowed, pixelId, PRODUCTION_PIXEL_ID } from '../lib/meta.js';
 import { saveToSheet } from '../lib/sheet.js';
 import leadApi from '../api/lead.js';
 import eventApi from '../api/event.js';
@@ -97,6 +97,33 @@ test('Meta: datos normalizados y hasheados con SHA-256', () => {
   assert.ok(Math.abs(eventTime(undefined) - now) <= 1);
   assert.ok(Math.abs(eventTime(Date.now() - 3600_000) - (now - 3600)) <= 1);
   assert.ok(Math.abs(eventTime(Date.now() - 30 * 24 * 3600_000) - now) <= 1, 'más de 7 días: hora actual');
+});
+
+test('Meta: el píxel de AAS Marketing solo en Producción; META_PIXEL_ID lo cambia u "off" lo quita', () => {
+  const saved = { id: process.env.META_PIXEL_ID, env: process.env.VERCEL_ENV };
+  try {
+    delete process.env.META_PIXEL_ID;
+    delete process.env.VERCEL_ENV;
+    assert.equal(pixelId(), '', 'en local, sin píxel');
+    process.env.VERCEL_ENV = 'preview';
+    assert.equal(pixelId(), '', 'en Preview, sin píxel');
+    process.env.VERCEL_ENV = 'production';
+    assert.equal(pixelId(), PRODUCTION_PIXEL_ID);
+    assert.equal(PRODUCTION_PIXEL_ID, '1600434437839020');
+    process.env.META_PIXEL_ID = '123456789012345';
+    assert.equal(pixelId(), '123456789012345');
+    process.env.META_PIXEL_ID = 'off';
+    assert.equal(pixelId(), '');
+    const warnings = [];
+    process.env.META_PIXEL_ID = 'abc';
+    assert.equal(pixelId((m) => warnings.push(m)), PRODUCTION_PIXEL_ID, 'un valor inválido se ignora');
+    assert.equal(warnings.length, 1);
+  } finally {
+    for (const [k, v] of [['META_PIXEL_ID', saved.id], ['VERCEL_ENV', saved.env]]) {
+      if (v === undefined) delete process.env[k];
+      else process.env[k] = v;
+    }
+  }
 });
 
 test('Meta: sin variables no se envía nada y no falla', async () => {

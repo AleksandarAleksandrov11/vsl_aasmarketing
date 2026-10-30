@@ -29,11 +29,11 @@ shared/              Código común navegador/servidor (teléfono, perfil, opcio
 src/data/content.mjs Textos de la landing con TODAS las cifras y plazos (también los de los alt), testimonios y FAQ
 src/templates/       Plantillas de la landing (titulares sin cifras y preguntas del formulario), legales y 404
 src/css/             critical.css (va en línea) y main.css (se carga sin bloquear)
-src/js/              Formulario, medición, cookies, CTA fijo, carruseles y vídeos
-assets/              Imágenes, vídeos, fuentes y favicons (originales; el build los optimiza)
+src/js/              Formulario, medición, cookies, CTA fijo, carruseles y cifras en bucle
+assets/              Imágenes, fuente y favicons (originales; el build los optimiza y recorta)
 apps-script/         Code.gs y README para el Sheet y el correo
 docs/meta.md         Píxel, API de conversiones y portfolio de Meta desde cero
-scripts/             build.mjs, serve.mjs (servidor local tipo Vercel), og.mjs y map.mjs
+scripts/             build.mjs, serve.mjs (servidor local tipo Vercel) y og.mjs
 tests/               Pruebas unitarias, de contenido y de extremo a extremo (Playwright)
 ```
 
@@ -58,12 +58,52 @@ Abre http://localhost:3000. Para probar el formulario contra un Sheet, copia
   que se eligen en el formulario en `shared/options.js` y los textos legales en
   `src/templates/legal.mjs`. Después, `npm run build` o un push para desplegar.
 - **Poner tu foto en "Soy Aleks":** guarda la foto como
-  `assets/img/aleks/foto.jpg` (también vale .png o .webp) y despliega. El build la
-  optimiza y sustituye al logo. Si la borras, vuelve el logo.
+  `assets/img/aleks/foto.jpg` (también vale .png, .webp o .avif) y despliega. El
+  build la optimiza y sustituye al logo (vertical 4:5, mejor de 1000 px de ancho
+  o más). Si la borras, vuelve el logo. La actual salió de un selfie de 400 px:
+  se amplió a 1600 px con superresolución EDSR (OpenCV, en local, sin servicios
+  externos), mezclada con una ampliación normal para que la piel no quede
+  plástica, y con un enfoque y un contraste muy suaves. Si tienes una foto
+  original más grande, sustitúyela y quedará mejor.
+- **Capturas de reels:** todas se recortan en el build a 4:5 con el mismo
+  encuadre (`crop` en `src/data/content.mjs`, en píxeles del original). Fuera
+  queda la franja de abajo con el contador de Instagram o TikTok; la página pone
+  el contador igual en todas. Para añadir una, copia otra entrada y ajusta `crop`.
 - **Imagen para compartir (og.jpg):** `assets/img/og.jpg`. Se generó con
   `node scripts/og.mjs` con el mismo estilo de la web (la de aasmarketing.com
   hablaba de webs y demo gratuita).
-- **Mapa de España y Europa:** `assets/img/mapa-europa.svg`, generado con `scripts/map.mjs`.
+
+## Secciones de la landing
+
+Pensada para el móvil: 9,2 pantallas a 390x844 y el formulario empieza a los
+788 px (antes de la primera pantalla y media). Títulos centrados, en mayúsculas
+y con una sola tipografía.
+
+1. **Hero:** titular en tres líneas fijas, una frase, el botón, la nota y la
+   línea de confianza. Debajo, los tres reels con más visitas (946 mil, +406 mil
+   y 306,9 mil). Sin altura mínima: las cifras empiezan justo después.
+2. **Cifras:** banda negra en bucle hacia la izquierda con diez cifras
+   confirmadas. Se para con el botón de pausa, al pasar el ratón y con "reducir
+   movimiento" (entonces queda quieta y se desliza con el dedo).
+3. **Formulario** (`#formulario`): mismas preguntas, opciones, orden y textos.
+4. **Casos reales:** VDN Performance y Exoneris en dos tarjetas iguales
+   (cliente, titular, cifras y capturas de perfil o estadísticas).
+5. **Más de 10 millones de visitas:** las once capturas de reels, de más a
+   menos visitas, todas con el mismo recorte y contador.
+6. **¿Te suena? + Así trabajo:** los tres problemas y cuatro puntos (grabo en
+   tu negocio, edito y publico, lanzo tus anuncios, te lo explico cada mes).
+7. **Cuentas y opiniones:** perfiles de clientes, enlace a Google y testimonios.
+8. **Soy Aleks** (con tu foto), **preguntas frecuentes** y **cierre**.
+9. **Pie oscuro:** marca, servicios, contacto, legal y "Configurar cookies".
+
+Todos los botones bajan a `#formulario` (también el CTA fijo del móvil). Lo que
+se quitó en el rediseño de octubre de 2026 (está en el historial de git):
+"Vídeos que se ven hasta el final" (y sus cuatro vídeos), "Lo de siempre vs
+AAS", "Qué hacemos", "Voy a grabar a tu negocio" con el mapa, "Así de fácil",
+los anuncios y las cuadrículas de vídeos de VDN, el móvil del caso Exoneris y
+la captura de su perfil (su foto queda en la tarjeta y sus cifras, en el
+titular y en los textos alternativos). Lo esencial de "Qué hacemos", "Voy a
+grabar" y "Lo de siempre vs AAS" pasó a "Así trabajo".
 
 ## Desplegar en Vercel (paso a paso)
 
@@ -81,7 +121,9 @@ Abre http://localhost:3000. Para probar el formulario contra un Sheet, copia
 2. **Variables de entorno** (Settings > Environment Variables). Ver `.env.example`:
    - `SHEET_WEBHOOK_URL` y `SHEET_SECRET` (después de desplegar el Apps Script, paso 4).
    - `CAPI_WITHOUT_CONSENT` = `true`.
-   - `META_PIXEL_ID` y `META_CAPI_TOKEN` cuando los tengas ([docs/meta.md](docs/meta.md)).
+   - `META_CAPI_TOKEN` cuando lo tengas ([docs/meta.md](docs/meta.md)). El ID del
+     píxel (`1600434437839020`) ya está en el código y solo se usa en Production;
+     `META_PIXEL_ID` solo hace falta para cambiarlo (o `off` para quitarlo).
    - `META_TEST_EVENT_CODE` solo mientras pruebas eventos; en producción, vacío.
    - Elige el tipo al crearlas: **Secret** (no se puede volver a leer) para
      `META_CAPI_TOKEN`, `SHEET_SECRET` y `UPSTASH_REDIS_REST_TOKEN`; **Config**
@@ -187,7 +229,10 @@ por servidor, foco y Escape), retirada de la analítica con la página abierta,
 decisión sincronizada entre pestañas, oposición que sobrevive a la caducidad
 de la decisión, reintentos con la decisión vigente, sin repeticiones al
 retirar y volver a aceptar, banner que no tapa el CTA del hero, píxel sin
-PageView automáticos, carruseles, vídeos, FAQ con su schema,
+PageView automáticos, carruseles, cifras en bucle (se mueven, se pausan y se
+quedan quietas con movimiento reducido), estructura en móvil (formulario antes
+de 2,5 pantallas y página de 10 como mucho a 390x844; CTA, nota y reels del hero
+en el primer pantallazo a 390x844 y 375x667; capturas con el mismo recorte), FAQ con su schema,
 "Leer más", saltar al formulario, sin JavaScript, movimiento reducido, móvil
 en horizontal y páginas legales. Necesita Playwright con WebKit y Chromium:
 
@@ -198,24 +243,27 @@ npm i -D playwright && npx playwright install --with-deps webkit chromium
 ## Rendimiento
 
 Medido con Lighthouse 13.5 sobre el build de producción (con un ID de píxel de
-prueba, como quedará en Vercel) servido en local con compresión:
+prueba, como quedará en Vercel) servido en local con compresión, después del
+rediseño de octubre de 2026:
 
 | | Rendimiento | Accesibilidad | Buenas prácticas | SEO |
 |---|---|---|---|---|
 | Móvil (4G lenta simulada) | 99-100 | 100 | 100 | 69* |
 | Escritorio | 100 | 100 | 100 | 69* |
 
-Móvil: FCP 0,9-1,2 s · LCP 1,4-1,7 s (el titular) · TBT 10-50 ms · CLS 0.
+Móvil: FCP 1,1-1,2 s · LCP 1,7-1,8 s · TBT 10-50 ms · CLS 0,002.
 Escritorio: FCP 0,3 s · LCP 0,4 s · TBT 0 ms · CLS 0.
 \* El SEO baja solo por el `noindex` que pediste (página solo para anuncios).
-Es la única comprobación que falla; con indexación sería 100.
+Es la única comprobación que falla; con indexación sería 100. (La primera
+pasada en frío dio 88 por un pico de TBT del propio equipo; las cinco
+siguientes, 99-100.)
 
-Primera carga en móvil: 324 KB en 26 peticiones (HTML 17 KB, CSS 5 KB, JS 9 KB
-comprimido y 23 KB sin comprimir, dos fuentes 40 KB e imágenes AVIF 241 KB). En
-escritorio, 268 KB. Sin aceptar cookies no se carga ni el píxel ni la analítica.
-Los vídeos solo se descargan al pulsar. Accesibilidad
-revisada también con axe-core (WCAG 2.2 AA): sin incidencias en la landing, en
-cada paso del formulario, en el banner ni en las legales.
+Primera carga en móvil: 299 KB en 26 peticiones (HTML 19 KB, CSS 4 KB, JS 9 KB
+comprimido y 22 KB sin comprimir, una sola fuente y las imágenes en AVIF). En
+escritorio, 246 KB. Sin aceptar cookies no se carga ni el píxel ni la analítica.
+La banda de cifras se mueve solo con CSS (transform), sin JavaScript en cada
+fotograma. Accesibilidad revisada también con axe-core (WCAG 2.2 AA): sin
+incidencias en la landing, en cada paso del formulario, en el banner ni en las legales.
 
 Falta repetir Lighthouse sobre el despliegue de Vercel: no tengo acceso a tu
 cuenta de Vercel desde aquí.
@@ -247,12 +295,12 @@ Los `[PENDIENTE]` y `[REVISAR]` están como comentarios en el código (no se ven
 la página publicada). Búscalos con `grep -rn "PENDIENTE\|REVISAR" src docs .env.example`.
 
 **[PENDIENTE]**
-- `META_PIXEL_ID` y `META_CAPI_TOKEN`: crear portfolio, píxel y token ([docs/meta.md](docs/meta.md)).
+- `META_CAPI_TOKEN`: generar el token del píxel 1600434437839020 ([docs/meta.md](docs/meta.md)).
 - `SHEET_WEBHOOK_URL` y `SHEET_SECRET`: desplegar el Apps Script.
 - Lighthouse sobre la URL de Vercel y prueba en un iPhone real desde Instagram.
-- Elegir titular: se mantiene el tuyo. Alternativas más cortas (comentario en
-  `src/data/content.mjs`): "Redes y anuncios que llenan tu agenda." y "Más
-  clientes desde tus redes."
+- Titular: con el rediseño pasa a "Más clientes desde tus redes." (una de las
+  alternativas cortas). El anterior era "Redes sociales y Meta Ads que llenan tu
+  agenda de clientes."; se cambia en `HERO.title` de `src/data/content.mjs`.
 - Decidir si activas la base de datos propia (opcional).
 - Crear el proyecto de Vercel en un equipo con plan Pro (el plan Hobby no admite
   webs comerciales) y activar Web Analytics en el panel (Speed Insights gratis no
@@ -285,8 +333,8 @@ la página publicada). Búscalos con `grep -rn "PENDIENTE\|REVISAR" src docs .en
   jurídica, analítica de Vercel (datos según su documentación), destinatarios,
   Meta como corresponsable, WhatsApp con el mensaje ya escrito, transferencias,
   hash que no es anónimo, envío por servidor y cómo oponerse, conservación,
-  derechos y seguridad. Se adapta sola a las variables de Vercel: sin
-  `META_PIXEL_ID` no habla de Meta y con `CAPI_WITHOUT_CONSENT=false` explica
+  derechos y seguridad. Se adapta sola a las variables de Vercel: sin píxel
+  (Preview, local o `META_PIXEL_ID=off`) no habla de Meta y con `CAPI_WITHOUT_CONSENT=false` explica
   que solo se mide con consentimiento.
 - Política de cookies: almacenamiento necesario, `aas_attr` solo con
   consentimiento, analítica de Vercel, cookies de Meta Pixel, medición desde el
@@ -295,11 +343,10 @@ la página publicada). Búscalos con `grep -rn "PENDIENTE\|REVISAR" src docs .en
 
 ## Decisiones que conviene que conozcas
 
-- **El enlace a las reseñas de Google** ("5,0 en Google", en testimonios) es el
-  único enlace externo antes del formulario porque lo pediste expresamente; se
-  abre en pestaña nueva. Antes del formulario no hay WhatsApp, teléfono, correo
-  ni Instagram. El banner de cookies enlaza a la política de cookies (primera
-  capa informativa).
+- **Antes del formulario no hay ningún enlace externo:** ni WhatsApp, teléfono,
+  correo, Instagram ni las reseñas de Google (el enlace "5,0 en Google" está en
+  la sección de opiniones, después del formulario, y se abre en pestaña nueva).
+  El banner de cookies enlaza a la política de cookies (primera capa informativa).
 - **El banner de cookies sale al primer scroll o a los 3 segundos**, pero nunca
   encima del botón del hero ni de la nota de debajo: en móviles pequeños espera
   a que el visitante baje. Hasta que deciden no se carga nada que use cookies;

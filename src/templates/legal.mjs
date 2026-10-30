@@ -205,7 +205,7 @@ ${header({ legal: true })}
 ${content}
   </div>
 </main>
-${footer(ctx)}
+${footer(ctx, { legal: true })}
 </body>
 </html>`;
 
