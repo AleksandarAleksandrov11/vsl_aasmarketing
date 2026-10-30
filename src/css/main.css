@@ -214,9 +214,14 @@
 .ex-phone { width: min(62%, 260px); margin-inline: auto; }
 .ex-title b { display: block; }
 .ex-title span { display: block; color: var(--ink-mute); }
-.ex-stats { display: grid; grid-template-columns: repeat(3, auto); justify-content: start; gap: 12px clamp(18px, 4vw, 40px); margin-top: 28px; }
+/* En móvil, tres columnas iguales: las cifras quedan a la misma distancia. */
+.ex-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 18px; margin-top: 28px; }
 .ex-stats dt { font-size: clamp(1.5rem, 1.1rem + 2vw, 3rem); font-weight: 640; line-height: 1; letter-spacing: -0.045em; white-space: nowrap; }
-.ex-stats dd { margin-top: 6px; font-size: 0.9375rem; line-height: 1.35; color: var(--ink-mute); text-wrap: balance; }
+.ex-stats dd { margin-top: 6px; font-size: 0.9375rem; line-height: 1.35; color: var(--ink-mute); }
+@media (max-width: 359.98px) {
+  .ex-stats { column-gap: 12px; }
+  .ex-stats dt { font-size: 1.3rem; }
+}
 .ex-shots { display: grid; gap: 12px; margin-top: 28px; }
 /* Mismo fondo que las capturas (modo oscuro de Instagram): si una es algo más
    baja que la otra, el marco termina a la misma altura sin que se note. */
@@ -230,6 +235,7 @@
 }
 .ex-shots .shot-img > picture { flex: 1; min-width: 0; }
 @media (min-width: 640px) {
+  .ex-stats { grid-template-columns: repeat(3, auto); justify-content: start; column-gap: clamp(18px, 4vw, 40px); }
   .ex-shots { grid-template-columns: 1fr 1fr; }
 }
 @media (min-width: 900px) {
