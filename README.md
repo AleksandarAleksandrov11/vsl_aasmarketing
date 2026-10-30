@@ -205,7 +205,7 @@ prueba, como quedará en Vercel) servido en local con compresión:
 | Móvil (4G lenta simulada) | 99-100 | 100 | 100 | 69* |
 | Escritorio | 100 | 100 | 100 | 69* |
 
-Móvil: FCP 1,1-1,2 s · LCP 1,5-1,7 s (el titular) · TBT 10-50 ms · CLS 0.
+Móvil: FCP 0,9-1,2 s · LCP 1,4-1,7 s (el titular) · TBT 10-50 ms · CLS 0.
 Escritorio: FCP 0,3 s · LCP 0,4 s · TBT 0 ms · CLS 0.
 \* El SEO baja solo por el `noindex` que pediste (página solo para anuncios).
 Es la única comprobación que falla; con indexación sería 100.
