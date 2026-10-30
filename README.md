@@ -82,7 +82,7 @@ Abre http://localhost:3000. Para probar el formulario contra un Sheet, copia
    - `SHEET_WEBHOOK_URL` y `SHEET_SECRET` (después de desplegar el Apps Script, paso 4).
    - `CAPI_WITHOUT_CONSENT` = `true`.
    - `META_CAPI_TOKEN` cuando lo tengas ([docs/meta.md](docs/meta.md)). El ID del
-     píxel (`1137027092146077`) ya está en el código y solo se usa en Production;
+     píxel (`1600434437839020`) ya está en el código y solo se usa en Production;
      `META_PIXEL_ID` solo hace falta para cambiarlo (o `off` para quitarlo).
    - `META_TEST_EVENT_CODE` solo mientras pruebas eventos; en producción, vacío.
    - Elige el tipo al crearlas: **Secret** (no se puede volver a leer) para
@@ -249,7 +249,7 @@ Los `[PENDIENTE]` y `[REVISAR]` están como comentarios en el código (no se ven
 la página publicada). Búscalos con `grep -rn "PENDIENTE\|REVISAR" src docs .env.example`.
 
 **[PENDIENTE]**
-- `META_CAPI_TOKEN`: generar el token del píxel 1137027092146077 ([docs/meta.md](docs/meta.md)).
+- `META_CAPI_TOKEN`: generar el token del píxel 1600434437839020 ([docs/meta.md](docs/meta.md)).
 - `SHEET_WEBHOOK_URL` y `SHEET_SECRET`: desplegar el Apps Script.
 - Lighthouse sobre la URL de Vercel y prueba en un iPhone real desde Instagram.
 - Elegir titular: se mantiene el tuyo. Alternativas más cortas (comentario en

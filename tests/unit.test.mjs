@@ -109,7 +109,7 @@ test('Meta: el píxel de AAS Marketing solo en Producción; META_PIXEL_ID lo cam
     assert.equal(pixelId(), '', 'en Preview, sin píxel');
     process.env.VERCEL_ENV = 'production';
     assert.equal(pixelId(), PRODUCTION_PIXEL_ID);
-    assert.equal(PRODUCTION_PIXEL_ID, '1137027092146077');
+    assert.equal(PRODUCTION_PIXEL_ID, '1600434437839020');
     process.env.META_PIXEL_ID = '123456789012345';
     assert.equal(pixelId(), '123456789012345');
     process.env.META_PIXEL_ID = 'off';
