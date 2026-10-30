@@ -2,12 +2,13 @@
 // Insights) y marketing (píxel de Meta). Aparte, la medición desde el servidor
 // (API de conversiones) va por interés legítimo aunque no acepten las cookies,
 // con su propio interruptor para oponerse. La decisión se guarda en localStorage
-// durante 24 meses.
+// durante 24 meses; la oposición, en su propia clave y sin caducidad.
 // El banner es una capa fija: no empuja la página y sube por encima del CTA fijo.
 
 import { $, local } from './util.js';
 
 const KEY = 'aas_consent';
+const OPTOUT = 'aas_optout'; // la oposición no caduca ni se pierde al volver a preguntar
 const VERSION = 2; // v2 añade la analítica: quien decidió con v1 vuelve a ver el banner
 const MAX_AGE = 730 * 24 * 3600 * 1000; // la AEPD recomienda volver a preguntar a los 24 meses
 // Lo que ofrece esta build: sin píxel o sin analítica no se pregunta por ellos.
@@ -17,54 +18,65 @@ const OFFERED = [
   $('meta[name="aas-capi"]') && 'server',
 ].filter(Boolean);
 const listeners = new Set();
+// Una oposición guardada antes de existir aas_optout (dentro de aas_consent) también cuenta.
+const readOptout = () => OFFERED.includes('server') && !!(local.get(OPTOUT) || local.get(KEY)?.optout);
+let optout = readOptout();
+if (optout && !local.get(OPTOUT)) local.set(OPTOUT, { ts: Date.now() });
 let state = read();
 
 function read() {
   const v = local.get(KEY);
-  if (!v || v.v !== VERSION || !(Date.now() - Number(v.ts || 0) < MAX_AGE)) return null;
-  // Si ahora se ofrece algo que no existía cuando decidió, se le vuelve a preguntar.
-  return OFFERED.every((c) => (v.cats || []).includes(c)) ? v : null;
+  if (!v) return null;
+  // Caducada, de otra versión o sin algo que ahora se ofrece: se borra y se vuelve a preguntar.
+  const valid = v.v === VERSION && Date.now() - Number(v.ts || 0) < MAX_AGE && OFFERED.every((c) => (v.cats || []).includes(c));
+  if (!valid) local.del(KEY);
+  return valid ? v : null;
 }
 
 export const hasDecision = () => !!state;
 export const hasMarketing = () => !!state?.marketing;
 export const hasAnalytics = () => !!state?.analytics;
 /** Se ha opuesto a la medición desde el servidor: no se manda nada por la API de conversiones. */
-export const hasOptedOut = () => !!state?.optout;
+export const hasOptedOut = () => optout;
 export const onConsentChange = (fn) => listeners.add(fn);
 
 const snapshot = () => ({ analytics: hasAnalytics(), marketing: hasMarketing(), optout: hasOptedOut() });
 
-function apply(next) {
+function apply(next, nextOptout) {
   const before = snapshot();
   state = next;
+  optout = nextOptout;
   const now = snapshot();
   listeners.forEach((fn) => fn(now, before));
 }
 
-export function setConsent({ analytics, marketing, optout = hasOptedOut() }) {
+export function setConsent({ analytics, marketing, optout: objects = hasOptedOut() }) {
+  const nextOptout = !!objects && OFFERED.includes('server');
+  if (nextOptout) local.set(OPTOUT, { ts: Date.now() });
+  else if (OFFERED.includes('server')) local.del(OPTOUT);
   const next = {
     v: VERSION,
     analytics: !!analytics && OFFERED.includes('analytics'),
     marketing: !!marketing && OFFERED.includes('marketing'),
-    optout: !!optout && OFFERED.includes('server'),
+    optout: nextOptout,
     cats: OFFERED,
     ts: Date.now(),
   };
   local.set(KEY, next);
-  apply(next);
+  apply(next, nextOptout);
 }
 
 // Otra pestaña cambió la decisión, o la página vuelve de la caché del navegador
 // con el botón Atrás: se relee para no seguir midiendo con una decisión antigua.
 function sync() {
+  const nextOptout = readOptout(); // antes de read(), que borra un registro caducado
   const next = read();
-  if ((next?.ts || 0) !== (state?.ts || 0)) apply(next);
+  if ((next?.ts || 0) !== (state?.ts || 0) || nextOptout !== optout) apply(next, nextOptout);
 }
 
 export function initConsent() {
   window.addEventListener('storage', (e) => {
-    if (e.key === KEY || e.key === null) sync();
+    if (e.key === KEY || e.key === OPTOUT || e.key === null) sync();
   });
   window.addEventListener('pageshow', (e) => {
     if (e.persisted) sync();

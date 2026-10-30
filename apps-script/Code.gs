@@ -15,6 +15,7 @@
 var HEADERS = ['Fecha', 'Nombre', 'WhatsApp', 'Necesita', 'Negocio', 'Perfil', 'Enlace al perfil', 'utm_source', 'utm_medium', 'utm_campaign', 'Página'];
 var EMAIL_TO = 'aaswebmarketing@gmail.com';
 var SHEET_NAME = ''; // vacío = la primera pestaña del Sheet
+var DEDUPE_DAYS = 8; // el navegador del visitante reintenta un envío hasta 7 días
 
 function doPost(e) {
   var data;
@@ -28,7 +29,9 @@ function doPost(e) {
   if (!secret || data.secret !== secret) return json_({ ok: false, error: 'secret' });
 
   var lead = data.lead || {};
-  var cache = CacheService.getScriptCache();
+  // Huella de cada envío ya guardado, fuera del Sheet (en las propiedades del
+  // script, no en una celda): así un reintento días después no duplica la fila.
+  var props = PropertiesService.getScriptProperties();
   var key = data.dedupe ? 'lead_' + String(data.dedupe).slice(0, 64) : '';
   var lock = LockService.getScriptLock();
   try {
@@ -37,8 +40,8 @@ function doPost(e) {
     return json_({ ok: false, error: 'lock' });
   }
   try {
-    // Si Vercel reintenta un envío que ya se guardó, no se duplica la fila.
-    if (key && cache.get(key)) return json_({ ok: true, duplicate: true });
+    // Si llega otra vez un envío que ya se guardó, no se duplica la fila ni el correo.
+    if (key && props.getProperty(key)) return json_({ ok: true, duplicate: true });
     var sheet = getSheet_();
     ensureHeaders_(sheet);
     sheet.appendRow([
@@ -54,7 +57,8 @@ function doPost(e) {
       text_(lead.utm_campaign),
       text_(lead.pagina)
     ]);
-    if (key) cache.put(key, '1', 21600); // 6 horas
+    if (key) props.setProperty(key, String(new Date().getTime()));
+    forgetOld_(props);
   } finally {
     lock.releaseLock();
   }
@@ -65,6 +69,15 @@ function doPost(e) {
     console.error('No se pudo enviar el correo: ' + err);
   }
   return json_({ ok: true });
+}
+
+/** Borra las huellas de más de DEDUPE_DAYS días (nunca toca SHEET_SECRET). */
+function forgetOld_(props) {
+  var limit = new Date().getTime() - DEDUPE_DAYS * 24 * 3600 * 1000;
+  var all = props.getProperties();
+  for (var k in all) {
+    if (k.indexOf('lead_') === 0 && Number(all[k]) < limit) props.deleteProperty(k);
+  }
 }
 
 /** Abrir la URL de la implementación en el navegador debe mostrar {"ok":true}. */

@@ -111,7 +111,7 @@ export function cookieBanner(ctx) {
   const rows = [
     ctx.analytics && ckRow('ck-ana', 'Analítica', 'Vercel Analytics: visitas y velocidad, sin cookies.'),
     ctx.pixelId && ckRow('ck-mkt', 'Marketing', 'Cookies del píxel de Meta para medir mis anuncios.'),
-    serverMeasurement(ctx) && ckRow('ck-srv', 'Medición desde el servidor', 'Sin cookies: mi servidor envía a Meta datos de tu visita para medir mis anuncios (interés legítimo). Desactívala para oponerte.', true),
+    serverMeasurement(ctx) && ckRow('ck-srv', 'Medición desde el servidor', 'Sin cookies: mi servidor envía a Meta datos de tu visita para medir mis anuncios (interés legítimo). Desactívala y guarda para oponerte.', true),
   ].filter(Boolean);
   return `<section class="ck" id="ck" aria-label="Aviso de cookies" hidden>
   <p>${bannerText(ctx)} <a href="/cookies">Más info</a></p>

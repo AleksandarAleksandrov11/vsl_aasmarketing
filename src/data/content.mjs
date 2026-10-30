@@ -214,6 +214,7 @@ export const FORM = {
   title: 'Te mando tu estrategia gratis.',
   sub: 'En menos de 24 horas. Plazas limitadas. Sin llamadas y sin compromiso.',
   intro: 'Analizo tu perfil y te mando la estrategia que seguiría, con los cambios concretos para conseguir más clientes.',
+  done: 'Analizo tu perfil y te mando la estrategia por WhatsApp en menos de 24 horas.',
 };
 
 // `review` marca respuestas redactadas o adaptadas que Aleks debe confirmar.

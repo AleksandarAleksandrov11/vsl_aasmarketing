@@ -8,7 +8,7 @@ async function load() {
   const code = await readFile(new URL('../apps-script/Code.gs', import.meta.url), 'utf8');
   const rows = [];
   const mails = [];
-  const cache = new Map();
+  const props = new Map([['SHEET_SECRET', 'clave']]);
   const sheet = {
     getLastRow: () => rows.length,
     appendRow: (r) => rows.push(r),
@@ -17,8 +17,14 @@ async function load() {
   };
   const ctx = {
     console,
-    PropertiesService: { getScriptProperties: () => ({ getProperty: (k) => (k === 'SHEET_SECRET' ? 'clave' : null) }) },
-    CacheService: { getScriptCache: () => ({ get: (k) => cache.get(k) || null, put: (k, v) => cache.set(k, v) }) },
+    PropertiesService: {
+      getScriptProperties: () => ({
+        getProperty: (k) => (props.has(k) ? props.get(k) : null),
+        setProperty: (k, v) => props.set(k, String(v)),
+        deleteProperty: (k) => props.delete(k),
+        getProperties: () => Object.fromEntries(props),
+      }),
+    },
     LockService: { getScriptLock: () => ({ waitLock: () => {}, releaseLock: () => {} }) },
     SpreadsheetApp: { getActiveSpreadsheet: () => ({ getSheets: () => [sheet], getSheetByName: () => sheet }) },
     MailApp: { sendEmail: (m) => mails.push(m) },
@@ -30,7 +36,7 @@ async function load() {
   vm.createContext(ctx);
   vm.runInContext(code, ctx);
   const post = (body) => ({ ...JSON.parse(ctx.doPost({ postData: { contents: JSON.stringify(body) } }).text) });
-  return { ctx, rows, mails, post };
+  return { ctx, rows, mails, props, post };
 }
 
 const lead = {
@@ -64,6 +70,24 @@ test('Apps Script: clave, fila con las 11 columnas, sin fórmulas y sin duplicad
   assert.match(m.htmlBody, /href="https:\/\/www\.instagram\.com\/prueba\/"/);
   assert.match(m.htmlBody, /=HYPERLINK\(&quot;x&quot;\)/, 'el HTML del correo va escapado');
   assert.match(m.body, /utm_campaign: cerrar/);
+});
+
+test('Apps Script: recuerda cada envío 8 días fuera del Sheet y después lo olvida', async () => {
+  const { rows, mails, props, post } = await load();
+  const day = 24 * 3600 * 1000;
+  // Huella de hace 9 días (se borra) y otra de hace 2 días (se respeta).
+  props.set('lead_viejo', String(Date.now() - 9 * day));
+  props.set('lead_reciente', String(Date.now() - 2 * day));
+  assert.deepEqual(post({ secret: 'clave', dedupe: 'nuevo', lead }), { ok: true });
+  assert.equal(props.has('lead_viejo'), false, 'la huella antigua se borra');
+  assert.equal(props.get('SHEET_SECRET'), 'clave', 'la clave nunca se toca');
+  assert.ok(props.has('lead_nuevo'));
+  // Un reintento días después (dentro de los 8) no duplica la fila ni el correo.
+  assert.deepEqual(post({ secret: 'clave', dedupe: 'reciente', lead }), { ok: true, duplicate: true });
+  assert.equal(rows.length, 2);
+  assert.equal(mails.length, 1);
+  // Ningún ID en el Sheet: la huella solo está en las propiedades del script.
+  assert.ok(!rows.flat().some((c) => String(c).includes('nuevo')));
 });
 
 test('Apps Script: JSON roto y comprobación por GET', async () => {

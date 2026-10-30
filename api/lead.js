@@ -3,8 +3,8 @@
 //   a) Lead a la API de conversiones de Meta (mismo event_id que el navegador).
 //   b) Guardado en Google Sheets (Apps Script) con reintentos.
 //   c) Copia opcional en base de datos propia (desactivada por defecto).
-// Responde {ok: true, saved}. Si no se ha podido guardar en ningún sitio, deja
-// el lead completo en el log y responde 503 para que el navegador lo reintente.
+// Responde {ok: true, saved}. Si el Sheet no ha podido guardarla, deja el lead
+// completo en el log y responde 503 para que el navegador lo reintente.
 
 import { createHash } from 'node:crypto';
 import { readJson, json, clientIp, sameOrigin } from '../lib/http.js';
@@ -65,15 +65,17 @@ export default {
       })
       : Promise.resolve({ sent: false, reason: !fromSite ? 'origin' : p.optout === true ? 'optout' : 'no-consent' });
 
-    const [sheet, db] = settle(await Promise.allSettled([saveToSheet(lead, dedupe), saveToDb(lead), meta]));
+    const [sheet, db] = settle(await Promise.allSettled([saveToSheet(lead, dedupe), saveToDb(lead, dedupe), meta]));
     const saved = !!(sheet.saved || db.saved);
     if (!sheet.saved) {
       console.error('[lead] NO SE HA GUARDADO EN EL SHEET. Lead completo para recuperarlo:', JSON.stringify({ ...lead, llegada: p.landing_at || '' }));
     }
-    // Sin guardar en ningún sitio (con el Sheet configurado): 503 y el navegador
-    // conserva la solicitud para reintentarla. No se duplica nada: el Apps Script
-    // descarta la misma solicitud durante 6 horas y Meta, el Lead con el mismo event_id.
-    if (!saved && sheet.reason !== 'not-configured') return json({ ok: false, saved: false }, 503);
+    // El Sheet (configurado) no la ha guardado: 503 y el navegador conserva la
+    // solicitud para reintentarla, aunque haya copia en la base de datos (sin
+    // la fila tampoco sale el correo). No se duplica nada: el Apps Script y la
+    // base de datos descartan la misma solicitud durante 8 días y Meta, el Lead
+    // con el mismo event_id.
+    if (!sheet.saved && sheet.reason !== 'not-configured') return json({ ok: false, saved: !!db.saved }, 503);
     return json({ ok: true, saved });
   },
 };

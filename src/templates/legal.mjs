@@ -73,8 +73,10 @@ ${h2('Legitimación')}
 <!-- [REVISAR] Párrafo modificado: ya no hay casilla; la base es la solicitud del interesado. -->
 <p>La base jurídica para atender tu solicitud y enviarte la estrategia y el precio es la aplicación de medidas precontractuales a petición del interesado (art. 6.1.b RGPD). Por eso el formulario no tiene casilla de aceptación: al enviarlo se te informa de esta política.</p>
 ${server ? `<!-- [REVISAR] Párrafo nuevo: medición por servidor sin consentimiento (CAPI_WITHOUT_CONSENT=true). Confirmar con un asesor: la AEPD suele exigir consentimiento para la medición publicitaria. Con CAPI_WITHOUT_CONSENT=false en Vercel y un nuevo despliegue, este párrafo cambia solo. -->
-<p>La medición de los anuncios desde el servidor (API de conversiones de Meta) se basa en el interés legítimo del responsable en conocer la eficacia de su publicidad (art. 6.1.f RGPD) y se hace aunque no aceptes las cookies. Puedes oponerte en cualquier momento desactivando «Medición desde el servidor» o pulsando «Rechazar todo» en «Configurar cookies», al pie de la página: desde ese momento el servidor deja de enviar a Meta los datos de ese navegador.</p>` : meta ? `<!-- [REVISAR] Párrafo nuevo: con CAPI_WITHOUT_CONSENT=false la medición desde el servidor solo se hace con consentimiento. -->
+<p>La medición de los anuncios desde el servidor (API de conversiones de Meta) se basa en el interés legítimo del responsable en conocer la eficacia de su publicidad (art. 6.1.f RGPD) y se hace aunque no aceptes las cookies. Puedes oponerte en cualquier momento en «Configurar cookies», al pie de la página: desactiva «Medición desde el servidor» y pulsa «Guardar selección», o pulsa «Rechazar todo». Desde ese momento el servidor deja de enviar a Meta los datos de ese navegador.</p>` : meta ? `<!-- [REVISAR] Párrafo nuevo: con CAPI_WITHOUT_CONSENT=false la medición desde el servidor solo se hace con consentimiento. -->
 <p>La medición de los anuncios desde el servidor (API de conversiones de Meta) solo se hace si aceptas las cookies de marketing y se basa en tu consentimiento (art. 6.1.a RGPD).</p>` : ''}
+<!-- [REVISAR] Párrafo nuevo: base jurídica de los parámetros de campaña que se guardan con la solicitud. -->
+<p>Guardar con tu solicitud los parámetros de campaña (utm), para saber qué anuncio la trajo, se basa en el interés legítimo del responsable en conocer de dónde vienen sus solicitudes (art. 6.1.f RGPD), al que también puedes oponerte.</p>
 ${meta || ctx.analytics ? `<!-- [REVISAR] Párrafo modificado: consentimiento para las cookies y la analítica, y su retirada. -->
 <p>${consentFor} en tu consentimiento (art. 6.1.a RGPD${meta ? ' y art. 22.2 LSSI-CE' : ''}). Puedes retirarlo cuando quieras desde «Configurar cookies», al pie de la página, sin que eso afecte a la licitud del tratamiento anterior.</p>` : ''}
 
@@ -99,22 +101,22 @@ ${h2('Medición de los anuncios (píxel y API de conversiones de Meta)')}
 <!-- [REVISAR] Párrafo nuevo: qué se envía a Meta y cuándo. -->
 <p>Para saber qué anuncios funcionan, el servidor de esta página envía a Meta eventos de visita (PageView y ViewContent), de solicitud (Lead) y de contacto por WhatsApp (Contact) con tu dirección IP, el navegador, la página visitada y los identificadores de Meta del clic y del navegador (fbc y fbp). En el evento de solicitud se añaden tu teléfono, tu nombre y tu país convertidos con SHA-256 en un código (hash). Ese código no es anónimo: Meta lo compara con los datos de sus usuarios para relacionar la solicitud con el anuncio, así que sigue siendo un dato personal.</p>
 ${server ? `<!-- [REVISAR] Párrafo nuevo: envío por servidor sin consentimiento y cómo oponerse (CAPI_WITHOUT_CONSENT=true). -->
-<p>Este envío desde el servidor se hace aunque no aceptes las cookies, salvo que te opongas: si desactivas «Medición desde el servidor» o pulsas «Rechazar todo» en «Configurar cookies», desde ese momento el servidor deja de enviar a Meta los datos de ese navegador.</p>` : `<!-- [REVISAR] Párrafo nuevo: con CAPI_WITHOUT_CONSENT=false, solo con consentimiento. -->
+<p>Este envío desde el servidor se hace aunque no aceptes las cookies, salvo que te opongas: en «Configurar cookies», desactiva «Medición desde el servidor» y pulsa «Guardar selección», o pulsa «Rechazar todo». Desde ese momento el servidor deja de enviar a Meta los datos de ese navegador, también los de una solicitud que estuviera pendiente de reenviarse. La oposición se guarda en tu navegador sin fecha de caducidad (clave aas_optout): si borras sus datos, usas otro navegador o el tuyo no permite guardarla, tendrás que repetirla.</p>` : `<!-- [REVISAR] Párrafo nuevo: con CAPI_WITHOUT_CONSENT=false, solo con consentimiento. -->
 <p>Este envío desde el servidor solo se hace si aceptas las cookies de marketing en el aviso de cookies.</p>`}
 <!-- [REVISAR] Párrafo nuevo: cookies del píxel solo con consentimiento. -->
 <p>Las cookies del píxel de Meta solo se instalan en tu dispositivo si las aceptas en el aviso de cookies. Tienes el detalle en la <a href="/cookies">política de cookies</a>.</p>` : ''}
 
 ${h2('Conservación')}
 <!-- [REVISAR] Plazos propuestos: confirmarlos con el asesor y cumplirlos (borrar a mano las filas y los correos de las solicitudes antiguas). -->
-<p>Si la solicitud no acaba en contrato, se borra de la hoja de solicitudes y del correo como máximo 12 meses después del último contacto${ctx.leadsDb ? ', igual que su copia en la base de datos' : ''}. Si contratas, los datos se conservan mientras dure la relación y, después, durante los plazos de prescripción de las obligaciones legales, fiscales y mercantiles (por ejemplo, 4 años según la Ley General Tributaria y 6 según el Código de Comercio).</p>
+<p>Si la solicitud no acaba en contrato, se borra de la hoja de solicitudes, del correo y de la conversación de WhatsApp como máximo 12 meses después del último contacto${ctx.leadsDb ? ', igual que su copia en la base de datos' : ''}. Si contratas, los datos se conservan mientras dure la relación y, después, durante los plazos de prescripción de las obligaciones legales, fiscales y mercantiles (por ejemplo, 4 años según la Ley General Tributaria y 6 según el Código de Comercio).</p>
 <!-- [REVISAR] Párrafo modificado: copia en los registros técnicos y su plazo. -->
 <p>Si una solicitud no se puede guardar en la hoja de solicitudes, o el sistema la marca como posible envío automático o sin un teléfono válido, queda en los registros técnicos del alojamiento (Vercel) solo para poder revisarla o recuperarla. Esos registros se borran solos en el plazo que fija Vercel según el plan contratado (como máximo, 30 días).</p>
 ${meta || ctx.analytics ? `<!-- [REVISAR] Párrafo nuevo: conservación en Meta y en Vercel Analytics. -->
-<p>${[meta && 'Lo que recibe Meta se conserva según su política de privacidad.', ctx.analytics && 'Los datos de la analítica se guardan en Vercel de forma agregada durante el periodo de informes de su plan (de 1 a 24 meses).'].filter(Boolean).join(' ')}</p>` : ''}
+<p>${[meta && 'Lo que recibe Meta se conserva según su política de privacidad.', ctx.analytics && 'Los datos de la analítica se guardan en Vercel sin nada que te identifique y según su política de privacidad: Web Analytics garantiza conservarlos durante el periodo de informes del plan (de 1 a 24 meses) y puede guardarlos más tiempo, y Speed Insights no publica un plazo.'].filter(Boolean).join(' ')}</p>` : ''}
 
 ${h2('Derechos')}
 <!-- [REVISAR] Párrafo modificado: añade cómo oponerse a la medición, la retirada del consentimiento y las decisiones automatizadas. -->
-<p>Puedes ejercer tus derechos de acceso, rectificación, supresión, oposición, limitación del tratamiento y portabilidad escribiendo a ${mail} e indicando qué derecho quieres ejercer.${server ? ' Para oponerte a la medición de los anuncios desde este navegador, basta con desactivar «Medición desde el servidor» en «Configurar cookies».' : ''}${meta || ctx.analytics ? ' Puedes retirar tu consentimiento cuando quieras desde «Configurar cookies», sin que eso afecte a la licitud del tratamiento anterior.' : ''} No se toman decisiones automatizadas que te afecten de forma significativa.</p>
+<p>Puedes ejercer tus derechos de acceso, rectificación, supresión, oposición, limitación del tratamiento y portabilidad escribiendo a ${mail} e indicando qué derecho quieres ejercer.${server ? ' Para oponerte a la medición de los anuncios desde este navegador, desactiva «Medición desde el servidor» en «Configurar cookies» y pulsa «Guardar selección».' : ''}${meta || ctx.analytics ? ' Puedes retirar tu consentimiento cuando quieras desde «Configurar cookies», sin que eso afecte a la licitud del tratamiento anterior.' : ''} No se toman decisiones automatizadas que te afecten de forma significativa.</p>
 <p>Si crees que no se han respetado tus derechos, puedes reclamar ante la Agencia Española de Protección de Datos (<a href="https://www.aepd.es" rel="noopener">aepd.es</a>).</p>
 
 ${h2('Seguridad')}
@@ -137,7 +139,7 @@ const cookies = (ctx) => {
   const meta = !!ctx.pixelId;
   const server = meta && ctx.capiWithoutConsent;
   const banner = meta || ctx.analytics;
-  const decision = [ctx.analytics && 'la analítica', meta && 'las cookies de marketing', server && 'la medición desde el servidor'].filter(Boolean);
+  const decision = [ctx.analytics && 'la analítica', meta && 'las cookies de marketing'].filter(Boolean);
   return `
 <h1>Política de cookies</h1>
 ${h2('¿Qué son las cookies?')}
@@ -150,9 +152,10 @@ ${h2('Cookies y almacenamiento necesarios')}
 <p>Sirven para que la página y el formulario funcionen. No necesitan tu consentimiento y no se comparten con nadie:</p>
 ${table(['Nombre', 'Dónde', 'Para qué', 'Duración'], [
     banner && ['aas_consent', 'localStorage', `Guarda tu decisión sobre ${list(decision)}.`, '24 meses, o hasta que la cambies'],
+    server && ['aas_optout', 'localStorage', 'Recuerda que te has opuesto a la medición desde el servidor, para no volver a enviar a Meta datos de este navegador. Solo existe si te opones.', 'Sin caducidad, hasta que vuelvas a activarla'],
     ['aas_form', 'sessionStorage', 'Guarda tus respuestas mientras rellenas el formulario para que no se pierdan si vuelves atrás.', 'Hasta cerrar la pestaña'],
     ['aas_done', 'sessionStorage', 'Recuerda que ya enviaste la solicitud para seguir mostrando la confirmación al volver de WhatsApp.', 'Hasta cerrar la pestaña'],
-    ['aas_pending', 'localStorage', 'Guarda tu solicitud justo antes de enviarla, para reenviarla si falla la conexión. Se borra en cuanto el servidor la recibe.', 'Hasta que se envíe; si no llega, se descarta al abrir la página pasados 7 días'],
+    ['aas_pending', 'localStorage', `Guarda tu solicitud justo antes de enviarla, para reenviarla si falla la conexión${meta ? ' (sin parámetros de campaña ni identificadores de Meta si no has aceptado el marketing)' : ''}. Se borra en cuanto el servidor la recibe.`, 'Hasta que se envíe; si no llega, se descarta al abrir la página pasados 7 días'],
   ].filter(Boolean))}
 ${ctx.analytics ? `
 ${h2('Analítica (Vercel Web Analytics y Speed Insights)')}
@@ -174,7 +177,7 @@ ${table(['Nombre', 'Proveedor', 'Para qué', 'Duración'], [
 ${server ? `
 ${h2('Medición desde el servidor (sin cookies)')}
 <!-- [REVISAR] Párrafo nuevo: envío por servidor aunque no se acepten las cookies (CAPI_WITHOUT_CONSENT=true). -->
-<p>Aunque no aceptes las cookies, el servidor de esta página envía a Meta datos de tu visita para medir los anuncios, sin instalar cookies en tu dispositivo. Puedes oponerte desactivando «Medición desde el servidor» o pulsando «Rechazar todo» en «Configurar cookies»: desde ese momento el servidor deja de enviar a Meta los datos de ese navegador. Tienes el detalle en el punto 6 de la <a href="/privacidad">política de privacidad</a>.</p>` : ''}
+<p>Aunque no aceptes las cookies, el servidor de esta página envía a Meta datos de tu visita para medir los anuncios, sin instalar cookies en tu dispositivo. Puedes oponerte en «Configurar cookies»: desactiva «Medición desde el servidor» y pulsa «Guardar selección», o pulsa «Rechazar todo». Desde ese momento el servidor deja de enviar a Meta los datos de ese navegador. Tienes el detalle en el punto 6 de la <a href="/privacidad">política de privacidad</a>.</p>` : ''}
 
 ${h2('Cómo cambiar tu decisión')}
 ${banner ? `<!-- [REVISAR] Párrafo modificado: enlace para cambiar la decisión, efectos y caducidad. -->

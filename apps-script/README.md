@@ -16,9 +16,12 @@ Columnas del Sheet, en este orden y nada más:
 En el Sheet **nunca** se guardan fbclid, fbc, fbp, event_id ni ningún ID de Meta.
 La columna Página guarda solo la dirección de la página, sin parámetros.
 
-Si Vercel reintenta un envío que en realidad ya se había guardado (por ejemplo,
-porque el script tardó más de 4 segundos en contestar), el script lo reconoce
-durante 6 horas y no duplica la fila.
+Si llega otra vez un envío que en realidad ya se había guardado (Vercel reintenta
+si el script tarda más de 4 segundos en contestar, y el navegador del visitante
+reintenta hasta 7 días si no recibió la confirmación), el script lo reconoce
+durante 8 días y no duplica ni la fila ni el correo. Para eso guarda una huella
+de cada envío en las propiedades del script (como `lead_...`, nunca en el Sheet)
+y borra sola las de más de 8 días.
 
 ## Instalación paso a paso (una sola vez)
 
@@ -72,7 +75,13 @@ Si cambias el código, no crees una implementación nueva (cambiaría la URL):
 
 La URL `/exec` sigue siendo la misma, así que en Vercel no hay que tocar nada.
 
-## Si ya habías desplegado la versión anterior
+## Si ya habías desplegado una versión anterior del script
+
+Esta versión recuerda los envíos ya guardados durante 8 días (antes, 6 horas) y
+no necesita permisos nuevos. Pega el código nuevo y publica una versión nueva de
+la misma implementación, como en el apartado anterior.
+
+## Si ya habías desplegado la versión de 9 columnas
 
 La versión anterior tenía 9 columnas
 (`Fecha | Nombre | WhatsApp | Necesita | Negocio | utm_source | utm_medium | utm_campaign | Página`).
@@ -108,6 +117,10 @@ asunto del correo. Para actualizarla:
   copiarla a mano. Míralo pronto: el registro dura 1 hora en el plan Hobby y 1
   día en Pro. Mientras tanto, el navegador del visitante reintenta el envío y el
   script no duplica la fila si al final llega dos veces.
+- **En Propiedades del script aparecen muchas `lead_...`**: son las huellas para
+  no duplicar filas. No las borres a mano; el script elimina solo las de más de
+  8 días. No toques `SHEET_SECRET`.
 - **Conservación:** la política de privacidad dice que las solicitudes que no
   acaban en contrato se borran como máximo 12 meses después del último
-  contacto. Borra a mano esas filas (y sus correos) de vez en cuando.
+  contacto. Borra a mano esas filas (y sus correos y conversaciones de WhatsApp)
+  de vez en cuando.

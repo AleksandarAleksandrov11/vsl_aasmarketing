@@ -40,25 +40,35 @@ export function sendServer(body, beacon = false) {
 export function track(name, { params, beacon = false, replay = false } = {}) {
   const id = uuid();
   const server = !hasOptedOut(); // quien se ha opuesto no manda nada por servidor
-  if (replay) fired.push({ name, id, params, server });
+  // Para repetirlo si aceptan después, cada evento recuerda si ya salió por el
+  // píxel, por servidor y por servidor con consentimiento.
+  if (replay) fired.push({ name, id, params, pixel: hasMarketing(), server, withConsent: server && hasMarketing() });
   pixelTrack(name, params, id);
   if (server) sendServer(payload(name, id), beacon);
   return id;
 }
 
 // Si aceptan las cookies más tarde: el píxel manda PageView (y ViewContent si
-// ya ocurrió) con el MISMO event_id que el servidor. Nunca dos PageView distintos.
+// ya ocurrió) con el MISMO event_id que el servidor. Nunca dos PageView distintos,
+// y nada se repite aunque retiren y vuelvan a aceptar en la misma página.
 export function initTracking() {
-  onConsentChange((state, before) => {
-    const granted = state.marketing && !before.marketing;
+  onConsentChange((state) => {
     for (const e of fired) {
-      if (granted) pixelTrack(e.name, e.params, e.id);
+      if (state.marketing && !e.pixel) {
+        pixelTrack(e.name, e.params, e.id);
+        e.pixel = true;
+      }
       if (state.optout) continue;
-      // Si no salió por servidor (se había opuesto), sale ahora. Si salió, al
-      // aceptar se avisa al servidor, que solo lo repite con CAPI_WITHOUT_CONSENT=false.
-      if (!e.server) sendServer(payload(e.name, e.id));
-      else if (granted) sendServer(payload(e.name, e.id, { replay: true }));
-      e.server = true;
+      if (!e.server) {
+        // No salió por servidor (se había opuesto): sale ahora.
+        sendServer(payload(e.name, e.id));
+        e.server = true;
+        e.withConsent = state.marketing;
+      } else if (state.marketing && !e.withConsent) {
+        // Salió sin consentimiento: el servidor solo lo repite con CAPI_WITHOUT_CONSENT=false.
+        sendServer(payload(e.name, e.id, { replay: true }));
+        e.withConsent = true;
+      }
     }
     // Cualquier decisión sin marketing borra _fbp y _fbc (también las que
     // quedaran de una decisión anterior). Se puede llamar varias veces.

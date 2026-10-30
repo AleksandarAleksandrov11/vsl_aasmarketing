@@ -255,16 +255,23 @@ test('móvil (WebKit): formulario completo con "Otro", éxito y WhatsApp bien co
 
 test('éxito aunque /api/lead falle, tarde o no haya red; reintento en la próxima visita', { skip, timeout: 90000 }, async () => {
   // a) Error 500: éxito y el envío queda guardado para reintentar.
-  let ctx = await open(pw.webkit, MOBILE, { before: (page) => page.route('**/api/lead', (r) => r.fulfill({ status: 500, body: 'x' })) });
+  let ctx = await open(pw.webkit, MOBILE, {
+    url: `${base}?utm_source=ig&fbclid=IwAR0prueba`,
+    before: (page) => page.route('**/api/lead', (r) => r.fulfill({ status: 500, body: 'x' })),
+  });
   await ctx.page.click('[data-ck="reject"]');
   await fillForm(ctx.page, { otro: false });
   await ctx.page.click('[data-submit]');
   await ctx.page.locator('[data-done]').waitFor({ state: 'visible', timeout: 9000 });
   const copy = await ctx.page.evaluate(() => JSON.parse(localStorage.getItem('aas_pending')));
   assert.equal(copy.length, 1);
-  // Sin consentimiento de marketing, la copia del navegador no guarda identificadores de Meta.
-  assert.deepEqual([copy[0].p.fbp, copy[0].p.fbc, copy[0].p.fbclid, copy[0].p.nombre], ['', '', '', 'PRUEBA']);
-  assert.match(ctx.log.leads.at(-1).fbp, /^fb\.1\.\d+\.\d+$/, 'la petición sí lleva el fbp (medición por servidor)');
+  // Sin consentimiento de marketing, la copia del navegador no guarda identificadores
+  // de Meta, datos de campaña ni la dirección con el fbclid.
+  const c = copy[0].p;
+  assert.deepEqual([c.fbp, c.fbc, c.fbclid, c.utm_source, c.landing_at, c.page_url, c.nombre], ['', '', '', '', '', base, 'PRUEBA']);
+  const sent = ctx.log.leads.at(-1);
+  assert.match(sent.fbp, /^fb\.1\.\d+\.\d+$/, 'la petición sí lleva el fbp (medición por servidor)');
+  assert.deepEqual([sent.utm_source, sent.fbclid], ['ig', 'IwAR0prueba'], 'y los datos de campaña');
   await ctx.browser.close();
 
   // b) Respuesta lenta: éxito antes de 7 s.
@@ -305,6 +312,7 @@ test('éxito aunque /api/lead falle, tarde o no haya red; reintento en la próxi
   // solicitud y la reintenta en la siguiente visita, cuando el Sheet ya funciona.
   sheetState.mode = 'fail';
   const b2 = await pw.webkit.launch();
+  try {
   const c2 = await b2.newContext(MOBILE);
   await c2.route('https://wa.me/**', (r) => r.fulfill({ contentType: 'text/html', body: 'wa' }));
   const p2 = await c2.newPage();
@@ -323,7 +331,10 @@ test('éxito aunque /api/lead falle, tarde o no haya red; reintento en la próxi
   await p3.goto(base);
   await p3.waitForFunction(() => !localStorage.getItem('aas_pending'), null, { timeout: 15000 });
   assert.equal(sheetState.calls.at(-1).lead.nombre, 'PRUEBA');
-  await b2.close();
+  } finally {
+    sheetState.mode = 'ok';
+    await b2.close();
+  }
 });
 
 test('escritorio (Chromium 1440): formulario solo con teclado y sin errores', { skip, timeout: 60000 }, async () => {
@@ -831,6 +842,94 @@ test('móvil pequeño (320x480): el banner no tapa el botón del hero', { skip, 
     await page.click('[data-ck="config"]');
     const panel = await page.locator('#ck').boundingBox();
     assert.ok(panel.y >= 0 && panel.y + panel.height <= 480, `el panel se sale (${panel.y}, ${panel.height})`);
+    assert.deepEqual(log.errors, []);
+  } finally {
+    await browser.close();
+  }
+});
+
+test('reintento con la decisión vigente: si se opone después de enviar, el reenvío va con la oposición', { skip, timeout: 60000 }, async () => {
+  sheetState.mode = 'ok';
+  const browser = await pw.chromium.launch();
+  const context = await browser.newContext(DESKTOP);
+  await context.route('https://connect.facebook.net/**', (r) => r.fulfill({ contentType: 'text/javascript', body: '' }));
+  await context.route('https://wa.me/**', (r) => r.fulfill({ contentType: 'text/html', body: 'wa' }));
+  try {
+    const page = await context.newPage();
+    await page.route('**/api/lead', (r) => r.abort('internetdisconnected'));
+    await page.goto(`${base}?utm_source=ig&fbclid=IwAR0prueba`);
+    await page.locator('#ck').waitFor({ state: 'visible', timeout: 6000 });
+    await page.click('[data-ck="accept"]');
+    await fillForm(page, { otro: false });
+    await page.click('[data-submit]');
+    await page.locator('[data-done]').waitFor({ state: 'visible', timeout: 9000 });
+    await page.click('[data-again]'); // antes de 1,5 s: no abre WhatsApp y seguimos en la página
+    let copy = await page.evaluate(() => JSON.parse(localStorage.getItem('aas_pending'))[0].p);
+    assert.deepEqual([copy.consent, copy.optout, !!copy.fbp, copy.utm_source], [true, false, true, 'ig'], 'con consentimiento la copia va completa');
+    // Después de enviar, se opone y retira el marketing: la copia guardada se recorta al momento.
+    await page.click('.ftr [data-open-cookies]');
+    await page.click('[data-ck="reject"]'); // «Rechazar todo»
+    copy = await page.evaluate(() => JSON.parse(localStorage.getItem('aas_pending'))[0].p);
+    assert.deepEqual([copy.consent, copy.optout, copy.fbp, copy.fbc, copy.fbclid, copy.utm_source, copy.page_url], [false, true, '', '', '', '', base]);
+    // Siguiente visita con red: el reenvío lleva la oposición.
+    await page.unroute('**/api/lead');
+    const next = await context.newPage();
+    const retried = next.waitForRequest((r) => r.url().endsWith('/api/lead'), { timeout: 15000 });
+    await next.goto(base);
+    const body = JSON.parse((await retried).postData());
+    assert.deepEqual([body.optout, body.consent, body.fbp], [true, false, '']);
+    await next.waitForFunction(() => !localStorage.getItem('aas_pending'), null, { timeout: 15000 });
+  } finally {
+    await browser.close();
+  }
+});
+
+test('la oposición no caduca con la decisión: sin envíos por servidor aunque vuelva a salir el banner', { skip, timeout: 60000 }, async () => {
+  const old = Date.now() - 800 * 24 * 3600 * 1000; // decisión de hace más de 24 meses
+  const { browser, page, log } = await open(pw.chromium, DESKTOP, {
+    before: (p, ctx) => ctx.addInitScript((ts) => {
+      if (sessionStorage.getItem('seeded')) return;
+      sessionStorage.setItem('seeded', '1');
+      localStorage.setItem('aas_consent', JSON.stringify({ v: 2, analytics: false, marketing: false, optout: true, cats: ['analytics', 'marketing', 'server'], ts }));
+      localStorage.setItem('aas_optout', JSON.stringify({ ts }));
+    }, old),
+  });
+  try {
+    await page.locator('#ck').waitFor({ state: 'visible', timeout: 6000 });
+    assert.equal(await page.evaluate(() => localStorage.getItem('aas_consent')), null, 'la decisión caducada se borra');
+    assert.equal(log.events.length, 0, 'nada por servidor: la oposición sigue');
+    await page.click('[data-ck="config"]');
+    assert.equal(await page.isChecked('#ck-srv'), false);
+    await page.keyboard.press('Escape');
+    await page.click('[data-ck="reject"]'); // «Rechazar» con el banner cerrado no borra la oposición
+    assert.ok(await page.evaluate(() => localStorage.getItem('aas_optout')));
+    await page.locator('#formulario').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(500);
+    assert.equal(log.events.length, 0);
+  } finally {
+    await browser.close();
+  }
+});
+
+test('retirar y volver a aceptar no repite eventos en el píxel', { skip, timeout: 60000 }, async () => {
+  const { browser, page, log } = await open(pw.chromium, DESKTOP);
+  try {
+    await page.locator('#ck').waitFor({ state: 'visible', timeout: 6000 });
+    await page.click('[data-ck="accept"]');
+    await page.waitForFunction(() => Array.isArray(window.__fbq) && window.__fbq.some((c) => c[0] === 'track'));
+    await page.click('.ftr [data-open-cookies]');
+    await page.uncheck('#ck-mkt');
+    await page.click('[data-ck="save"]');
+    await page.click('.ftr [data-open-cookies]');
+    await page.click('[data-ck="accept"]'); // «Aceptar todo»
+    await page.waitForTimeout(300);
+    const calls = await page.evaluate(() => window.__fbq);
+    const pageViews = calls.filter((c) => c[0] === 'track' && c[1] === 'PageView');
+    assert.equal(pageViews.length, 1, JSON.stringify(calls));
+    // Por servidor: el PageView de la carga y un solo aviso de repetición (el servidor
+    // lo ignora con CAPI_WITHOUT_CONSENT=true), no uno por cada vez que se acepta.
+    const pv = log.events.filter((e) => e.event_name === 'PageView');
+    assert.deepEqual(pv.map((e) => !!e.replay), [false, true]);
     assert.deepEqual(log.errors, []);
   } finally {
     await browser.close();

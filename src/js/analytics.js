@@ -3,30 +3,19 @@
 // cookies. El build añade <meta name="aas-analytics" content="1"> salvo que
 // VERCEL_ANALYTICS=false.
 
-import { $ } from './util.js';
+import { $, withoutClickIds } from './util.js';
 import { hasAnalytics, onConsentChange } from './consent.js';
 
 const ENABLED = $('meta[name="aas-analytics"]')?.content === '1';
-// Identificadores de clic de anuncios: no se mandan a Vercel (sí los utm).
-const CLICK_IDS = ['fbclid', 'gclid', 'gbraid', 'wbraid', 'ttclid', 'msclkid'];
 let loaded = false;
-
-function stripClickIds(url) {
-  try {
-    const u = new URL(url, location.href);
-    CLICK_IDS.forEach((k) => u.searchParams.delete(k));
-    return u.href;
-  } catch {
-    return url;
-  }
-}
 
 // Vercel llama a beforeSend antes de cada envío: si se retira la analítica con la
 // página abierta, devolver null descarta el evento (los scripts ya cargados no se
 // pueden quitar, pero dejan de enviar desde ese momento).
 const clean = (event) => {
   if (!hasAnalytics()) return null;
-  return event && typeof event.url === 'string' ? { ...event, url: stripClickIds(event.url) } : event;
+  // Los identificadores de clic de los anuncios no se mandan a Vercel (los utm, sí).
+  return event && typeof event.url === 'string' ? { ...event, url: withoutClickIds(event.url) } : event;
 };
 
 function inject(src) {

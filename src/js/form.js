@@ -3,12 +3,12 @@
 // mandarlo; pase lo que pase (ok, error o 6 s sin respuesta) se muestra la
 // pantalla de éxito y a los 1,5 s se abre WhatsApp con las respuestas.
 
-import { $, $$, uuid, sleep, session, local } from './util.js';
+import { $, $$, uuid, sleep, session, local, withoutClickIds, pageOnly } from './util.js';
 import { servicioLabel, negocioLabel, clean } from '../../shared/options.js';
 import { normalizePhone, detectCountry, PHONE_ERRORS, OTHER, COUNTRIES } from '../../shared/phone.js';
 import { normalizeProfile } from '../../shared/profile.js';
 import { getAttribution } from './attribution.js';
-import { hasMarketing, hasOptedOut } from './consent.js';
+import { hasMarketing, hasOptedOut, onConsentChange } from './consent.js';
 import { pixelTrack } from './pixel.js';
 import { track } from './track.js';
 
@@ -46,6 +46,26 @@ const savePending = (list) => (list.length ? local.set(PENDING, list) : local.de
 const dropPending = (id) => savePending(pending().filter((x) => x.p.event_id !== id));
 let retryTimer = 0;
 
+// La solicitud con la decisión más restrictiva entre la del envío y la de ahora.
+// Sin consentimiento de marketing, o con oposición, no lleva identificadores de
+// Meta, parámetros de campaña ni hora de llegada, y la página va sin parámetros:
+// así se guarda en el navegador y así se reintenta.
+function restrict(p) {
+  const consent = !!p.consent && hasMarketing();
+  const optout = !!p.optout || hasOptedOut();
+  if (consent && !optout) return { ...p, consent, optout };
+  return {
+    ...p, consent, optout, fbp: '', fbc: '', fbclid: '', landing_at: '', page_url: pageOnly(p.page_url),
+    utm_source: '', utm_medium: '', utm_campaign: '', utm_content: '', utm_term: '',
+  };
+}
+
+// Si cambian la decisión mientras hay algo pendiente, la copia guardada nunca es
+// más permisiva que la decisión vigente.
+onConsentChange(() => {
+  if (pending().length) savePending(pending().map((x) => ({ ...x, p: restrict(x.p) })));
+});
+
 const inFlight = new Set();
 
 async function postLead(payload) {
@@ -72,7 +92,7 @@ async function flushPending() {
   for (const item of pending()) {
     if (inFlight.has(item.p.event_id)) continue;
     savePending(pending().map((x) => (x.p.event_id === item.p.event_id ? { ...x, n: x.n + 1 } : x)));
-    if (await postLead(item.p)) dropPending(item.p.event_id);
+    if (await postLead(restrict(item.p))) dropPending(item.p.event_id);
   }
   if (pending().length) scheduleRetry();
 }
@@ -301,7 +321,8 @@ export function initForm() {
     if (elapsed < MIN_MS) await sleep(MIN_MS - elapsed);
 
     const a = getAttribution();
-    // Quien se ha opuesto a la medición no manda identificadores de Meta.
+    // Quien se ha opuesto a la medición no manda identificadores de Meta (ni el
+    // del clic dentro de la dirección de la página).
     const ids = hasOptedOut() ? {} : a;
     const profile = normalizeProfile(val('perfil'));
     const answers = {
@@ -331,7 +352,7 @@ export function initForm() {
       utm_campaign: a.utm_campaign || '',
       utm_content: a.utm_content || '',
       utm_term: a.utm_term || '',
-      page_url: location.href,
+      page_url: hasOptedOut() ? withoutClickIds(location.href) : location.href,
       landing_at: a.landing_at || '',
       ts: Date.now(),
     };
@@ -339,9 +360,8 @@ export function initForm() {
     // 1. Lead en el navegador (solo con consentimiento), mismo event_id que el servidor.
     pixelTrack('Lead', { content_name: 'Estrategia gratis' }, payload.event_id);
     // 2. Guardar primero: si la red falla o se cierra la página, se reenvía después.
-    // Sin consentimiento de marketing, la copia del navegador no guarda identificadores de Meta.
-    const copy = hasMarketing() ? payload : { ...payload, fbp: '', fbc: '', fbclid: '' };
-    savePending([...pending(), { p: copy, n: 1, at: Date.now() }]);
+    // Sin consentimiento de marketing, la copia del navegador va sin datos de campaña.
+    savePending([...pending(), { p: restrict(payload), n: 1, at: Date.now() }]);
     // 3. Enviar y esperar como mucho 6 s. El Lead por servidor no depende del Sheet.
     const request = postLead(payload).then((ok) => {
       if (ok) dropPending(payload.event_id);

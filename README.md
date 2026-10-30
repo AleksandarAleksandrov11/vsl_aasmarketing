@@ -26,8 +26,8 @@ api/lead.js          POST /api/lead: formulario → Meta (Lead) + Google Sheets 
 api/event.js         POST /api/event: PageView, ViewContent y Contact → API de conversiones
 lib/                 Código de servidor (Meta, Sheet, BD opcional, validación)
 shared/              Código común navegador/servidor (teléfono, perfil, opciones)
-src/data/content.mjs Textos de la landing con TODAS las cifras (también las de los alt), testimonios y FAQ
-src/templates/       Plantillas de la landing (titulares sin cifras), legales y 404
+src/data/content.mjs Textos de la landing con TODAS las cifras y plazos (también los de los alt), testimonios y FAQ
+src/templates/       Plantillas de la landing (titulares sin cifras y preguntas del formulario), legales y 404
 src/css/             critical.css (va en línea) y main.css (se carga sin bloquear)
 src/js/              Formulario, medición, cookies, CTA fijo, carruseles y vídeos
 assets/              Imágenes, vídeos, fuentes y favicons (originales; el build los optimiza)
@@ -51,11 +51,12 @@ Abre http://localhost:3000. Para probar el formulario contra un Sheet, copia
 `.env.example` a `.env.local` y rellena `SHEET_WEBHOOK_URL` y `SHEET_SECRET`
 (usa siempre el nombre **PRUEBA** en la hoja real).
 
-- **Cambiar textos:** `src/data/content.mjs` (todas las cifras, también las de
-  los textos alternativos de las capturas, testimonios y preguntas frecuentes).
-  Los titulares de sección sin cifras están en `src/templates/landing.mjs`, los
-  textos legales en `src/templates/legal.mjs` y las preguntas del formulario en
-  `shared/options.js`. Después, `npm run build` o un push para desplegar.
+- **Cambiar textos:** `src/data/content.mjs` (todas las cifras y plazos, también
+  los de los textos alternativos de las capturas y de la pantalla de éxito,
+  testimonios y preguntas frecuentes). Los titulares de sección sin cifras y las
+  preguntas del formulario están en `src/templates/landing.mjs`, las opciones
+  que se eligen en el formulario en `shared/options.js` y los textos legales en
+  `src/templates/legal.mjs`. Después, `npm run build` o un push para desplegar.
 - **Poner tu foto en "Soy Aleks":** guarda la foto como
   `assets/img/aleks/foto.jpg` (también vale .png o .webp) y despliega. El build la
   optimiza y sustituye al logo. Si la borras, vuelve el logo.
@@ -74,7 +75,9 @@ Abre http://localhost:3000. Para probar el formulario contra un Sheet, copia
    cualquier despliegue anterior. En [vercel.com/new](https://vercel.com/new)
    importa el repositorio `vsl_aasmarketing`. Framework Preset: **Other**. No
    toques los comandos: `vercel.json` ya indica `npm run build` y la carpeta
-   `dist`. Pulsa Deploy. Tendrás una URL `*.vercel.app` de preview.
+   `dist`. Pulsa Deploy. Ese primer despliegue ya es de **producción** y tendrá
+   una URL `<proyecto>.vercel.app` que usa las variables de Production: cuando
+   las pongas, esa URL mide y guarda filas igual que vsl.aasmarketing.com.
 2. **Variables de entorno** (Settings > Environment Variables). Ver `.env.example`:
    - `SHEET_WEBHOOK_URL` y `SHEET_SECRET` (después de desplegar el Apps Script, paso 4).
    - `CAPI_WITHOUT_CONSENT` = `true`.
@@ -83,11 +86,12 @@ Abre http://localhost:3000. Para probar el formulario contra un Sheet, copia
    - Elige el tipo al crearlas: **Secret** (no se puede volver a leer) para
      `META_CAPI_TOKEN`, `SHEET_SECRET` y `UPSTASH_REDIS_REST_TOKEN`; **Config**
      para el resto.
-   - Entorno: **Production**. En **Preview** no pongas las de Meta ni las del
-     Sheet real: la landing funciona igual sin ellas y así tus pruebas en las
-     URL `*.vercel.app` no mandan eventos a tu píxel ni filas a tu hoja. Si
-     quieres probar el formulario en preview, usa una hoja de pruebas con su
-     propio Apps Script.
+   - Entorno: **Production**. En **Preview** (los despliegues de ramas que no
+     son `main`) no pongas las de Meta ni las del Sheet real: la landing funciona
+     igual sin ellas y así esas pruebas no mandan eventos a tu píxel ni filas a
+     tu hoja. Si quieres probar el formulario en preview, usa una hoja de pruebas
+     con su propio Apps Script. Las URL de producción (`<proyecto>.vercel.app` y
+     vsl.aasmarketing.com) miden siempre: prueba allí solo con el nombre PRUEBA.
    - **Después de guardar variables, Redeploy** (Deployments > ⋯ > Redeploy).
 3. **Dominio vsl.aasmarketing.com.** Settings > Domains > Add Domain >
    `vsl.aasmarketing.com`.
@@ -105,17 +109,21 @@ Abre http://localhost:3000. Para probar el formulario contra un Sheet, copia
 5. **Meta:** sigue [docs/meta.md](docs/meta.md) (portfolio, cuenta publicitaria,
    píxel desde el portfolio, verificación del dominio con TXT, token, Redeploy y
    "Probar eventos").
-6. **Vercel Analytics:** en el proyecto, pestaña **Analytics** > Enable y pestaña
-   **Speed Insights** > Enable, y después Redeploy. La landing ya los trae
-   conectados al aviso de cookies: solo se cargan si el visitante acepta la
-   analítica (categoría propia en "Configurar") y dejan de enviar datos en
-   cuanto la retira. Si no los quieres, pon `VERCEL_ANALYTICS=false`. Lo que
-   da cada plan ([precios de Speed Insights](https://vercel.com/docs/speed-insights/limits-and-pricing)
+6. **Vercel Analytics:** en el proyecto, pestaña **Analytics** > **Enable** y
+   después Redeploy (sin esto, el script de Web Analytics da error 404). Speed
+   Insights gratis no hay que activarlo: los despliegues ya incluyen su ruta. En
+   la pestaña Speed Insights no pulses Enable salvo que quieras Plus, que es de
+   pago. La landing los trae conectados al aviso de cookies: solo se cargan si el
+   visitante acepta la analítica (categoría propia en "Configurar") y dejan de
+   enviar datos en cuanto la retira. Si no los quieres, pon
+   `VERCEL_ANALYTICS=false`. Lo que da cada plan
+   ([precios de Speed Insights](https://vercel.com/docs/speed-insights/limits-and-pricing)
    y [de Web Analytics](https://vercel.com/docs/analytics/limits-and-pricing)):
    - **Speed Insights gratis:** solo la puntuación de experiencia real (RES), no
-     el LCP, CLS e INP por separado (eso es Speed Insights Plus, 10 $ al mes por
-     proyecto en Pro). Admite 10.000 eventos en 30 días para todo el equipo; si
-     se superan, Vercel pausa la recogida al menos 14 días (la web sigue igual).
+     el LCP, CLS e INP por separado (eso es Speed Insights Plus, solo en Pro: 10 $
+     al mes por proyecto más 0,65 $ por cada 10.000 eventos, sin eventos
+     incluidos). Admite 10.000 eventos en 30 días para todo el equipo; si se
+     superan, Vercel pausa la recogida al menos 14 días (la web sigue igual).
      Cada visita que acepta suele generar entre 3 y 6 eventos.
    - **Web Analytics:** en Hobby, 50.000 eventos al mes y después se pausa; en
      Pro se paga por evento (0,03 $ cada 1.000, con el crédito mensual del plan).
@@ -176,8 +184,10 @@ lentas, validaciones de cada paso y prefijos (también con el idioma es-MX),
 borrador al recargar, doble clic, mínimo de 3 s, Contact una sola vez, flujo
 completo de "Configurar cookies" (botones del panel, oposición a la medición
 por servidor, foco y Escape), retirada de la analítica con la página abierta,
-decisión sincronizada entre pestañas, banner que no tapa el CTA del hero,
-píxel sin PageView automáticos, carruseles, vídeos, FAQ con su schema,
+decisión sincronizada entre pestañas, oposición que sobrevive a la caducidad
+de la decisión, reintentos con la decisión vigente, sin repeticiones al
+retirar y volver a aceptar, banner que no tapa el CTA del hero, píxel sin
+PageView automáticos, carruseles, vídeos, FAQ con su schema,
 "Leer más", saltar al formulario, sin JavaScript, movimiento reducido, móvil
 en horizontal y páginas legales. Necesita Playwright con WebKit y Chromium:
 
@@ -245,7 +255,8 @@ la página publicada). Búscalos con `grep -rn "PENDIENTE\|REVISAR" src docs .en
   clientes desde tus redes."
 - Decidir si activas la base de datos propia (opcional).
 - Crear el proyecto de Vercel en un equipo con plan Pro (el plan Hobby no admite
-  webs comerciales) y activar Analytics y Speed Insights en el panel.
+  webs comerciales) y activar Web Analytics en el panel (Speed Insights gratis no
+  necesita activarse).
 - Opcional: una captura más grande del reel de 151 mil de Exoneris (1080 px de
   ancho o más, a pantalla completa). La actual mide 405 px y en un iPhone se ve
   algo blanda; basta con sustituir `assets/img/cases/exoneris-primer-video.jpg`.
@@ -261,7 +272,8 @@ la página publicada). Búscalos con `grep -rn "PENDIENTE\|REVISAR" src docs .en
 - Medición por servidor sin consentimiento (`CAPI_WITHOUT_CONSENT=true`), con
   interés legítimo y un interruptor para oponerse: confírmalo con un asesor.
 - Plazos de conservación propuestos (12 meses si no hay contrato): confírmalos y
-  cúmplelos, borrando a mano las filas y los correos antiguos.
+  cúmplelos, borrando a mano las filas, los correos y las conversaciones de
+  WhatsApp antiguas.
 - Google: con una cuenta gratuita de Gmail no hay contrato de encargado del
   tratamiento. Lo recomendable es Google Workspace con su anexo de tratamiento de datos.
 - Meta como corresponsable (art. 26 RGPD) y transferencias a Estados Unidos:
@@ -305,9 +317,11 @@ la página publicada). Búscalos con `grep -rn "PENDIENTE\|REVISAR" src docs .en
   visitante pueda oponerse de verdad (un correo no sirve con visitas anónimas),
   así que "Configurar cookies" tiene un interruptor "Medición desde el servidor",
   activado por defecto: si lo desactivan (o pulsan "Rechazar todo"), ese
-  navegador deja de mandar eventos por servidor. Lo usará muy poca gente. El
-  banner lo dice: "Aunque rechaces, mi servidor envía a Meta datos de tu visita
-  con ese fin; puedes oponerte en Configurar."
+  navegador deja de mandar eventos por servidor, también los de una solicitud
+  pendiente de reenviarse. La oposición se guarda aparte (`aas_optout`) y no
+  caduca con la decisión de cookies. Lo usará muy poca gente. El banner lo dice:
+  "Aunque rechaces, mi servidor envía a Meta datos de tu visita con ese fin;
+  puedes oponerte en Configurar."
 - **Identificadores de Meta antes del consentimiento:** el fbclid, fbc, fbp y
   los utm se capturan al cargar, como pediste, pero sin consentimiento solo se
   guardan en memoria (no en sessionStorage) y no se leen cookies: guardar
@@ -328,11 +342,15 @@ la página publicada). Búscalos con `grep -rn "PENDIENTE\|REVISAR" src docs .en
   recomienda ahora rutas únicas por despliegue ("resilient intake", con su
   paquete v2) para que los bloqueadores no las reconozcan; las rutas fijas siguen
   funcionando y en el navegador de Instagram apenas hay bloqueadores.
-- **Duplicados:** si Vercel reintenta un envío que ya se guardó, el Apps Script
-  no duplica la fila (lo recuerda 6 horas sin guardar ningún ID en el Sheet).
-- **Si el Sheet falla:** `/api/lead` responde 503 y el navegador del visitante
-  conserva la solicitud y la reintenta (cada 15 s mientras la página siga
-  abierta y al volver a abrirla), sin duplicar filas. Además, Vercel > Logs
-  tiene la solicitud completa (`NO SE HA GUARDADO EN EL SHEET`), pero el registro
-  solo dura 1 hora en Hobby y 1 día en Pro: revísalo pronto o activa la copia en
-  base de datos. Los envíos marcados como spam también quedan en el log.
+- **Duplicados:** si llega otra vez un envío que ya se guardó (reintento de
+  Vercel o del navegador), el Apps Script no duplica la fila ni el correo: lo
+  recuerda 8 días en las propiedades del script, sin guardar ningún ID en el
+  Sheet. La copia en base de datos tampoco se duplica.
+- **Si el Sheet falla:** `/api/lead` responde 503 (aunque se haya guardado la
+  copia en base de datos, porque sin fila tampoco sale el correo) y el navegador
+  del visitante conserva la solicitud y la reintenta: cada 15 s mientras la
+  página siga abierta y al volver a abrirla, durante 7 días. Cada reintento usa
+  la decisión de cookies de ese momento. Además, Vercel > Logs tiene la solicitud
+  completa (`NO SE HA GUARDADO EN EL SHEET`), pero el registro solo dura 1 hora
+  en Hobby y 1 día en Pro: revísalo pronto o activa la copia en base de datos.
+  Los envíos marcados como spam también quedan en el log.

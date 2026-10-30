@@ -123,8 +123,8 @@ una cuenta personal, Meta no deja generar el token de la API de conversiones.
    - Repite en "Configurar cookies" con "Medición desde el servidor"
      desactivada: no debe llegar nada por servidor.
 5. Borra la fila PRUEBA del Sheet.
-6. **Vacía `META_TEST_EVENT_CODE`** en Vercel y haz Redeploy. Si se queda con
-   valor, Meta trata los eventos reales como de prueba y no optimiza.
+6. **Vacía `META_TEST_EVENT_CODE`** en Vercel y haz Redeploy. El código es solo
+   para "Probar eventos" y Meta pide quitarlo en producción.
 
 ## 8. Regla de oro con anuncios activos
 
@@ -134,7 +134,7 @@ una cuenta personal, Meta no deja generar el token de la API de conversiones.
   Resultados o "Clientes potenciales en el sitio web") con las **filas reales del
   Sheet**. Siempre habrá alguno menos en Meta (quien se opuso a la medición o
   bloquea los envíos). Si Meta cuenta muchos menos, algo falla en la medición; si
-  cuenta muchos más, revisa que no haya un código de prueba puesto ni envíos duplicados.
+  cuenta muchos más, revisa que no haya envíos duplicados.
 - Antes de cambiar nada, apunta la fecha y el cambio para poder comparar y, si
   hace falta, volver atrás (ver "Volver atrás" en el README).
 

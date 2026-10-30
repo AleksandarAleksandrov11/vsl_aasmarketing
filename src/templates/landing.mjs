@@ -378,7 +378,7 @@ function form(ctx) {
       <div class="lf-done" data-done tabindex="-1" hidden>
         <div class="done-ico">${icon.check()}</div>
         <h3 data-done-title>¡Listo!</h3>
-        <p>Analizo tu perfil y te mando la estrategia por WhatsApp en menos de 24 horas.</p>
+        <p>${esc(FORM.done)}</p>
         <p class="done-redirect" data-done-redirect>Abriendo WhatsApp…</p>
         <a class="btn btn-wa" href="https://wa.me/${SITE.whatsapp}" data-wa rel="noopener">${icon.whatsapp()} Abrir WhatsApp</a>
         <button type="button" class="btn-again" data-again>Enviar otra solicitud</button>

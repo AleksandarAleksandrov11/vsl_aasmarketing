@@ -266,6 +266,50 @@ test('/api/lead: si no se guarda en ningún sitio responde 503 para que el naveg
   assert.deepEqual([r.status, await r.json()], [200, { ok: true, saved: false }]);
 });
 
+test('/api/lead: con copia en BD, si el Sheet falla también responde 503 y la BD no duplica', async () => {
+  const { server, url } = await mockSheet((n, res) => {
+    res.writeHead(500);
+    res.end('error');
+  });
+  process.env.SHEET_WEBHOOK_URL = url;
+  process.env.SHEET_SECRET = 's3cret';
+  process.env.LEADS_DB_ENABLED = 'true';
+  process.env.UPSTASH_REDIS_REST_URL = 'https://redis.example.test';
+  process.env.UPSTASH_REDIS_REST_TOKEN = 'tok';
+  const realFetch = globalThis.fetch;
+  const redis = [];
+  const seen = new Set();
+  globalThis.fetch = async (u, init) => {
+    if (String(u).startsWith('https://redis.example.test')) {
+      const cmd = JSON.parse(init.body);
+      redis.push(cmd);
+      // EVAL con SET NX + LPUSH: 1 la primera vez, 0 si la clave ya existe.
+      const first = !seen.has(cmd[3]);
+      seen.add(cmd[3]);
+      return new Response(JSON.stringify({ result: first ? 1 : 0 }), { status: 200 });
+    }
+    return realFetch(u, init);
+  };
+  const body = { event_id: 'evt-db123456', servicio: 'redes', sector: 'salud', perfil: '@prueba', nombre: 'PRUEBA', prefijo: 'ES', telefono: '600000000', elapsed_ms: 9000 };
+  try {
+    const r1 = await leadApi.fetch(post(body));
+    assert.equal(r1.status, 503, 'el navegador debe reintentar: sin fila no hay correo');
+    assert.deepEqual(await r1.json(), { ok: false, saved: true });
+    await leadApi.fetch(post(body)); // reintento
+    assert.equal(redis.length, 2);
+    assert.equal(redis[0][0], 'EVAL');
+    assert.equal(redis[0][3], `aas:lead:${sha('evt-db123456').slice(0, 32)}`);
+    assert.equal(redis[0][4], 'leads');
+    assert.equal(JSON.parse(redis[0][5]).nombre, 'PRUEBA');
+  } finally {
+    globalThis.fetch = realFetch;
+    server.close();
+    delete process.env.LEADS_DB_ENABLED;
+    delete process.env.UPSTASH_REDIS_REST_URL;
+    delete process.env.UPSTASH_REDIS_REST_TOKEN;
+  }
+});
+
 test('/api/lead: Lead a Meta salvo oposición', async () => {
   const { server, url } = await mockSheet((n, res) => {
     res.writeHead(200, { 'content-type': 'application/json' });

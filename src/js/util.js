@@ -43,6 +43,30 @@ export function readCookie(name) {
   return m ? decodeURIComponent(m[1]) : '';
 }
 
+// Identificadores de clic de los anuncios (Meta, Google, TikTok, Microsoft).
+const CLICK_IDS = ['fbclid', 'gclid', 'gbraid', 'wbraid', 'ttclid', 'msclkid'];
+
+/** La dirección sin los identificadores de clic (los utm se quedan). */
+export function withoutClickIds(url) {
+  try {
+    const u = new URL(url, location.href);
+    CLICK_IDS.forEach((k) => u.searchParams.delete(k));
+    return u.href;
+  } catch {
+    return url;
+  }
+}
+
+/** Solo origen y ruta, sin parámetros. */
+export function pageOnly(url) {
+  try {
+    const u = new URL(url, location.href);
+    return u.origin + u.pathname;
+  } catch {
+    return '';
+  }
+}
+
 /** Dominio para las cookies _fbp/_fbc: el principal si estamos en aasmarketing.com. */
 export function cookieDomain() {
   return /(^|\.)aasmarketing\.com$/.test(location.hostname) ? '; domain=.aasmarketing.com' : '';
