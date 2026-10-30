@@ -6,7 +6,7 @@
 
 import { esc, icon, picture, sprite, stars } from '../../scripts/lib/html.mjs';
 import {
-  SITE, CTA, RATING, META, HERO, HEADLINES, STATS, PAINS, RESULTS, VDN, EXONERIS, WORK, ACCOUNTS, TESTIMONIALS,
+  SITE, CTA, RATING_LONG, META, HERO, HEADLINES, STATS, PAINS, RESULTS, VDN, EXONERIS, WORK, ACCOUNTS, TESTIMONIALS,
   ABOUT, FORM, FAQS, CLOSING,
 } from '../data/content.mjs';
 import { SERVICIOS, SECTORES } from '../../shared/options.js';
@@ -48,17 +48,19 @@ async function hero(ctx) {
 </section>`;
 }
 
-// Cifras en bucle hacia la izquierda: la lista se repite una vez (oculta a los
-// lectores de pantalla) para que el bucle no tenga corte. Se para con el botón,
-// al pasar el ratón y con "reducir movimiento".
+// Bucle infinito: la lista se repite una vez para que no haya corte. La copia
+// no se lee dos veces (aria-hidden) y sus botones no reciben el foco con el
+// tabulador. Con "reducir movimiento" se queda quieto y se desliza con el dedo.
+const loop = (tag, items, cls = '') => `<div class="mq${cls ? ` ${cls}` : ''}" data-marquee>
+    <${tag} class="mq-track">${items}</${tag}>
+    <${tag} class="mq-track" aria-hidden="true">${items.replace(/<button /g, '<button tabindex="-1" ')}</${tag}>
+  </div>`;
+
+// Cifras: siempre en movimiento hacia la izquierda.
 function stats() {
   const items = STATS.map((s) => `<li class="mq-item"><b>${s.star ? icon.star({ size: 22 }) : ''}${esc(s.value)}</b><span>${esc(s.label)}</span></li>`).join('');
-  return `<section class="band" aria-label="Resultados en cifras" data-marquee>
-  <div class="mq">
-    <ul class="mq-track">${items}</ul>
-    <ul class="mq-track" aria-hidden="true">${items}</ul>
-  </div>
-  <button type="button" class="mq-toggle" data-marquee-toggle aria-label="Pausar las cifras" aria-pressed="false" hidden>${icon.pause({ size: 16, cls: 'i-pause' })}${icon.play({ size: 16, cls: 'i-play' })}</button>
+  return `<section class="band" aria-label="Resultados en cifras">
+  ${loop('ul', items)}
 </section>`;
 }
 
@@ -80,7 +82,7 @@ async function cases(ctx) {
   const exAvatar = await picture(ctx.assets, EXONERIS.avatar.src, { alt: '', widths: [96], sizes: '48px', crop: EXONERIS.avatar.crop });
   return `<section class="sec" id="casos" aria-labelledby="t-casos">
   <div class="wrap">
-    <div class="sec-head"><h2 class="h2" id="t-casos">Casos reales.</h2></div>
+    <div class="sec-head"><h2 class="h2" id="t-casos">Casos reales</h2></div>
     <div class="cases">
       ${await caseCard(ctx, VDN, { id: 'vdn', avatar: vdnAvatar })}
       ${await caseCard(ctx, EXONERIS, { id: 'exoneris', avatar: exAvatar })}
@@ -108,11 +110,11 @@ function work() {
   <div class="wrap">
     <div class="sec-head"><h2 class="h2" id="t-suena">¿Te suena?</h2></div>
     <ul class="pains">
-      ${PAINS.map((p) => `<li>${icon.x({ size: 18 })}${esc(p)}</li>`).join('\n      ')}
+      ${PAINS.map((p) => `<li><span class="pain-x">${icon.x({ size: 18 })}</span>${esc(p)}</li>`).join('\n      ')}
     </ul>
-    <div class="sec-head work-head"><h2 class="h2" id="t-trabajo">Así trabajo.</h2></div>
+    <div class="sec-head work-head"><h2 class="h2" id="t-trabajo">Así trabajo</h2></div>
     <ul class="work">
-      ${WORK.map((w) => `<li><span class="work-ico">${icon[w.icon]({ size: 22 })}</span><b>${esc(w.title)}</b><span>${esc(w.text)}</span></li>`).join('\n      ')}
+      ${WORK.map((w) => `<li${w.wide ? ' class="work-wide"' : ''}><span class="work-ico">${icon[w.icon]({ size: 22 })}</span><b>${esc(w.title)}</b><span>${esc(w.text)}</span></li>`).join('\n      ')}
     </ul>
     <div class="cta-row">${ctaBtn()}</div>
   </div>
@@ -131,26 +133,22 @@ async function proof(ctx) {
         ${long(t) ? '<button type="button" class="more" data-more hidden>Leer más</button>' : ''}
         <figcaption><span class="avatar" aria-hidden="true">${esc(initials(t.name))}</span><span><b>${esc(t.name)}</b><span>${esc(t.role)}</span></span></figcaption>
       </figure>`);
+  // Cuentas en bucle hacia la izquierda y opiniones hacia la derecha; se paran
+  // al pasar el ratón, con el foco o mientras se tocan, para poder leer.
   return `<section class="sec sec-soft" id="opiniones" aria-labelledby="t-cuentas">
   <div class="wrap">
     <div class="sec-head">
       <h2 class="h2" id="t-cuentas">${esc(HEADLINES.accounts)}</h2>
-      <a class="g-link" href="${SITE.reviews}" target="_blank" rel="noopener"><span class="stars">${stars(17)}</span> <u>${esc(RATING)}</u> <span class="g-more">Ver reseñas ${icon.arrow({ size: 16 })}</span></a>
+      <p class="g-rating"><span class="stars">${stars(17)}</span> ${esc(RATING_LONG)}</p>
     </div>
-    <div class="scroller accounts" data-carousel="cuentas" tabindex="0" role="region" aria-label="Perfiles de Instagram de clientes">
-      ${accounts.join('\n      ')}
-    </div>
-    <div class="car-nav" data-carousel-nav="cuentas">
-      <button type="button" class="car-btn" data-dir="-1" aria-label="Ver cuentas anteriores" disabled>${icon.chevronL()}</button>
-      <button type="button" class="car-btn" data-dir="1" aria-label="Ver más cuentas">${icon.chevronR()}</button>
-    </div>
-    <div class="scroller tcards" data-carousel="opiniones" role="region" aria-label="Opiniones de clientes">
-      ${reviews.join('\n      ')}
-    </div>
-    <div class="car-nav" data-carousel-nav="opiniones">
-      <button type="button" class="car-btn" data-dir="-1" aria-label="Opiniones anteriores" disabled>${icon.chevronL()}</button>
-      <button type="button" class="car-btn" data-dir="1" aria-label="Más opiniones">${icon.chevronR()}</button>
-    </div>
+  </div>
+  <div class="loop-accounts" role="region" aria-label="Perfiles de Instagram de clientes">
+  ${loop('div', accounts.join(''), 'mq-pause')}
+  </div>
+  <div class="loop-reviews" role="region" aria-label="Opiniones de clientes">
+  ${loop('div', reviews.join(''), 'mq-pause mq-rev')}
+  </div>
+  <div class="wrap">
     <div class="cta-row">${ctaBtn()}</div>
   </div>
 </section>`;
@@ -277,7 +275,7 @@ function form(ctx) {
 function faq() {
   return `<section class="sec" id="preguntas" aria-labelledby="t-faq">
   <div class="wrap narrow">
-    <div class="sec-head"><h2 class="h2" id="t-faq">Preguntas frecuentes.</h2></div>
+    <div class="sec-head"><h2 class="h2" id="t-faq">Preguntas frecuentes</h2></div>
     <div class="faq">
       ${FAQS.map((f) => `${f.review ? `<!-- [${f.review}] -->\n      ` : ''}<details class="faq-item"><summary>${esc(f.q)}${icon.plus()}</summary><p>${esc(f.a)}</p></details>`).join('\n      ')}
     </div>

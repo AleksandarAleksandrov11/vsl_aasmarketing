@@ -75,24 +75,29 @@ Abre http://localhost:3000. Para probar el formulario contra un Sheet, copia
 
 ## Secciones de la landing
 
-Pensada para el móvil: 9,2 pantallas a 390x844 y el formulario empieza a los
-788 px (antes de la primera pantalla y media). Títulos centrados, en mayúsculas
-y con una sola tipografía.
+Pensada para el móvil: 9,7 pantallas a 390x844 y el formulario empieza a los
+800 px (antes de la primera pantalla y media). Títulos centrados, en mayúsculas,
+sin punto final y con una sola tipografía.
 
-1. **Hero:** titular en tres líneas fijas, una frase, el botón, la nota y la
-   línea de confianza. Debajo, los tres reels con más visitas (946 mil, +406 mil
+1. **Hero:** "Más clientes desde tus redes sociales" en tres líneas fijas, una
+   frase, el botón, la nota y la línea de confianza. Debajo, los tres reels con más visitas (946 mil, +406 mil
    y 306,9 mil). Sin altura mínima: las cifras empiezan justo después.
-2. **Cifras:** banda negra en bucle hacia la izquierda con diez cifras
-   confirmadas. Se para con el botón de pausa, al pasar el ratón y con "reducir
-   movimiento" (entonces queda quieta y se desliza con el dedo).
+2. **Cifras:** banda negra en bucle infinito hacia la izquierda con diez cifras
+   confirmadas, cada una centrada. Siempre en movimiento, sin botón de pausa;
+   solo se queda quieta si el móvil tiene activado "reducir movimiento"
+   (entonces se desliza con el dedo).
 3. **Formulario** (`#formulario`): mismas preguntas, opciones, orden y textos.
 4. **Casos reales:** VDN Performance y Exoneris en dos tarjetas iguales
    (cliente, titular, cifras y capturas de perfil o estadísticas).
-5. **Más de 10 millones de visitas:** las once capturas de reels, de más a
-   menos visitas, todas con el mismo recorte y contador.
-6. **¿Te suena? + Así trabajo:** los tres problemas y cuatro puntos (grabo en
-   tu negocio, edito y publico, lanzo tus anuncios, te lo explico cada mes).
-7. **Cuentas y opiniones:** perfiles de clientes, enlace a Google y testimonios.
+5. **Más de 10 millones de visitas generadas:** las once capturas de reels, de
+   más a menos visitas, todas con el mismo recorte y contador.
+6. **¿Te suena? + Así trabajo:** los tres problemas en rojo y cinco pasos
+   (estudio tu sector, escribo tus guiones, voy a grabar a tu negocio, edito y
+   publico y, a todo el ancho, optimización mensual).
+7. **Cuentas y opiniones:** "5 estrellas en Google" (sin enlace), los perfiles
+   de clientes en bucle hacia la izquierda y los testimonios hacia la derecha.
+   Se paran con el ratón encima, con el foco o mientras se tocan, y al abrir
+   "Leer más" se quedan quietos hasta que la sección sale de la pantalla.
 8. **Soy Aleks** (con tu foto), **preguntas frecuentes** y **cierre**.
 9. **Pie oscuro:** marca, servicios, contacto, legal y "Configurar cookies".
 
@@ -102,8 +107,9 @@ se quitó en el rediseño de octubre de 2026 (está en el historial de git):
 AAS", "Qué hacemos", "Voy a grabar a tu negocio" con el mapa, "Así de fácil",
 los anuncios y las cuadrículas de vídeos de VDN, el móvil del caso Exoneris y
 la captura de su perfil (su foto queda en la tarjeta y sus cifras, en el
-titular y en los textos alternativos). Lo esencial de "Qué hacemos", "Voy a
-grabar" y "Lo de siempre vs AAS" pasó a "Así trabajo".
+titular y en los textos alternativos). Después, en "Así trabajo" se quitaron
+"Lanzo tus anuncios" y "Te lo explico cada mes", el botón de pausa de las
+cifras, las flechas de cuentas y opiniones y el enlace a las reseñas de Google.
 
 ## Desplegar en Vercel (paso a paso)
 
@@ -229,8 +235,9 @@ por servidor, foco y Escape), retirada de la analítica con la página abierta,
 decisión sincronizada entre pestañas, oposición que sobrevive a la caducidad
 de la decisión, reintentos con la decisión vigente, sin repeticiones al
 retirar y volver a aceptar, banner que no tapa el CTA del hero, píxel sin
-PageView automáticos, carruseles, cifras en bucle (se mueven, se pausan y se
-quedan quietas con movimiento reducido), estructura en móvil (formulario antes
+PageView automáticos, bucles de cifras, cuentas y opiniones (dirección, pausa
+con el ratón encima, copia oculta a lectores de pantalla y quietos con
+movimiento reducido), estructura en móvil (formulario antes
 de 2,5 pantallas y página de 10 como mucho a 390x844; CTA, nota y reels del hero
 en el primer pantallazo a 390x844 y 375x667; capturas con el mismo recorte), FAQ con su schema,
 "Leer más", saltar al formulario, sin JavaScript, movimiento reducido, móvil
@@ -344,9 +351,10 @@ la página publicada). Búscalos con `grep -rn "PENDIENTE\|REVISAR" src docs .en
 ## Decisiones que conviene que conozcas
 
 - **Antes del formulario no hay ningún enlace externo:** ni WhatsApp, teléfono,
-  correo, Instagram ni las reseñas de Google (el enlace "5,0 en Google" está en
-  la sección de opiniones, después del formulario, y se abre en pestaña nueva).
-  El banner de cookies enlaza a la política de cookies (primera capa informativa).
+  correo, Instagram ni Google. La valoración de Google es texto, sin enlace. Los
+  únicos enlaces que salen de la página están en el pie (WhatsApp, correo e
+  Instagram), después del formulario. El banner de cookies enlaza a la política
+  de cookies (primera capa informativa).
 - **El banner de cookies sale al primer scroll o a los 3 segundos**, pero nunca
   encima del botón del hero ni de la nota de debajo: en móviles pequeños espera
   a que el visitante baje. Hasta que deciden no se carga nada que use cookies;

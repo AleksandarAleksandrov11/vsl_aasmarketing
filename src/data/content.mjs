@@ -12,12 +12,12 @@ export const SITE = {
   email: 'aaswebmarketing@gmail.com',
   instagram: 'https://www.instagram.com/aas_webmarketing/',
   instagramHandle: '@aas_webmarketing',
-  reviews: 'https://share.google/XqEnxlBCnqPrfpFHi',
   updated: 'octubre de 2026',
 };
 
 export const CTA = 'Quiero mi estrategia gratis';
 export const RATING = '5,0 en Google';
+export const RATING_LONG = '5 estrellas en Google';
 export const HEADER_CTA = 'Estrategia gratis';
 
 export const META = {
@@ -56,7 +56,7 @@ export const RESULTS = [
 
 export const HERO = {
   // Una línea por elemento: el titular corta siempre igual (sin saltos al cargar la fuente).
-  title: ['Más clientes', 'desde tus', 'redes.'],
+  title: ['Más clientes', 'desde tus', 'redes sociales'],
   sub: 'Grabo, edito y publico tus vídeos y lanzo tus anuncios en Meta.',
   note: 'Gratis, sin compromiso y en menos de 24 horas.',
   trust: [RATING, '+25 cuentas', '+10 M de visitas'], // la primera lleva la estrella
@@ -86,12 +86,12 @@ export const PAINS = [
 
 // Titulares con cifras (los demás titulares de sección están en la plantilla).
 export const HEADLINES = {
-  results: 'Más de 10 millones de visitas.',
-  accounts: 'Más de 25 cuentas confían en nosotros.',
+  results: 'Más de 10 millones de visitas generadas',
+  accounts: 'Más de 25 cuentas confían en nosotros',
 };
 
 export const VDN = {
-  title: '2,5 millones de visitas en menos de 3 meses.',
+  title: '2,5 millones de visitas en menos de 3 meses',
   client: 'VDN Performance',
   sector: 'Reprogramaciones de coches en Madrid',
   logo: 'img/cases/vdn-logo.webp',
@@ -109,7 +109,7 @@ export const VDN = {
 // primer vídeo y perfil): 151.155 reproducciones, 126.433 espectadores,
 // 1.058 seguidores nuevos y 1.032 seguidores en la cuenta.
 export const EXONERIS = {
-  title: 'Su primer vídeo: +1.000 seguidores nuevos.',
+  title: 'Su primer vídeo: +1.000 seguidores nuevos',
   client: 'Javier Núñez',
   sector: 'Exoneris Consulting, subastas y NPL',
   // La foto de su perfil, recortada de la captura.
@@ -124,13 +124,13 @@ export const EXONERIS = {
   ],
 };
 
-// Así trabajo: lo que antes eran "Qué hacemos", "Voy a grabar a tu negocio" y
-// "Lo de siempre vs AAS", en cuatro puntos.
+// Así trabajo: cuatro pasos en dos columnas y el último a todo el ancho (`wide`).
 export const WORK = [
+  { icon: 'search', title: 'Estudio tu sector', text: 'Estudio tu nicho y tu competencia y diseño la estrategia que vamos a seguir.' },
+  { icon: 'pen', title: 'Escribo tus guiones', text: 'Preparo todos los guiones del mes adaptados a tu estilo.' },
   { icon: 'camera', title: 'Voy a grabar a tu negocio', text: 'A cualquier parte de España y de Europa.' },
-  { icon: 'film', title: 'Edito y publico', text: 'Guiones, gancho en 3 segundos y subtítulos.' },
-  { icon: 'target', title: 'Lanzo tus anuncios', text: 'Meta Ads con los leads directos a tu WhatsApp.' },
-  { icon: 'chart', title: 'Te lo explico cada mes', text: 'Informe y reunión mensual. Crecimiento real.' },
+  { icon: 'film', title: 'Edito y publico', text: 'Gancho en 3 segundos, subtítulos y publicación.' },
+  { icon: 'chart', title: 'Optimización mensual', text: 'Optimizamos la estrategia mes a mes, validando los formatos que mejor te funcionen.', wide: true },
 ];
 
 // Nombre, sector y seguidores salen del alt de cada imagen en el origen.
@@ -181,7 +181,7 @@ export const TESTIMONIALS = [
 ];
 
 export const ABOUT = {
-  title: 'Soy Aleks.',
+  title: 'Soy Aleks',
   lines: [
     'Llevo las redes y los anuncios de más de 25 cuentas y voy yo a grabar a cada negocio.',
     'Trabajo con un número limitado de plazas para que cada cuenta tenga resultados.',
@@ -189,7 +189,7 @@ export const ABOUT = {
 };
 
 export const FORM = {
-  title: 'Te mando tu estrategia gratis.',
+  title: 'Te mando tu estrategia gratis',
   sub: 'En menos de 24 horas. Plazas limitadas. Sin llamadas y sin compromiso.',
   intro: 'Analizo tu perfil y te mando la estrategia que seguiría, con los cambios concretos para conseguir más clientes.',
   done: 'Analizo tu perfil y te mando la estrategia por WhatsApp en menos de 24 horas.',
@@ -209,7 +209,7 @@ export const FAQS = [
 ];
 
 export const CLOSING = {
-  title: 'Tus redes pueden traerte clientes.',
+  title: 'Tus redes pueden traerte clientes',
   sub: 'Estrategia gratis. Precio cerrado si quieres que la ejecute yo.',
 };
 

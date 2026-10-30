@@ -69,7 +69,7 @@ export function footer(ctx, { legal = false } = {}) {
       <div class="ftr-brand">
         <a class="brand" href="/" aria-label="AAS Marketing, ir al inicio"><span class="brand-mark" aria-hidden="true"></span></a>
         <p>${esc(FOOTER.about)}</p>
-        <a class="ftr-rating" href="${SITE.reviews}" target="_blank" rel="noopener"><span class="stars">${stars(15)}</span> ${esc(RATING)}</a>
+        <p class="ftr-rating"><span class="stars">${stars(15)}</span> ${esc(RATING)}</p>
       </div>
       <div class="ftr-col">
         <h2 class="ftr-h">Servicios</h2>

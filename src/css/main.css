@@ -50,26 +50,6 @@
 }
 .scroller::-webkit-scrollbar { display: none; }
 .scroller > * { scroll-snap-align: start; }
-.car-nav { display: none; gap: 8px; justify-content: center; margin-top: 16px; }
-.car-btn {
-  display: grid;
-  place-items: center;
-  width: 48px;
-  height: 48px;
-  border: 1px solid var(--line-strong);
-  border-radius: 50%;
-  background: #fff;
-  color: var(--ink);
-  transition: opacity 0.2s var(--ease), transform 0.3s var(--ease);
-}
-.car-btn:disabled { opacity: 0.35; cursor: default; }
-@media (hover: hover) {
-  .car-btn:not(:disabled):hover { transform: translateY(-1px); }
-}
-@media (min-width: 1024px) {
-  .car-nav { display: flex; }
-}
-
 /* Casos reales: dos tarjetas iguales (cliente, titular, cifras y capturas) */
 .cases { display: grid; gap: 16px; }
 .case {
@@ -110,6 +90,7 @@
   padding-block: 16px;
   border-block: 1px solid var(--inv-line);
 }
+.case-kpis div { text-align: center; }
 .case-kpis dt { font-size: clamp(1.375rem, 1.1rem + 1.2vw, 2rem); font-weight: 800; line-height: 1; letter-spacing: -0.04em; white-space: nowrap; }
 .case-kpis dd { margin-top: 6px; font-size: 0.8125rem; line-height: 1.35; color: var(--inv-soft); }
 .case-proof { display: grid; gap: 8px; margin-top: 16px; }
@@ -145,20 +126,34 @@
   .results .rc:nth-child(n + 5) .rc-views { font-size: 0.9375rem; }
 }
 
-/* ¿Te suena? y Así trabajo */
-.pains { display: grid; gap: 8px; max-width: 520px; margin-inline: auto; }
-/* El aspa va dentro del texto: si la frase parte en dos líneas, sigue centrada. */
+/* ¿Te suena? (cada problema en rojo, con el aspa en un círculo) y Así trabajo */
+.pains { display: grid; gap: 10px; max-width: 540px; margin-inline: auto; }
 .pains li {
-  padding: 15px 20px;
-  border: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border: 1px solid rgba(179, 55, 47, 0.18);
   border-radius: var(--r-m);
-  background: var(--bg-soft);
-  font-size: 0.9375rem;
-  font-weight: 650;
+  background: #fdf1ef;
+  font-size: 1.0625rem;
+  font-weight: 700;
   line-height: 1.3;
-  text-align: center;
+  letter-spacing: -0.01em;
+  color: #3d1512;
 }
-.pains svg { display: inline-block; margin: -3px 8px 0 0; vertical-align: middle; color: var(--err); }
+.pain-x {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--err);
+  color: #fff;
+  box-shadow: 0 6px 14px -6px rgba(179, 55, 47, 0.7);
+}
+.pain-x svg { stroke-width: 2.6; }
 .work-head { margin-top: clamp(48px, 7vw, 80px); }
 .work { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .work li {
@@ -185,32 +180,47 @@
 }
 .work b { font-size: 1rem; font-weight: 750; line-height: 1.25; letter-spacing: -0.01em; text-wrap: balance; }
 .work li > span:last-child { font-size: 0.875rem; line-height: 1.4; color: var(--ink-mute); text-wrap: pretty; }
+/* El último paso ocupa las dos columnas */
+.work .work-wide { grid-column: 1 / -1; }
+.work-wide > span:last-child { max-width: 36ch; }
 @media (min-width: 900px) {
   .work { grid-template-columns: repeat(4, 1fr); gap: 16px; }
   .work li { padding: 28px 20px; }
 }
 
-/* Cuentas y opiniones */
-.g-link {
+/* Cuentas y opiniones: dos bucles a todo el ancho (cuentas a la izquierda,
+   opiniones a la derecha). Se paran con el ratón encima, con el foco y
+   mientras se tocan, para poder leer. */
+.g-rating {
   display: inline-flex;
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
   gap: 8px;
   margin-top: 14px;
-  min-height: 44px;
-  font-weight: 600;
+  font-weight: 650;
   color: var(--ink);
 }
-.g-link .stars { display: inline-flex; }
-.g-link u { text-underline-offset: 3px; text-decoration-thickness: 1px; }
-.g-link .g-more { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-soft); }
-.accounts {
+.g-rating .stars { display: inline-flex; }
+.loop-accounts, .loop-reviews {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 4%, #000 96%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 4%, #000 96%, transparent);
+}
+.loop-accounts .mq-track {
+  --mq-time: 90s;
+  display: grid;
   grid-auto-flow: column;
   grid-template-rows: repeat(2, auto);
   grid-auto-columns: min(300px, 78vw);
   gap: 10px;
+  padding: 4px 10px 8px 0;
 }
+.loop-reviews { margin-top: 18px; }
+.loop-reviews .mq-track { --mq-time: 150s; align-items: flex-start; gap: 12px; padding: 4px 12px 12px 0; }
+@media (hover: hover) {
+  .mq-pause:hover .mq-track { animation-play-state: paused; }
+}
+.mq-pause:focus-within .mq-track, .mq-pause.is-held .mq-track, .mq-pause.is-reading .mq-track { animation-play-state: paused; }
 .acc {
   display: flex;
   align-items: center;
@@ -221,11 +231,11 @@
 }
 .acc > picture { flex: 1; min-width: 0; }
 .acc img { width: 100%; height: auto; }
-.tcards { --card: 86%; align-items: start; margin-top: 24px; }
 .tcard {
+  flex: none;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  width: min(340px, 84vw);
   padding: 22px;
   border: 1px solid var(--line);
   border-radius: var(--r-l);
@@ -267,22 +277,21 @@
   flex: none;
   display: grid;
   place-items: center;
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   background: var(--bg-soft);
   border: 1px solid var(--line);
   font-size: 0.8125rem;
   font-weight: 700;
 }
-.tcard figcaption b { display: block; font-weight: 650; line-height: 1.25; }
+.tcard figcaption b { display: block; font-size: 1.125rem; font-weight: 750; line-height: 1.25; letter-spacing: -0.01em; }
 .tcard figcaption span span { display: block; font-size: 0.875rem; color: var(--ink-mute); }
-@media (min-width: 768px) {
-  .tcards { --card: calc((100% - 24px) / 2.2); }
-}
 @media (min-width: 1024px) {
-  .accounts { grid-auto-columns: 340px; gap: 14px; }
-  .tcards { --card: calc((100% - 32px) / 3); margin-inline: 0; padding-inline: 0; scroll-padding-inline: 0; gap: 16px; margin-top: 40px; }
+  .loop-accounts .mq-track { grid-auto-columns: 340px; gap: 14px; padding-right: 14px; }
+  .loop-reviews { margin-top: 28px; }
+  .loop-reviews .mq-track { gap: 16px; padding-right: 16px; }
+  .tcard { width: 380px; }
 }
 
 /* Soy Aleks: foto (o el logo mientras no haya foto) y dos frases, centrado */
@@ -576,7 +585,7 @@
 .ftr-brand { grid-column: 1 / -1; }
 .ftr-brand p { max-width: 38ch; margin-top: 14px; line-height: 1.55; }
 .ftr-rating {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 8px;
   min-height: 44px;
@@ -622,7 +631,7 @@
   color: rgba(245, 245, 243, 0.56);
 }
 @media (hover: hover) {
-  .ftr-col a:hover, .ftr-col button:hover, .ftr-rating:hover { color: var(--inv-ink); text-decoration: underline; text-underline-offset: 3px; }
+  .ftr-col a:hover, .ftr-col button:hover { color: var(--inv-ink); text-decoration: underline; text-underline-offset: 3px; }
 }
 @media (min-width: 640px) {
   .ftr-grid { grid-template-columns: repeat(3, 1fr); }

@@ -17,7 +17,7 @@ const html = `<!doctype html><meta charset="utf-8"><style>
 body{width:1200px;height:630px;background:#fff;font-family:Manrope;color:#0c0c0d;overflow:hidden}
 .wrap{position:relative;height:100%;padding:64px 72px;display:flex;flex-direction:column}
 .logo{display:block;width:120px;height:auto}
-h1{margin-top:auto;font-size:80px;font-weight:800;line-height:.98;letter-spacing:-.04em;text-transform:uppercase}
+h1{margin-top:auto;font-size:76px;font-weight:800;line-height:.98;letter-spacing:-.04em;text-transform:uppercase}
 h1 span{display:block}
 p{margin-top:24px;font-size:26px;font-weight:600;color:#46464d;letter-spacing:-.01em}
 .card{position:absolute;right:96px;top:64px;width:316px;aspect-ratio:4/5;border-radius:28px;overflow:hidden;background:#1a1a1c;box-shadow:0 18px 50px rgba(16,16,18,.14),0 60px 120px -30px rgba(16,16,18,.2)}
@@ -28,7 +28,7 @@ p{margin-top:24px;font-size:26px;font-weight:600;color:#46464d;letter-spacing:-.
 </style>
 <div class="wrap">
   <img class="logo" src="${a('img/logo-aas.svg')}" alt="">
-  <h1><span>Más clientes</span><span>desde tus</span><span>redes.</span></h1>
+  <h1><span>Más clientes</span><span>desde tus</span><span>redes sociales</span></h1>
   <p>Tu estrategia gratis en menos de 24 horas.</p>
   <div class="card"><img src="${a('img/results/tatuajes-946mil.webp')}" style="top:-${(200 / 800) * 316}px"><span class="views">▶ 946 mil</span></div>
   <div class="url">vsl.aasmarketing.com</div>

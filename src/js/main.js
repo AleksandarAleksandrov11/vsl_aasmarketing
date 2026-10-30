@@ -6,7 +6,7 @@ import { initConsent } from './consent.js';
 import { initAnalytics } from './analytics.js';
 import { track, initTracking } from './track.js';
 import { initForm } from './form.js';
-import { initCarousels, initMarquee, initTestimonials } from './media.js';
+import { initLoops, initTestimonials } from './media.js';
 
 loadDeferredCss();
 captureAttribution();
@@ -19,6 +19,5 @@ initAnalytics();
 initHeader();
 initSticky();
 initForm();
-initCarousels();
-initMarquee();
+initLoops();
 initTestimonials();

@@ -218,7 +218,7 @@ export function legalPages(ctx) {
 
 export function notFound(ctx) {
   return shell(ctx, { title: 'Página no encontrada · AAS Marketing', description: 'Esta página no existe.', path: '/404' }, `
-<h1>No encuentro esta página.</h1>
+<h1>No encuentro esta página</h1>
 <p>Puede que el enlace esté mal escrito o que la página ya no exista.</p>
 <p><a href="/">Volver al inicio</a></p>`);
 }

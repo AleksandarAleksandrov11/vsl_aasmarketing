@@ -700,7 +700,7 @@ test('cookies: rechazar se recuerda, configurar activa y desactivar revoca', { s
   }
 });
 
-test('componentes: carruseles, cifras en bucle, FAQ con schema, "Leer más" y saltar al formulario', { skip, timeout: 60000 }, async () => {
+test('componentes: bucles de cifras, cuentas y opiniones, FAQ con schema, "Leer más" y saltar al formulario', { skip, timeout: 60000 }, async () => {
   const { browser, page, log } = await open(pw.chromium, DESKTOP);
   try {
     // Saltar al formulario: primer elemento con Tab.
@@ -715,39 +715,40 @@ test('componentes: carruseles, cifras en bucle, FAQ con schema, "Leer más" y sa
       await page.waitForTimeout(150);
     }
     assert.ok(Math.abs(top) < 120, `el formulario queda arriba (${top})`);
-    // Carrusel de opiniones con flechas.
-    const track = page.locator('[data-carousel="opiniones"]');
-    await track.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(300);
-    const prev = page.locator('[data-carousel-nav="opiniones"] [data-dir="-1"]');
-    assert.equal(await prev.isDisabled(), true);
-    await page.click('[data-carousel-nav="opiniones"] [data-dir="1"]');
-    await page.waitForTimeout(900);
-    assert.ok((await track.evaluate((el) => el.scrollLeft)) > 100);
-    assert.equal(await prev.isDisabled(), false);
-    // "Leer más" en un testimonio largo.
-    const more = page.locator('.tcard [data-more]:visible').first();
-    await more.click();
-    assert.equal(await page.locator('.tcard.is-clamped [data-more]:visible').count() < 4, true);
-    // Cifras en bucle: se mueven solas, el botón las para (y las vuelve a mover)
-    // y la copia que cierra el bucle no se lee dos veces.
+    // Bucles: cifras y cuentas hacia la izquierda, opiniones hacia la derecha.
+    // Sin botón de pausa ni flechas; la copia que cierra el bucle no se lee
+    // dos veces ni mete botones en el orden del tabulador.
     assert.equal(await page.locator('video').count(), 0);
-    const mqX = () => page.locator('.mq-track').first().evaluate((el) => new DOMMatrix(getComputedStyle(el).transform).m41);
-    await page.locator('.band').scrollIntoViewIfNeeded();
-    await page.mouse.move(5, 5); // sin el ratón encima (al pasarlo se paran)
-    const x0 = await mqX();
-    await page.waitForTimeout(600);
-    assert.ok((await mqX()) < x0, 'las cifras no se mueven');
-    assert.equal(await page.locator('.mq-track').nth(1).getAttribute('aria-hidden'), 'true');
-    const toggle = page.locator('[data-marquee-toggle]');
-    await toggle.click();
-    await page.mouse.move(5, 5);
-    assert.equal(await toggle.getAttribute('aria-pressed'), 'true');
-    const x1 = await mqX();
-    await page.waitForTimeout(600);
-    assert.equal(await mqX(), x1, 'pausadas siguen moviéndose');
-    await toggle.click();
-    assert.equal(await toggle.getAttribute('aria-pressed'), 'false');
+    assert.equal(await page.locator('[data-marquee-toggle], .car-nav, [data-carousel]').count(), 0);
+    const x = (sel) => page.locator(`${sel} .mq-track`).first().evaluate((el) => new DOMMatrix(getComputedStyle(el).transform).m41);
+    await page.locator('.loop-reviews').scrollIntoViewIfNeeded();
+    await page.mouse.move(5, 5); // sin el ratón encima
+    const x0 = { band: await x('.band'), acc: await x('.loop-accounts'), rev: await x('.loop-reviews') };
+    await page.waitForTimeout(800);
+    assert.ok((await x('.band')) < x0.band, 'las cifras no van a la izquierda');
+    assert.ok((await x('.loop-accounts')) < x0.acc, 'las cuentas no van a la izquierda');
+    assert.ok((await x('.loop-reviews')) > x0.rev, 'las opiniones no van a la derecha');
+    for (const sel of ['.band', '.loop-accounts', '.loop-reviews']) {
+      assert.equal(await page.locator(`${sel} .mq-track`).nth(1).getAttribute('aria-hidden'), 'true', sel);
+    }
+    assert.equal(await page.locator('.mq-track[aria-hidden] button:not([tabindex="-1"])').count(), 0);
+    // Con el ratón encima, las opiniones se paran y "Leer más" abre el texto entero.
+    const more = await page.evaluate(() => {
+      const btn = [...document.querySelectorAll('.loop-reviews [data-more]')].find((b) => {
+        const r = b.getBoundingClientRect();
+        return !b.hidden && getComputedStyle(b).visibility !== 'hidden' && r.left > 40 && r.right < innerWidth - 40 && r.top > 0 && r.bottom < innerHeight;
+      });
+      if (!btn) return null;
+      const r = btn.getBoundingClientRect();
+      return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+    });
+    assert.ok(more, 'no hay ningún "Leer más" a la vista');
+    await page.mouse.move(more.x, more.y);
+    const held = await x('.loop-reviews');
+    await page.waitForTimeout(500);
+    assert.equal(await x('.loop-reviews'), held, 'con el ratón encima siguen moviéndose');
+    await page.mouse.click(more.x, more.y);
+    assert.ok((await page.locator('.tcard[data-long]:not(.is-clamped)').count()) >= 1, '"Leer más" no abre el texto');
     // FAQ en acordeón y schema FAQPage con las mismas preguntas.
     const first = page.locator('.faq-item').first();
     await first.locator('summary').click();
@@ -766,7 +767,6 @@ test('sin JavaScript, con movimiento reducido, en horizontal y en las páginas l
   // Sin JS: se lee todo con estilos (main.css por <noscript>) y el formulario avisa.
   let ctx = await open(pw.chromium, { ...DESKTOP, javaScriptEnabled: false });
   assert.equal(await ctx.page.locator('.mq-track').first().evaluate((el) => getComputedStyle(el).display), 'flex');
-  assert.equal(await ctx.page.isVisible('[data-marquee-toggle]'), false, 'sin JS el botón de pausa no sirve: oculto');
   assert.equal(await ctx.page.isVisible('#ck'), false);
   assert.match(await ctx.page.textContent('[data-form]'), /activar JavaScript/);
   await ctx.browser.close();

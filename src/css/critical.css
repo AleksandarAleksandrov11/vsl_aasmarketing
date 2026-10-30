@@ -90,9 +90,9 @@
   --maxw: 1200px;
   --header-h: 64px;
   --sticky-h: 0px;
-  /* El titular del hero llena casi todo el ancho en móvil ("MÁS CLIENTES" es la línea más larga). */
-  --text-h1: clamp(2.375rem, 13.6vw - 0.3rem, 5.25rem);
-  --text-h2: clamp(1.625rem, 1.25rem + 1.6vw, 2.625rem);
+  /* El titular del hero llena casi todo el ancho en móvil ("REDES SOCIALES" es la línea más larga). */
+  --text-h1: clamp(2.125rem, 11.6vw - 0.25rem, 4.5rem);
+  --text-h2: clamp(1.875rem, 1.35rem + 2.2vw, 3rem);
   --text-lead: clamp(1.0625rem, 1rem + 0.3vw, 1.25rem);
 }
 @media (min-width: 768px) {
@@ -374,7 +374,7 @@ button { cursor: pointer; }
     min-height: min(calc(100svh - var(--header-h)), 820px);
   }
   .hero-copy { align-items: flex-start; padding-block: 48px; text-align: left; }
-  .hero-title { font-size: min(5vw, 5.25rem); }
+  .hero-title { font-size: min(5.2vw, 4.5rem); }
   .trust { justify-content: flex-start; }
   .hero-sub { margin-top: 22px; }
   .hero-cta { margin-top: 32px; }
@@ -384,30 +384,33 @@ button { cursor: pointer; }
   .rc-img { border-radius: 22px; }
 }
 
-/* Banda de cifras: en bucle hacia la izquierda. Las dos listas se desplazan su
-   propio ancho a la vez, así que el bucle no tiene corte. */
+/* Bucles infinitos (cifras, cuentas y opiniones): las dos copias se desplazan
+   su propio ancho a la vez, así que el bucle no tiene corte. */
+.mq { display: flex; overflow: hidden; }
+.mq-track { flex: none; display: flex; animation: mq var(--mq-time, 70s) linear infinite; }
+.mq-rev .mq-track { animation-direction: reverse; }
+@keyframes mq {
+  to { transform: translateX(-100%); }
+}
+
+/* Banda de cifras: siempre en movimiento hacia la izquierda, cada cifra centrada */
 .band {
   position: relative;
   background: var(--inv-bg);
   color: var(--inv-ink);
   overflow: hidden;
 }
-.mq { display: flex; overflow: hidden; }
-.mq-track {
-  flex: none;
-  display: flex;
-  align-items: center;
-  padding-block: 22px;
-  animation: mq 70s linear infinite;
-}
-.band:hover .mq-track, .band.is-paused .mq-track { animation-play-state: paused; }
+.band .mq-track { align-items: stretch; padding-block: 20px; }
 .mq-item {
   flex: none;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
+  gap: 6px;
   padding-inline: 26px;
   border-right: 1px solid var(--inv-line);
+  text-align: center;
 }
 .mq-item b {
   display: inline-flex;
@@ -421,16 +424,13 @@ button { cursor: pointer; }
 }
 .mq-item b svg { width: 22px; height: 22px; }
 .mq-item span {
-  max-width: 15ch;
+  max-width: 17ch;
   font-size: 0.8125rem;
   font-weight: 600;
   line-height: 1.3;
   color: var(--inv-soft);
 }
-@keyframes mq {
-  to { transform: translateX(-100%); }
-}
-/* Fundido en los bordes: las cifras entran y salen suaves y el botón no queda encima del texto. */
+/* Fundido en los bordes: las cifras entran y salen suaves. */
 .band::before, .band::after {
   content: "";
   position: absolute;
@@ -440,36 +440,9 @@ button { cursor: pointer; }
   background: linear-gradient(to right, var(--inv-bg), rgba(12, 12, 13, 0));
   pointer-events: none;
 }
-.band::after { inset: 0 0 0 auto; width: 84px; background: linear-gradient(to left, var(--inv-bg) 45%, rgba(12, 12, 13, 0)); }
-.mq-toggle {
-  position: absolute;
-  z-index: 2;
-  top: 50%;
-  right: 8px;
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  margin-top: -22px;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: none;
-  color: var(--inv-ink);
-  -webkit-tap-highlight-color: transparent;
-}
-.mq-toggle::before {
-  content: "";
-  position: absolute;
-  inset: 6px;
-  border: 1px solid var(--inv-line);
-  border-radius: 50%;
-}
-.mq-toggle .i-play, .mq-toggle[aria-pressed="true"] .i-pause { display: none; }
-.mq-toggle[aria-pressed="true"] .i-play { display: block; }
-.band :focus-visible { outline-color: var(--inv-ink); }
+.band::after { inset: 0 0 0 auto; background: linear-gradient(to left, var(--inv-bg), rgba(12, 12, 13, 0)); }
 @media (min-width: 1024px) {
-  .mq-track { padding-block: 28px; }
+  .band .mq-track { padding-block: 28px; }
   .mq-item { padding-inline: 34px; }
   .mq-item b { font-size: 2.375rem; }
   .mq-item span { font-size: 0.875rem; }
@@ -591,11 +564,11 @@ button { cursor: pointer; }
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  /* Cifras quietas: se desplazan con el dedo. */
+  /* Bucles quietos: se desplazan con el dedo. */
   .mq { overflow-x: auto; scrollbar-width: none; }
   .mq::-webkit-scrollbar { display: none; }
   .mq-track { animation: none !important; }
-  .mq-track[aria-hidden], .mq-toggle { display: none !important; }
+  .mq-track[aria-hidden] { display: none !important; }
 }
 
 .sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
