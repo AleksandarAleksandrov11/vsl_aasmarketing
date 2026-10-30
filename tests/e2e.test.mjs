@@ -117,10 +117,29 @@ async function open(browserType, ctxOptions, { url = base, before: setup } = {})
   return { browser, context, page, log };
 }
 
+/**
+ * Espera a que la página deje de desplazarse (scroll suave al cambiar de paso,
+ * ancla o restauración del scroll al volver atrás): si se pulsa mientras se
+ * mueve, el toque puede caer fuera del botón.
+ */
+const settle = (page) => page.waitForFunction(() => new Promise((resolve) => {
+  let last = -1;
+  let same = 0;
+  const tick = () => {
+    same = scrollY === last ? same + 1 : 0;
+    last = scrollY;
+    if (same >= 5) resolve(true);
+    else requestAnimationFrame(tick);
+  };
+  tick();
+}), null, { timeout: 5000 });
+
 async function fillForm(page, { otro = true } = {}) {
   await page.locator('#formulario').scrollIntoViewIfNeeded();
+  await settle(page);
   await page.locator('.lf-opt', { hasText: 'Las dos' }).click();
   await page.locator('[data-step="2"]').waitFor({ state: 'visible' });
+  await settle(page);
   if (otro) {
     await page.locator('.lf-chip', { hasText: 'Otro' }).click();
     await page.fill('#f-otro', 'Escuela de música');
@@ -129,10 +148,15 @@ async function fillForm(page, { otro = true } = {}) {
     await page.locator('.lf-chip', { hasText: 'Motor y talleres' }).click();
   }
   await page.locator('[data-step="3"]').waitFor({ state: 'visible' });
+  await settle(page);
   await page.fill('#f-perfil', 'instagram.com/prueba');
   await page.locator('[data-step="3"] [data-next]').click();
+  await page.locator('[data-step="4"]').waitFor({ state: 'visible' });
+  await settle(page);
   await page.fill('#f-nombre', 'PRUEBA');
   await page.locator('[data-step="4"] [data-next]').click();
+  await page.locator('[data-step="5"]').waitFor({ state: 'visible' });
+  await settle(page);
   await page.fill('#f-tel', '600 000 000');
 }
 
@@ -244,6 +268,7 @@ test('móvil (WebKit): formulario completo con "Otro", éxito y WhatsApp bien co
     await page.locator('[data-done]').waitFor({ state: 'visible' });
     assert.equal(await page.isVisible('[data-form]'), false);
     // "Enviar otra solicitud" vuelve al paso 1 vacío.
+    await settle(page);
     await page.click('[data-again]');
     await page.locator('[data-step="1"]').waitFor({ state: 'visible' });
     assert.equal(await page.inputValue('#f-perfil'), '');

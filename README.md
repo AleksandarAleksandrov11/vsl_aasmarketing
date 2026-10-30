@@ -211,7 +211,7 @@ Escritorio: FCP 0,3 s · LCP 0,4 s · TBT 0 ms · CLS 0.
 Es la única comprobación que falla; con indexación sería 100.
 
 Primera carga en móvil: 324 KB en 26 peticiones (HTML 17 KB, CSS 5 KB, JS 9 KB
-comprimido y 22 KB sin comprimir, dos fuentes 40 KB e imágenes AVIF 241 KB). En
+comprimido y 23 KB sin comprimir, dos fuentes 40 KB e imágenes AVIF 241 KB). En
 escritorio, 268 KB. Sin aceptar cookies no se carga ni el píxel ni la analítica.
 Los vídeos solo se descargan al pulsar. Accesibilidad
 revisada también con axe-core (WCAG 2.2 AA): sin incidencias en la landing, en
