@@ -149,18 +149,27 @@ const settle = (page) => page.waitForFunction(() => new Promise((resolve) => {
   tick();
 }), null, { timeout: 5000 });
 
+// Pulsa una opción y comprueba que ha quedado marcada: si la página aún se
+// estaba desplazando, el toque puede caer en otra opción y se repite.
+async function choose(page, option) {
+  for (let i = 0; i < 3; i++) {
+    await settle(page);
+    await option.click();
+    if (await option.locator('input').isChecked()) return;
+  }
+  throw new Error('no se marca la opción');
+}
+
 async function fillForm(page, { otro = true } = {}) {
   await page.locator('#formulario').scrollIntoViewIfNeeded();
-  await settle(page);
-  await page.locator('.lf-opt', { hasText: 'Las dos' }).click();
+  await choose(page, page.locator('.lf-opt', { hasText: 'Las dos' }));
   await page.locator('[data-step="2"]').waitFor({ state: 'visible' });
-  await settle(page);
   if (otro) {
-    await page.locator('.lf-chip', { hasText: 'Otro' }).click();
+    await choose(page, page.locator('.lf-chip', { hasText: 'Otro' }));
     await page.fill('#f-otro', 'Escuela de música');
     await page.locator('[data-step="2"] [data-next]').click();
   } else {
-    await page.locator('.lf-chip', { hasText: 'Motor y talleres' }).click();
+    await choose(page, page.locator('.lf-chip', { hasText: 'Motor y talleres' }));
   }
   await page.locator('[data-step="3"]').waitFor({ state: 'visible' });
   await settle(page);
@@ -337,6 +346,7 @@ test('éxito aunque /api/lead falle, tarde o no haya red; reintento en la próxi
   sheetState.mode = 'ok';
   sheetState.calls.length = 0;
   const browser = await pw.webkit.launch();
+  try {
   const context = await browser.newContext(MOBILE);
   await routeWa(context);
   const page = await context.newPage();
@@ -352,7 +362,9 @@ test('éxito aunque /api/lead falle, tarde o no haya red; reintento en la próxi
   await next.goto(base);
   await next.waitForFunction(() => !localStorage.getItem('aas_pending'), null, { timeout: 15000 });
   assert.equal(sheetState.calls.at(-1).lead.nombre, 'PRUEBA');
-  await browser.close();
+  } finally {
+    await browser.close();
+  }
 
   // d) El Sheet no responde: /api/lead contesta 503, el navegador conserva la
   // solicitud y la reintenta en la siguiente visita, cuando el Sheet ya funciona.

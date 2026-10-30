@@ -69,10 +69,13 @@ onConsentChange(() => {
   if (pending().length) savePending(pending().map((x) => ({ ...x, p: restrict(x.p) })));
 });
 
-const inFlight = new Set();
+// Envíos en curso (id → hora). Safari no entrega la respuesta si la página ya
+// estaba abriendo WhatsApp: pasados 10 s, se da por perdida y se puede reenviar.
+const inFlight = new Map();
+const flying = (id) => Date.now() - (inFlight.get(id) || 0) < 10000;
 
 async function postLead(payload) {
-  inFlight.add(payload.event_id);
+  inFlight.set(payload.event_id, Date.now());
   try {
     const res = await fetch('/api/lead', {
       method: 'POST',
@@ -93,7 +96,7 @@ async function flushPending() {
   const week = 7 * 24 * 3600 * 1000;
   savePending(pending().filter((x) => Date.now() - x.at < week && x.n < 20));
   for (const item of pending()) {
-    if (inFlight.has(item.p.event_id)) continue;
+    if (flying(item.p.event_id)) continue;
     savePending(pending().map((x) => (x.p.event_id === item.p.event_id ? { ...x, n: x.n + 1 } : x)));
     if (await postLead(restrict(item.p))) dropPending(item.p.event_id);
   }
@@ -462,4 +465,12 @@ export function initForm() {
 
   window.addEventListener('online', flushPending);
   if (pending().length) setTimeout(flushPending, 2500);
+  // Al volver de WhatsApp (pestaña visible otra vez o página recuperada con el
+  // botón Atrás), lo que el servidor no llegó a confirmar se reenvía ya. El
+  // Sheet, la base de datos y Meta descartan los repetidos.
+  const retryOnReturn = () => {
+    if (document.visibilityState === 'visible' && pending().length) scheduleRetry(1000);
+  };
+  document.addEventListener('visibilitychange', retryOnReturn);
+  window.addEventListener('pageshow', (e) => { if (e.persisted) retryOnReturn(); });
 }

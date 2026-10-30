@@ -8,7 +8,8 @@ import { whenNear } from './ui.js';
  * - Se arrastran con el dedo o con el ratón (con algo de inercia) y la rueda
  *   horizontal del trackpad también los mueve. Al tocarlos se paran y vuelven a
  *   moverse solos 5 s después de la última interacción.
- * - Con el ratón encima, con el foco dentro o con una opinión abierta, quietos.
+ * - Pasar el ratón por encima no los para (con el cursor quieto en mitad de la
+ *   pantalla parecerían rotos). Con el foco dentro o una opinión abierta, quietos.
  * - Con "reducir movimiento" no se mueven solos: el CSS deja una fila que se
  *   desliza con el dedo.
  */
@@ -34,7 +35,6 @@ function runLoop(loop) {
   let placed = false;
   let started = false;
   let visible = false;
-  let hovered = false;
   let holdUntil = 0;
   let velocity = 0; // inercia al soltar, en px/ms
   let drag = null;
@@ -63,7 +63,7 @@ function runLoop(loop) {
     placed = true;
   };
   const hold = (ms = RESUME_MS) => { holdUntil = performance.now() + ms; };
-  const paused = () => hovered || drag || loop.matches(':focus-within') || loop.classList.contains('is-reading') || performance.now() < holdUntil;
+  const paused = () => drag || loop.matches(':focus-within') || loop.classList.contains('is-reading') || performance.now() < holdUntil;
 
   const frame = (t) => {
     raf = visible ? requestAnimationFrame(frame) : 0;
@@ -109,10 +109,6 @@ function runLoop(loop) {
     }
     if (visible) run();
   }, { threshold: [0, 0.5] }).observe(loop);
-
-  // Ratón encima: quieto (solo con ratón; en el móvil el "hover" se queda pegado).
-  loop.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') hovered = true; });
-  loop.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') hovered = false; });
 
   // Arrastrar: el desplazamiento vertical de la página sigue siendo del navegador
   // (touch-action: pan-y); el horizontal mueve el bucle.

@@ -101,8 +101,7 @@ sin punto final y con una sola tipografía.
    perfiles de clientes en bucle hacia la izquierda (empezando por los de más
    seguidores) y las opiniones hacia la derecha (empezando por la primera).
    Están quietos hasta que se ve la sección; se pueden arrastrar con el dedo o
-   con el ratón y vuelven a moverse solos 5 s después. Con el ratón encima se
-   paran. Todas las opiniones miden lo mismo: las largas se cortan con "Leer
+   con el ratón y vuelven a moverse solos 5 s después. Todas las opiniones miden lo mismo: las largas se cortan con "Leer
    más", que abre la opinión entera en una ventana. Fuera las opiniones de
    "Aleks Nikolaev Antonov" y "Adriana Aleksandrova" (podían parecer tuyas).
 8. **Soy Aleks** (con tu foto), **preguntas frecuentes** y **cierre**.
@@ -242,9 +241,8 @@ por servidor, foco y Escape), retirada de la analítica con la página abierta,
 decisión sincronizada entre pestañas, oposición que sobrevive a la caducidad
 de la decisión, reintentos con la decisión vigente, sin repeticiones al
 retirar y volver a aceptar, banner que no tapa el CTA del hero, píxel sin
-PageView automáticos, bucles de cifras, cuentas y opiniones (dirección, pausa
-con el ratón encima, copia oculta a lectores de pantalla y quietos con
-movimiento reducido), estructura en móvil (formulario antes
+PageView automáticos, bucles de cifras, cuentas y opiniones (dirección, copia
+oculta a lectores de pantalla y quietos con movimiento reducido), estructura en móvil (formulario antes
 de 2,5 pantallas y página de 10 como mucho a 390x844; CTA, nota y reels del hero
 en el primer pantallazo a 390x844 y 375x667; capturas con el mismo recorte), FAQ con su schema,
 "Leer más" en una ventana, tarjetas de opiniones iguales, bucles que arrancan
