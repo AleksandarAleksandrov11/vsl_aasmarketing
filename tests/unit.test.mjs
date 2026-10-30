@@ -6,7 +6,7 @@ import { createHash } from 'node:crypto';
 import { normalizePhone, detectCountry, OTHER } from '../shared/phone.js';
 import { normalizeProfile } from '../shared/profile.js';
 import { buildLead, pageOnly, countryFor } from '../lib/lead.js';
-import { leadUserData, normalizeName, eventTime, cleanFbc, cleanFbp, sendEvent } from '../lib/meta.js';
+import { leadUserData, normalizeName, eventTime, cleanFbc, cleanFbp, sendEvent, capiAllowed } from '../lib/meta.js';
 import { saveToSheet } from '../lib/sheet.js';
 import leadApi from '../api/lead.js';
 import eventApi from '../api/event.js';
@@ -113,7 +113,7 @@ test('Meta: carga útil de la API de conversiones', async () => {
   const realFetch = globalThis.fetch;
   let call;
   globalThis.fetch = async (url, init) => {
-    call = { url: String(url), body: JSON.parse(init.body) };
+    call = { url: String(url), body: Object.fromEntries(init.body) };
     return new Response('{"events_received":1}', { status: 200 });
   };
   try {
@@ -122,9 +122,11 @@ test('Meta: carga útil de la API de conversiones', async () => {
       ip: '1.2.3.4', ua: 'UA', fbc: 'fb.1.1.x', fbp: 'fb.1.1.2', userData: { ph: ['h'] }, customData: { content_name: 'Estrategia gratis' },
     });
     assert.equal(r.sent, true);
-    assert.match(call.url, /^https:\/\/graph\.facebook\.com\/v\d+\.0\/123456789012345\/events\?access_token=TOKEN$/);
-    const e = call.body.data[0];
+    // El token va en el cuerpo (campos de formulario), nunca en la URL.
+    assert.match(call.url, /^https:\/\/graph\.facebook\.com\/v\d+\.0\/123456789012345\/events$/);
+    assert.equal(call.body.access_token, 'TOKEN');
     assert.equal(call.body.test_event_code, 'TEST123');
+    const e = JSON.parse(call.body.data)[0];
     assert.equal(e.event_name, 'Lead');
     assert.equal(e.event_id, 'evt-12345678');
     assert.equal(e.action_source, 'website');
@@ -136,6 +138,22 @@ test('Meta: carga útil de la API de conversiones', async () => {
     delete process.env.META_PIXEL_ID;
     delete process.env.META_CAPI_TOKEN;
     delete process.env.META_TEST_EVENT_CODE;
+  }
+});
+
+test('Meta: la oposición manda siempre; sin ella, decide CAPI_WITHOUT_CONSENT', () => {
+  delete process.env.CAPI_WITHOUT_CONSENT; // por defecto, true
+  assert.equal(capiAllowed(false), true);
+  assert.equal(capiAllowed(true), true);
+  assert.equal(capiAllowed(false, true), false);
+  assert.equal(capiAllowed(true, true), false);
+  process.env.CAPI_WITHOUT_CONSENT = 'false';
+  try {
+    assert.equal(capiAllowed(false), false);
+    assert.equal(capiAllowed(true), true);
+    assert.equal(capiAllowed(true, true), false);
+  } finally {
+    delete process.env.CAPI_WITHOUT_CONSENT;
   }
 });
 
@@ -227,6 +245,62 @@ test('/api/lead: guarda, responde rápido y deja el lead en el log si falla', as
   }
 });
 
+test('/api/lead: si no se guarda en ningún sitio responde 503 para que el navegador reintente', async () => {
+  const { server, url } = await mockSheet((n, res) => {
+    res.writeHead(500);
+    res.end('error');
+  });
+  process.env.SHEET_WEBHOOK_URL = url;
+  process.env.SHEET_SECRET = 's3cret';
+  const body = { event_id: 'evt-fail1234', servicio: 'redes', sector: 'salud', perfil: '@prueba', nombre: 'PRUEBA', prefijo: 'ES', telefono: '600000000', elapsed_ms: 9000 };
+  try {
+    const r = await leadApi.fetch(post(body));
+    assert.equal(r.status, 503);
+    assert.deepEqual(await r.json(), { ok: false, saved: false });
+  } finally {
+    server.close();
+  }
+  // Sin Sheet configurado (por ejemplo, en una preview) no hay nada que reintentar.
+  delete process.env.SHEET_WEBHOOK_URL;
+  const r = await leadApi.fetch(post({ ...body, event_id: 'evt-noconf12' }));
+  assert.deepEqual([r.status, await r.json()], [200, { ok: true, saved: false }]);
+});
+
+test('/api/lead: Lead a Meta salvo oposición', async () => {
+  const { server, url } = await mockSheet((n, res) => {
+    res.writeHead(200, { 'content-type': 'application/json' });
+    res.end('{"ok":true}');
+  });
+  process.env.SHEET_WEBHOOK_URL = url;
+  process.env.SHEET_SECRET = 's3cret';
+  process.env.META_PIXEL_ID = '123456789012345';
+  process.env.META_CAPI_TOKEN = 'TOKEN';
+  const realFetch = globalThis.fetch;
+  const graph = [];
+  globalThis.fetch = async (u, init) => {
+    if (String(u).startsWith('https://graph.facebook.com/')) {
+      graph.push(JSON.parse(new URLSearchParams(init.body).get('data'))[0]);
+      return new Response('{"events_received":1}', { status: 200 });
+    }
+    return realFetch(u, init);
+  };
+  const body = (extra) => ({ event_id: `evt-${Math.random().toString(36).slice(2, 12)}`, servicio: 'redes', sector: 'salud', perfil: '@prueba', nombre: 'PRUEBA', prefijo: 'ES', telefono: '600000000', elapsed_ms: 9000, ...extra });
+  try {
+    await leadApi.fetch(post(body({ consent: false })));
+    assert.equal(graph.length, 1, 'sin cookies y sin oposición: Lead por servidor');
+    assert.equal(graph[0].event_name, 'Lead');
+    assert.ok(graph[0].user_data.ph, 'con el teléfono en hash');
+    await leadApi.fetch(post(body({ consent: false, optout: true })));
+    await leadApi.fetch(post(body({ consent: true, optout: true })));
+    assert.equal(graph.length, 1, 'con oposición no se manda nada a Meta');
+  } finally {
+    globalThis.fetch = realFetch;
+    server.close();
+    delete process.env.META_PIXEL_ID;
+    delete process.env.META_CAPI_TOKEN;
+  }
+});
+
 test('/api/event: valida el evento y el origen', async () => {
   const ev = (body, origin = 'https://vsl.aasmarketing.com') => eventApi.fetch(new Request('https://vsl.aasmarketing.com/api/event', {
     method: 'POST', headers: { 'content-type': 'text/plain', origin, host: 'vsl.aasmarketing.com' }, body: JSON.stringify(body),
@@ -237,4 +311,12 @@ test('/api/event: valida el evento y el origen', async () => {
   assert.equal((await ev({ event_name: 'PageView', event_id: 'evt-12345678' }, 'https://otra-web.com')).status, 403);
   const replay = await (await ev({ event_name: 'PageView', event_id: 'evt-12345678', replay: true, consent: true })).json();
   assert.equal(replay.reason, 'already-sent');
+  const optout = await (await ev({ event_name: 'PageView', event_id: 'evt-12345678', optout: true })).json();
+  assert.deepEqual(optout, { ok: true, sent: false, reason: 'optout' });
+  process.env.CAPI_WITHOUT_CONSENT = 'false';
+  try {
+    assert.equal((await (await ev({ event_name: 'PageView', event_id: 'evt-12345678' })).json()).reason, 'no-consent');
+  } finally {
+    delete process.env.CAPI_WITHOUT_CONSENT;
+  }
 });

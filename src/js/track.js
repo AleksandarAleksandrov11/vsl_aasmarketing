@@ -1,10 +1,11 @@
 // Eventos de Meta: PageView, ViewContent, Lead y Contact. Ninguno más.
 // Cada evento lleva un event_id único que se usa igual en el navegador
 // (píxel) y en el servidor (API de conversiones) para que Meta deduplique.
-// El servidor recibe siempre el evento; el píxel solo si hay consentimiento.
+// El servidor recibe el evento acepten o no las cookies, salvo que el visitante
+// se haya opuesto a esa medición; el píxel, solo con consentimiento de marketing.
 
 import { getAttribution } from './attribution.js';
-import { hasMarketing, onConsentChange } from './consent.js';
+import { hasMarketing, hasOptedOut, onConsentChange } from './consent.js';
 import { PIXEL_ID, pixelTrack, revokePixel } from './pixel.js';
 import { uuid } from './util.js';
 
@@ -19,6 +20,7 @@ function payload(name, id, extra) {
     fbc: a.fbc || '',
     fbp: a.fbp || '',
     consent: hasMarketing(),
+    optout: hasOptedOut(),
     ...extra,
   };
 }
@@ -37,9 +39,10 @@ export function sendServer(body, beacon = false) {
 
 export function track(name, { params, beacon = false, replay = false } = {}) {
   const id = uuid();
-  if (replay) fired.push({ name, id, params });
+  const server = !hasOptedOut(); // quien se ha opuesto no manda nada por servidor
+  if (replay) fired.push({ name, id, params, server });
   pixelTrack(name, params, id);
-  sendServer(payload(name, id), beacon);
+  if (server) sendServer(payload(name, id), beacon);
   return id;
 }
 
@@ -47,13 +50,18 @@ export function track(name, { params, beacon = false, replay = false } = {}) {
 // ya ocurrió) con el MISMO event_id que el servidor. Nunca dos PageView distintos.
 export function initTracking() {
   onConsentChange((state, before) => {
-    if (state.marketing && !before.marketing) {
-      for (const e of fired) {
-        pixelTrack(e.name, e.params, e.id);
-        sendServer(payload(e.name, e.id, { replay: true }));
-      }
-    } else if (!state.marketing && before.marketing) {
-      revokePixel();
+    const granted = state.marketing && !before.marketing;
+    for (const e of fired) {
+      if (granted) pixelTrack(e.name, e.params, e.id);
+      if (state.optout) continue;
+      // Si no salió por servidor (se había opuesto), sale ahora. Si salió, al
+      // aceptar se avisa al servidor, que solo lo repite con CAPI_WITHOUT_CONSENT=false.
+      if (!e.server) sendServer(payload(e.name, e.id));
+      else if (granted) sendServer(payload(e.name, e.id, { replay: true }));
+      e.server = true;
     }
+    // Cualquier decisión sin marketing borra _fbp y _fbc (también las que
+    // quedaran de una decisión anterior). Se puede llamar varias veces.
+    if (!state.marketing) revokePixel();
   });
 }

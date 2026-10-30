@@ -40,6 +40,9 @@ export function loadPixel() {
   n.loaded = true;
   n.version = '2.0';
   n.queue = [];
+  // Sin PageView automáticos al cambiar el #ancla o el historial (los CTA bajan a
+  // #formulario): solo los eventos que mandamos, con su event_id.
+  n.disablePushState = true;
   // Sin eventos automáticos (clics, metadatos): solo los cuatro que mandamos.
   window.fbq('set', 'autoConfig', false, PIXEL_ID);
   window.fbq('init', PIXEL_ID);
@@ -52,6 +55,7 @@ export function pixelTrack(name, params, eventID) {
   if (!PIXEL_ID || !hasMarketing()) return;
   loadPixel();
   if (revoked) {
+    seedCookies(); // al retirar se borraron _fbp y _fbc: mismo valor que el servidor
     window.fbq('consent', 'grant');
     revoked = false;
   }

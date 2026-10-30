@@ -105,4 +105,9 @@ asunto del correo. Para actualizarla:
   correos al día con MailApp.
 - **Una solicitud no está en el Sheet**: en Vercel > Logs busca
   `NO SE HA GUARDADO EN EL SHEET`; la línea incluye la solicitud completa para
-  copiarla a mano.
+  copiarla a mano. Míralo pronto: el registro dura 1 hora en el plan Hobby y 1
+  día en Pro. Mientras tanto, el navegador del visitante reintenta el envío y el
+  script no duplica la fila si al final llega dos veces.
+- **Conservación:** la política de privacidad dice que las solicitudes que no
+  acaban en contrato se borran como máximo 12 meses después del último
+  contacto. Borra a mano esas filas (y sus correos) de vez en cuando.

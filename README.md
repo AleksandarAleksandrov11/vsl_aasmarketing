@@ -11,11 +11,13 @@ API de conversiones.
 
 - **HTML estático generado con un script de build pequeño en Node** (plantillas
   en JS, esbuild y sharp). No hay framework: el navegador solo recibe HTML
-  pregenerado, el CSS crítico en línea y unos 8 KB de JS propio.
+  pregenerado, el CSS crítico en línea y unos 9 KB de JS propio (comprimido).
 - Imágenes en AVIF y WebP con `srcset` y medidas fijas generadas en el build, y
   funciones de Vercel en `/api` (Node 24) para el formulario y la API de conversiones.
 - Pediste Node 20, pero Vercel lo retiró el 1 de octubre de 2026. Las funciones
-  usan Node 24 (el LTS por defecto de Vercel); el código también funciona en 22.
+  usan Node 24, fijado con `engines` en `package.json` (Vercel pone 26.x por
+  defecto en los proyectos nuevos y sigue admitiendo 24.x); el código también
+  funciona en 22.
 
 ## Estructura
 
@@ -24,8 +26,8 @@ api/lead.js          POST /api/lead: formulario → Meta (Lead) + Google Sheets 
 api/event.js         POST /api/event: PageView, ViewContent y Contact → API de conversiones
 lib/                 Código de servidor (Meta, Sheet, BD opcional, validación)
 shared/              Código común navegador/servidor (teléfono, perfil, opciones)
-src/data/content.mjs TODOS los textos, cifras, testimonios y preguntas frecuentes
-src/templates/       Plantillas de la landing, legales y 404
+src/data/content.mjs Textos de la landing con TODAS las cifras (también las de los alt), testimonios y FAQ
+src/templates/       Plantillas de la landing (titulares sin cifras), legales y 404
 src/css/             critical.css (va en línea) y main.css (se carga sin bloquear)
 src/js/              Formulario, medición, cookies, CTA fijo, carruseles y vídeos
 assets/              Imágenes, vídeos, fuentes y favicons (originales; el build los optimiza)
@@ -49,8 +51,11 @@ Abre http://localhost:3000. Para probar el formulario contra un Sheet, copia
 `.env.example` a `.env.local` y rellena `SHEET_WEBHOOK_URL` y `SHEET_SECRET`
 (usa siempre el nombre **PRUEBA** en la hoja real).
 
-- **Cambiar textos:** `src/data/content.mjs` (y las preguntas del formulario en
-  `shared/options.js`). Después, `npm run build` o un push para desplegar.
+- **Cambiar textos:** `src/data/content.mjs` (todas las cifras, también las de
+  los textos alternativos de las capturas, testimonios y preguntas frecuentes).
+  Los titulares de sección sin cifras están en `src/templates/landing.mjs`, los
+  textos legales en `src/templates/legal.mjs` y las preguntas del formulario en
+  `shared/options.js`. Después, `npm run build` o un push para desplegar.
 - **Poner tu foto en "Soy Aleks":** guarda la foto como
   `assets/img/aleks/foto.jpg` (también vale .png o .webp) y despliega. El build la
   optimiza y sustituye al logo. Si la borras, vuelve el logo.
@@ -61,16 +66,28 @@ Abre http://localhost:3000. Para probar el formulario contra un Sheet, copia
 
 ## Desplegar en Vercel (paso a paso)
 
-1. **Crear el proyecto.** En [vercel.com/new](https://vercel.com/new) importa el
-   repositorio `vsl_aasmarketing`. Framework Preset: **Other**. No toques los
-   comandos: `vercel.json` ya indica `npm run build` y la carpeta `dist`.
-   Pulsa Deploy. Tendrás una URL `*.vercel.app` de preview.
-2. **Variables de entorno** (Settings > Environment Variables, entornos
-   Production y Preview). Ver `.env.example`:
+1. **Crear el proyecto en un equipo con plan Pro.** Es una web comercial
+   (anuncia tus servicios) y el plan Hobby de Vercel solo admite uso personal no
+   comercial ([Fair Use Guidelines](https://vercel.com/docs/limits/fair-use-guidelines));
+   con anuncios activos, Vercel podría pausar el proyecto. En Pro, además, los
+   registros duran 1 día en lugar de 1 hora y el Instant Rollback puede volver a
+   cualquier despliegue anterior. En [vercel.com/new](https://vercel.com/new)
+   importa el repositorio `vsl_aasmarketing`. Framework Preset: **Other**. No
+   toques los comandos: `vercel.json` ya indica `npm run build` y la carpeta
+   `dist`. Pulsa Deploy. Tendrás una URL `*.vercel.app` de preview.
+2. **Variables de entorno** (Settings > Environment Variables). Ver `.env.example`:
    - `SHEET_WEBHOOK_URL` y `SHEET_SECRET` (después de desplegar el Apps Script, paso 4).
    - `CAPI_WITHOUT_CONSENT` = `true`.
    - `META_PIXEL_ID` y `META_CAPI_TOKEN` cuando los tengas ([docs/meta.md](docs/meta.md)).
    - `META_TEST_EVENT_CODE` solo mientras pruebas eventos; en producción, vacío.
+   - Elige el tipo al crearlas: **Secret** (no se puede volver a leer) para
+     `META_CAPI_TOKEN`, `SHEET_SECRET` y `UPSTASH_REDIS_REST_TOKEN`; **Config**
+     para el resto.
+   - Entorno: **Production**. En **Preview** no pongas las de Meta ni las del
+     Sheet real: la landing funciona igual sin ellas y así tus pruebas en las
+     URL `*.vercel.app` no mandan eventos a tu píxel ni filas a tu hoja. Si
+     quieres probar el formulario en preview, usa una hoja de pruebas con su
+     propio Apps Script.
    - **Después de guardar variables, Redeploy** (Deployments > ⋯ > Redeploy).
 3. **Dominio vsl.aasmarketing.com.** Settings > Domains > Add Domain >
    `vsl.aasmarketing.com`.
@@ -91,12 +108,25 @@ Abre http://localhost:3000. Para probar el formulario contra un Sheet, copia
 6. **Vercel Analytics:** en el proyecto, pestaña **Analytics** > Enable y pestaña
    **Speed Insights** > Enable, y después Redeploy. La landing ya los trae
    conectados al aviso de cookies: solo se cargan si el visitante acepta la
-   analítica (categoría propia en "Configurar"). Speed Insights te dará el LCP,
-   CLS e INP reales de las visitas desde Instagram. Si no los quieres, pon
-   `VERCEL_ANALYTICS=false`.
+   analítica (categoría propia en "Configurar") y dejan de enviar datos en
+   cuanto la retira. Si no los quieres, pon `VERCEL_ANALYTICS=false`. Lo que
+   da cada plan ([precios de Speed Insights](https://vercel.com/docs/speed-insights/limits-and-pricing)
+   y [de Web Analytics](https://vercel.com/docs/analytics/limits-and-pricing)):
+   - **Speed Insights gratis:** solo la puntuación de experiencia real (RES), no
+     el LCP, CLS e INP por separado (eso es Speed Insights Plus, 10 $ al mes por
+     proyecto en Pro). Admite 10.000 eventos en 30 días para todo el equipo; si
+     se superan, Vercel pausa la recogida al menos 14 días (la web sigue igual).
+     Cada visita que acepta suele generar entre 3 y 6 eventos.
+   - **Web Analytics:** en Hobby, 50.000 eventos al mes y después se pausa; en
+     Pro se paga por evento (0,03 $ cada 1.000, con el crédito mensual del plan).
+     El desglose por `utm` es de Web Analytics Plus (10 $ al mes por equipo).
 7. **Opcional (decide tú):** copia de cada solicitud en una base de datos propia
    (Upstash Redis desde el Marketplace de Vercel). Está hecha y desactivada:
-   `LEADS_DB_ENABLED=true` más `UPSTASH_REDIS_REST_URL` y `UPSTASH_REDIS_REST_TOKEN`.
+   `LEADS_DB_ENABLED=true` más `UPSTASH_REDIS_REST_URL` y `UPSTASH_REDIS_REST_TOKEN`
+   (si la integración crea `KV_REST_API_URL` y `KV_REST_API_TOKEN`, también valen).
+8. **Barra de Vercel en las previews:** la política de seguridad (CSP) de
+   `vercel.json` no deja cargar la Vercel Toolbar. Si te molesta el aviso en la
+   consola de las previews, desactívala en Settings > General > Vercel Toolbar.
 
 ## Antes de activar anuncios
 
@@ -111,7 +141,8 @@ Abre http://localhost:3000. Para probar el formulario contra un Sheet, copia
 - [ ] Lighthouse móvil sobre la URL de Vercel (PageSpeed Insights:
       [pagespeed.web.dev](https://pagespeed.web.dev)) y apunta las cifras.
 - [ ] Con anuncios activos: un cambio cada vez y compara los Lead de Meta con las
-      filas del Sheet.
+      filas del Sheet. Algunas filas no tendrán Lead en Meta: las de quien se
+      opuso a la medición en "Configurar cookies".
 
 ## Pruebas
 
@@ -143,7 +174,10 @@ aunque `/api/lead` falle, tarde o no haya red, reintento en la siguiente visita,
 texto de WhatsApp, consentimiento y `event_id` compartidos, CLS con fuentes
 lentas, validaciones de cada paso y prefijos (también con el idioma es-MX),
 borrador al recargar, doble clic, mínimo de 3 s, Contact una sola vez, flujo
-completo de "Configurar cookies", carruseles, vídeos, FAQ con su schema,
+completo de "Configurar cookies" (botones del panel, oposición a la medición
+por servidor, foco y Escape), retirada de la analítica con la página abierta,
+decisión sincronizada entre pestañas, banner que no tapa el CTA del hero,
+píxel sin PageView automáticos, carruseles, vídeos, FAQ con su schema,
 "Leer más", saltar al formulario, sin JavaScript, movimiento reducido, móvil
 en horizontal y páginas legales. Necesita Playwright con WebKit y Chromium:
 
@@ -153,22 +187,23 @@ npm i -D playwright && npx playwright install --with-deps webkit chromium
 
 ## Rendimiento
 
-Medido con Lighthouse 13.5 sobre el build de producción servido en local con
-compresión, como en Vercel:
+Medido con Lighthouse 13.5 sobre el build de producción (con un ID de píxel de
+prueba, como quedará en Vercel) servido en local con compresión:
 
 | | Rendimiento | Accesibilidad | Buenas prácticas | SEO |
 |---|---|---|---|---|
 | Móvil (4G lenta simulada) | 99-100 | 100 | 100 | 69* |
 | Escritorio | 100 | 100 | 100 | 69* |
 
-Móvil: FCP 1,1-1,2 s · LCP 1,5-1,7 s (el titular) · TBT 20 ms · CLS 0.
+Móvil: FCP 1,1-1,2 s · LCP 1,5-1,7 s (el titular) · TBT 10-50 ms · CLS 0.
 Escritorio: FCP 0,3 s · LCP 0,4 s · TBT 0 ms · CLS 0.
 \* El SEO baja solo por el `noindex` que pediste (página solo para anuncios).
 Es la única comprobación que falla; con indexación sería 100.
 
-Primera carga en móvil: 323 KB en 25 peticiones (HTML 16 KB, CSS 5 KB, JS 8 KB
-comprimido y 19 KB sin comprimir, dos fuentes 40 KB e imágenes AVIF 243 KB). En
-escritorio, 265 KB. Los vídeos solo se descargan al pulsar. Accesibilidad
+Primera carga en móvil: 324 KB en 26 peticiones (HTML 17 KB, CSS 5 KB, JS 9 KB
+comprimido y 22 KB sin comprimir, dos fuentes 40 KB e imágenes AVIF 241 KB). En
+escritorio, 268 KB. Sin aceptar cookies no se carga ni el píxel ni la analítica.
+Los vídeos solo se descargan al pulsar. Accesibilidad
 revisada también con axe-core (WCAG 2.2 AA): sin incidencias en la landing, en
 cada paso del formulario, en el banner ni en las legales.
 
@@ -177,8 +212,12 @@ cuenta de Vercel desde aquí.
 
 ## Volver atrás
 
-- **Al instante, sin tocar código:** Vercel > Deployments > elige el despliegue
-  anterior que funcionaba > ⋯ > **Promote to Production** (Instant Rollback).
+- **Al instante, sin tocar código:** en la tarjeta del despliegue de producción,
+  **Instant Rollback** (o Deployments > ⋮ en el despliegue que funcionaba >
+  Instant Rollback) y elige el despliegue al que volver. En Pro puedes volver a
+  cualquiera de los que estuvieron en producción; en Hobby, solo al anterior.
+  **Ojo:** después de un rollback, los siguientes push no se publican solos
+  hasta que pulses **Undo Rollback** en esa misma tarjeta.
 - **Deshaciendo un cambio en el código:**
 
 ```bash
@@ -189,8 +228,8 @@ git revert <commit>
 git push
 ```
 
-  Vercel despliega el commit de reversión solo. Tras cambiar variables de
-  entorno, Redeploy.
+  Vercel despliega el commit de reversión solo (si antes hiciste un Instant
+  Rollback, primero Undo Rollback). Tras cambiar variables de entorno, Redeploy.
 
 ## Pendientes y textos a revisar
 
@@ -205,19 +244,41 @@ la página publicada). Búscalos con `grep -rn "PENDIENTE\|REVISAR" src docs .en
   `src/data/content.mjs`): "Redes y anuncios que llenan tu agenda." y "Más
   clientes desde tus redes."
 - Decidir si activas la base de datos propia (opcional).
+- Crear el proyecto de Vercel en un equipo con plan Pro (el plan Hobby no admite
+  webs comerciales) y activar Analytics y Speed Insights en el panel.
+- Opcional: una captura más grande del reel de 151 mil de Exoneris (1080 px de
+  ancho o más, a pantalla completa). La actual mide 405 px y en un iPhone se ve
+  algo blanda; basta con sustituir `assets/img/cases/exoneris-primer-video.jpg`.
 
 **[REVISAR]**
+- Aviso legal del formulario: lo he cambiado. El texto que pediste ("Al enviar
+  aceptas la política de privacidad. Usamos tus datos solo para responderte.")
+  no era cierto: también se usan para medir los anuncios en Meta, y con la base
+  jurídica de la política no hay nada que "aceptar". Ahora dice: "En AAS
+  Marketing usamos tus datos para responderte y, convertidos en un código, para
+  medir nuestros anuncios en Meta. Puedes oponerte a esa medición en Configurar
+  cookies. Más información y tus derechos en la política de privacidad."
+- Medición por servidor sin consentimiento (`CAPI_WITHOUT_CONSENT=true`), con
+  interés legítimo y un interruptor para oponerse: confírmalo con un asesor.
+- Plazos de conservación propuestos (12 meses si no hay contrato): confírmalos y
+  cúmplelos, borrando a mano las filas y los correos antiguos.
+- Google: con una cuenta gratuita de Gmail no hay contrato de encargado del
+  tratamiento. Lo recomendable es Google Workspace con su anexo de tratamiento de datos.
+- Meta como corresponsable (art. 26 RGPD) y transferencias a Estados Unidos:
+  comprueba en dataprivacyframework.gov que Vercel, Google y Meta siguen adheridas.
 - FAQ "¿Qué recibo exactamente?": confírmame el contenido.
 - FAQ "¿Vienes a mi ciudad?": adaptada a la oferta nueva ("Lo vemos cuando te mande la estrategia.").
 - FAQ "¿Qué necesito para empezar?": adaptada de la respuesta de la web.
-- Política de privacidad: datos recogidos, finalidad, base jurídica (medidas
-  precontractuales y, para la medición, interés legítimo: confirmar con un
-  asesor), analítica de Vercel con consentimiento, destinatarios (Vercel,
-  Google, Meta, WhatsApp y Upstash si activas la copia), transferencias,
-  envío por servidor a Meta sin cookies (`CAPI_WITHOUT_CONSENT=true`),
-  conservación, derechos y seguridad.
-- Política de cookies: lista de almacenamiento, `aas_attr`, analítica de Vercel,
-  cookies de Meta Pixel y cómo cambiar la decisión.
+- Política de privacidad: datos recogidos y si son obligatorios, finalidad, base
+  jurídica, analítica de Vercel (datos según su documentación), destinatarios,
+  Meta como corresponsable, WhatsApp con el mensaje ya escrito, transferencias,
+  hash que no es anónimo, envío por servidor y cómo oponerse, conservación,
+  derechos y seguridad. Se adapta sola a las variables de Vercel: sin
+  `META_PIXEL_ID` no habla de Meta y con `CAPI_WITHOUT_CONSENT=false` explica
+  que solo se mide con consentimiento.
+- Política de cookies: almacenamiento necesario, `aas_attr` solo con
+  consentimiento, analítica de Vercel, cookies de Meta Pixel, medición desde el
+  servidor, caducidad de la decisión (24 meses) y cómo cambiarla.
 - Aviso legal: dominio y capturas de clientes.
 
 ## Decisiones que conviene que conozcas
@@ -227,15 +288,32 @@ la página publicada). Búscalos con `grep -rn "PENDIENTE\|REVISAR" src docs .en
   abre en pestaña nueva. Antes del formulario no hay WhatsApp, teléfono, correo
   ni Instagram. El banner de cookies enlaza a la política de cookies (primera
   capa informativa).
-- **El banner de cookies sale al primer scroll o a los 3 segundos**, para que el
-  primer pantallazo del móvil muestre solo titular, CTA y línea de confianza.
-  Hasta que deciden no se carga nada opcional, así que esperar no cambia nada
-  legalmente; los eventos por servidor no dependen del banner.
-- **Tres categorías en el aviso de cookies:** necesarias (siempre), analítica
-  (Vercel Web Analytics y Speed Insights, sin cookies) y marketing (Meta Pixel).
-  "Aceptar" activa las dos opcionales, "Rechazar" ninguna y "Configurar" deja
-  elegir. A Vercel no se le manda el identificador de clic de los anuncios
-  (fbclid y similares): se quita de la dirección antes de enviarla.
+- **El banner de cookies sale al primer scroll o a los 3 segundos**, pero nunca
+  encima del botón del hero ni de la nota de debajo: en móviles pequeños espera
+  a que el visitante baje. Hasta que deciden no se carga nada que use cookies;
+  los eventos por servidor no dependen del banner.
+- **Aviso de cookies:** necesarias (siempre), analítica (Vercel Web Analytics y
+  Speed Insights, sin cookies) y marketing (Meta Pixel). "Aceptar" activa todo,
+  "Rechazar" quita las cookies opcionales y "Configurar" deja elegir; con el
+  panel abierto los botones dicen "Rechazar todo", "Aceptar todo" y "Guardar
+  selección". El banner solo pregunta por lo que esté activado en Vercel. La
+  decisión dura 24 meses (lo que recomienda la AEPD) y se vuelve a preguntar si
+  activas algo nuevo (por ejemplo, el píxel). A Vercel no se le manda el
+  identificador de clic de los anuncios (fbclid y similares).
+- **Medición por servidor y derecho de oposición:** como pediste, los eventos van
+  por la API de conversiones acepten o no las cookies. La ley obliga a que el
+  visitante pueda oponerse de verdad (un correo no sirve con visitas anónimas),
+  así que "Configurar cookies" tiene un interruptor "Medición desde el servidor",
+  activado por defecto: si lo desactivan (o pulsan "Rechazar todo"), ese
+  navegador deja de mandar eventos por servidor. Lo usará muy poca gente. El
+  banner lo dice: "Aunque rechaces, mi servidor envía a Meta datos de tu visita
+  con ese fin; puedes oponerte en Configurar."
+- **Identificadores de Meta antes del consentimiento:** el fbclid, fbc, fbp y
+  los utm se capturan al cargar, como pediste, pero sin consentimiento solo se
+  guardan en memoria (no en sessionStorage) y no se leen cookies: guardar
+  identificadores publicitarios en el navegador sin permiso no lo admite la
+  LSSI. Como el formulario está en la misma página, los eventos llevan los
+  mismos datos. Con consentimiento se guardan en sessionStorage como antes.
 - **Caso Exoneris actualizado** con tus capturas nuevas: 151 mil visitas, 126 mil
   personas lo vieron y 1.058 seguidores nuevos con su primer vídeo, y 1.032
   seguidores en la cuenta. He quitado "en 24 horas" porque las capturas nuevas no
@@ -245,8 +323,16 @@ la página publicada). Búscalos con `grep -rn "PENDIENTE\|REVISAR" src docs .en
   negocio o "no tengo"), se guarda tal cual en lugar de bloquear el envío.
 - **País para Meta:** el Lead lleva el país del prefijo elegido (España por
   defecto), no siempre "es", para no mandar datos erróneos si el teléfono es de otro país.
+- **Analítica de Vercel por las rutas de siempre:** los scripts se cargan desde
+  `/_vercel/insights/script.js` y `/_vercel/speed-insights/script.js`. Vercel
+  recomienda ahora rutas únicas por despliegue ("resilient intake", con su
+  paquete v2) para que los bloqueadores no las reconozcan; las rutas fijas siguen
+  funcionando y en el navegador de Instagram apenas hay bloqueadores.
 - **Duplicados:** si Vercel reintenta un envío que ya se guardó, el Apps Script
   no duplica la fila (lo recuerda 6 horas sin guardar ningún ID en el Sheet).
-- **Logs:** si una solicitud no se guarda en el Sheet, Vercel > Logs tiene la
-  solicitud completa (`NO SE HA GUARDADO EN EL SHEET`). Los envíos marcados como
-  spam también quedan en el log por si fueran de una persona real.
+- **Si el Sheet falla:** `/api/lead` responde 503 y el navegador del visitante
+  conserva la solicitud y la reintenta (cada 15 s mientras la página siga
+  abierta y al volver a abrirla), sin duplicar filas. Además, Vercel > Logs
+  tiene la solicitud completa (`NO SE HA GUARDADO EN EL SHEET`), pero el registro
+  solo dura 1 hora en Hobby y 1 día en Pro: revísalo pronto o activa la copia en
+  base de datos. Los envíos marcados como spam también quedan en el log.

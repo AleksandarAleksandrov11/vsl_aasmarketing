@@ -75,17 +75,41 @@ test('el CTA principal dice lo mismo en toda la landing', async () => {
   assert.match(html, /<a class="btn btn-s" href="#formulario">Estrategia gratis<\/a>/);
 });
 
+// Cifras antiguas del caso Exoneris (antes de las capturas de octubre de 2026),
+// buscadas en el texto que se ve y se oye, no en el HTML: ahí </dt><dd> separa
+// la cifra de su etiqueta.
+const OLD_EXONERIS = [/\+\s?600\b/, /\b600\s+seguidores/i, /seguidores[^.]{0,60}\b24\s?(?:h|horas)\b/i, /(?<![\d.,])65[28](?![\d.,])/, /\b106(?:[.,]866|\s?mil)\b/];
+
 test('Exoneris con las cifras nuevas y ninguna antigua', async () => {
   const html = await readFile(path.join(dist, 'index.html'), 'utf8');
-  for (const old of ['106 mil', '+600 seguidores', '658 seguidores', '652', '106.866']) assert.ok(!html.includes(old), `cifra antigua: ${old}`);
-  for (const now of ['151 mil', '+1.000 seguidores nuevos', '1.058', '1.032 seguidores']) assert.ok(html.includes(now), `falta: ${now}`);
+  const text = visibleText(html) + ' ' + attrText(html);
+  for (const re of OLD_EXONERIS) assert.ok(!re.test(text), `cifra antigua: ${re}`);
+  for (const now of ['151 mil', '126 mil', '+1.000 seguidores nuevos', '1.058 seguidores nuevos', '1.032 seguidores', '151.155', '126.433']) {
+    assert.ok(text.includes(now), `falta: ${now}`);
+  }
+  // Y en ningún archivo del repositorio (salvo dependencias, builds y esta prueba).
+  const skip = new Set(['node_modules', 'dist', 'dist-test', '.git', 'test-results', 'package-lock.json', 'content.test.mjs']);
+  const walk = async (dir) => {
+    for (const e of await readdir(dir, { withFileTypes: true })) {
+      if (skip.has(e.name)) continue;
+      const p = path.join(dir, e.name);
+      if (e.isDirectory()) await walk(p);
+      else if (/\.(m?js|gs|md|html|css|json|example)$/.test(e.name)) {
+        const src = await readFile(p, 'utf8');
+        for (const re of OLD_EXONERIS.slice(0, 2).concat(OLD_EXONERIS.slice(3))) assert.ok(!re.test(src), `${path.relative(root, p)}: ${re}`);
+      }
+    }
+  };
+  await walk(root);
 });
 
 test('solo cifras confirmadas en la landing', async () => {
   const html = await readFile(path.join(dist, 'index.html'), 'utf8');
   // Los prefijos telefónicos del selector no son cifras de resultados.
-  const body = html.replace(/<head>[\s\S]*?<\/head>/, '').replace(/<select[\s\S]*?<\/select>/g, '');
-  const text = visibleText(body) + ' ' + attrText(html);
+  // Ni el ejemplo del campo de teléfono (600 000 000), para que no tape un "+600".
+  const page = html.replace(/ placeholder="600 000 000"/g, '');
+  const body = page.replace(/<head>[\s\S]*?<\/head>/, '').replace(/<select[\s\S]*?<\/select>/g, '');
+  const text = visibleText(body) + ' ' + attrText(page);
   const numbers = new Set((text.match(/(?<![\p{L}\d])[+<]?\d[\d.,]*\d(?:\s?(?:millones|mil|M)\b)?|(?<![\p{L}\d])[+<]?\d(?:\s?(?:millones|mil|M)\b)?/gu) || []).map((n) => n.trim()));
   const allowed = [
     // Agencia y casos (sección 3 del encargo y web aasmarketing.com)
@@ -99,8 +123,7 @@ test('solo cifras confirmadas en la landing', async () => {
     '1.267', '1.057', '1.046', '863', '790', '732', '716', '583', '543', '148', '128', '3.541', '74,2 mil',
     '3.000', '5.000', '30', '10',
     // Textos: pasos, plazos, formulario, contacto y legal
-    '1', '4', '5', '1/5', '100', '10/10', '100%', '2026', '695', '850', '590', '+34', '34', '0', '000', '1.0', '6',
-    '600', // ejemplo del campo de teléfono (600 000 000)
+    '1', '4', '5', '1/5', '100', '10/10', '100%', '2026', '695', '850', '590', '+34', '34', '0', '1.0', '6',
   ];
   const unknown = [...numbers].filter((n) => !allowed.includes(n.trim()) && !allowed.includes(n.replace(/^[+<]/, '').trim()));
   const where = unknown.map((n) => `${n} → «${text.slice(Math.max(0, text.indexOf(n) - 40), text.indexOf(n) + 40)}»`);

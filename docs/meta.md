@@ -16,10 +16,16 @@ el navegador y en el servidor, para que Meta los cuente una sola vez.
 
 | Evento | Cuándo | Servidor (API de conversiones) | Navegador (píxel) |
 |---|---|---|---|
-| PageView | Al cargar la página | Siempre | Solo si aceptan las cookies de marketing |
-| ViewContent | La primera vez que el formulario entra en pantalla | Siempre | Solo con consentimiento |
-| Lead | Al enviar el formulario | Siempre, desde `/api/lead`, sin depender del Sheet | Solo con consentimiento |
-| Contact | Al abrir WhatsApp desde la pantalla de éxito | Siempre (con `sendBeacon`) | Solo con consentimiento |
+| PageView | Al cargar la página | Siempre* | Solo si aceptan las cookies de marketing |
+| ViewContent | La primera vez que el formulario entra en pantalla | Siempre* | Solo con consentimiento |
+| Lead | Al enviar el formulario | Siempre*, desde `/api/lead`, sin depender del Sheet | Solo con consentimiento |
+| Contact | Al abrir WhatsApp desde la pantalla de éxito | Siempre* (con `sendBeacon`) | Solo con consentimiento |
+
+\* Salvo que el visitante se oponga: en "Configurar cookies" hay un interruptor
+"Medición desde el servidor" (activado por defecto). Si lo desactiva o pulsa
+"Rechazar todo", ese navegador deja de mandar eventos por servidor. La ley
+obliga a ofrecerlo porque la medición sin consentimiento se basa en el interés
+legítimo; lo usará muy poca gente.
 
 - Por servidor se envían la IP, el navegador, la página y `fbc`/`fbp`. En el
   Lead, además, el teléfono, el nombre y el país transformados con SHA-256.
@@ -28,9 +34,14 @@ el navegador y en el servidor, para que Meta los cuente una sola vez.
   PageView distintos.
 - El píxel se carga con los eventos automáticos desactivados (`autoConfig`
   falso), así que no aparecen eventos que no hemos pedido.
+- El píxel no manda PageView automáticos al cambiar el ancla (los CTA bajan a
+  `#formulario`) ni al volver atrás: solo los cuatro eventos de la tabla.
 - `CAPI_WITHOUT_CONSENT=true` (por defecto) envía por servidor aunque no acepten
-  las cookies. Con `false` y Redeploy, solo se envía con consentimiento. La
-  política de privacidad explica la opción activa (párrafo marcado [REVISAR]).
+  las cookies. Con `false` y Redeploy, solo se envía con consentimiento. El aviso
+  de cookies y la política de privacidad se adaptan solos a la opción activa
+  (párrafos marcados [REVISAR]).
+- El token de la API de conversiones va en el cuerpo de la petición, no en la
+  URL, para que no aparezca en los registros de Vercel.
 
 ## 1. Crear el portfolio empresarial
 
@@ -77,7 +88,9 @@ una cuenta personal, Meta no deja generar el token de la API de conversiones.
 ## 5. Poner el ID del píxel en Vercel
 
 1. Vercel > proyecto de la landing > Settings > **Environment Variables**.
-2. `META_PIXEL_ID` = el ID del paso 3 (entornos Production y Preview).
+2. `META_PIXEL_ID` = el ID del paso 3, tipo Config, entorno **Production** (en
+   Preview déjala vacía: la landing funciona igual y tus visitas de prueba no se
+   mezclan con los datos reales).
 3. Guarda. Todavía no hagas Redeploy si vas a añadir el token ahora.
 
 ## 6. Generar el token de la API de conversiones
@@ -85,7 +98,7 @@ una cuenta personal, Meta no deja generar el token de la API de conversiones.
 1. Administrador de eventos > tu conjunto de datos > **Configuración**.
 2. Sección API de conversiones > **Generar token de acceso** (con la integración
    manual / "Configurar manualmente"). Cópialo: solo se muestra una vez.
-3. En Vercel: `META_CAPI_TOKEN` = el token. Guarda.
+3. En Vercel: `META_CAPI_TOKEN` = el token, tipo **Secret**, entorno Production. Guarda.
 4. **Redeploy**: Deployments > ⋯ en el último despliegue > Redeploy. Sin Redeploy
    las variables no se aplican (este fue el fallo de otra landing: el Lead por
    servidor no llegaba porque faltaba el token o no se había redeployado).
@@ -107,6 +120,8 @@ una cuenta personal, Meta no deja generar el token de la API de conversiones.
      servidor aparecen "Teléfono", "Nombre" y "País" como parámetros de cliente.
    - Al abrirse WhatsApp: **Contact**.
    - Repite sin aceptar cookies: deben llegar los mismos eventos, solo por servidor.
+   - Repite en "Configurar cookies" con "Medición desde el servidor"
+     desactivada: no debe llegar nada por servidor.
 5. Borra la fila PRUEBA del Sheet.
 6. **Vacía `META_TEST_EVENT_CODE`** en Vercel y haz Redeploy. Si se queda con
    valor, Meta trata los eventos reales como de prueba y no optimiza.
@@ -117,8 +132,9 @@ una cuenta personal, Meta no deja generar el token de la API de conversiones.
   y espera a ver datos antes de tocar otra.
 - Cada semana compara los **Lead de Meta** (Administrador de anuncios, columna
   Resultados o "Clientes potenciales en el sitio web") con las **filas reales del
-  Sheet**. Si Meta cuenta muchos menos, algo falla en la medición; si cuenta muchos
-  más, revisa que no haya un código de prueba puesto ni envíos duplicados.
+  Sheet**. Siempre habrá alguno menos en Meta (quien se opuso a la medición o
+  bloquea los envíos). Si Meta cuenta muchos menos, algo falla en la medición; si
+  cuenta muchos más, revisa que no haya un código de prueba puesto ni envíos duplicados.
 - Antes de cambiar nada, apunta la fecha y el cambio para poder comparar y, si
   hace falta, volver atrás (ver "Volver atrás" en el README).
 

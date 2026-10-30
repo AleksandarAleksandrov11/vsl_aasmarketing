@@ -1,4 +1,6 @@
-// Todos los textos y datos de la landing en un solo sitio.
+// Textos y datos de la landing: todas las cifras (también las de los alt de las
+// capturas), testimonios y preguntas frecuentes. Los titulares de sección sin
+// cifras están en src/templates/landing.mjs y los textos legales en legal.mjs.
 // Cifras: solo las confirmadas (web aasmarketing.com y alt de las capturas).
 // Reglas: tuteo, frases cortas, sin guiones largos ni medios y sin emojis.
 
@@ -15,6 +17,7 @@ export const SITE = {
 };
 
 export const CTA = 'Quiero mi estrategia gratis';
+export const RATING = '5,0 en Google';
 export const HEADER_CTA = 'Estrategia gratis';
 
 export const META = {
@@ -26,6 +29,12 @@ export const META = {
     'Analizo tu perfil y te mando gratis por WhatsApp la estrategia que seguiría para conseguir más clientes. Sin llamadas y sin compromiso.',
 };
 
+// Primer reel de Exoneris: sale en el hero, en el muro de resultados y en el caso.
+const EXONERIS_REEL = {
+  src: 'img/cases/exoneris-primer-video.jpg',
+  alt: 'Primer reel de Javier Núñez, de Exoneris Consulting, sobre dónde comprar pisos baratos, con 151 mil visualizaciones',
+};
+
 export const HERO = {
   // Alternativas más cortas para el titular (pendientes de que Aleks elija):
   //   1. "Redes y anuncios que llenan tu agenda."
@@ -35,8 +44,9 @@ export const HERO = {
   titleAfter: '.',
   sub: 'Voy a tu negocio a grabar, edito los vídeos, gestiono tus redes y lanzo tus anuncios. Tú atiendes a los clientes.',
   note: 'Gratis y sin compromiso. Te la mando por WhatsApp en menos de 24 horas.',
+  trust: [RATING, '+25 cuentas', '+10 M de visitas'], // la primera lleva la estrella
   phones: [
-    { src: 'img/cases/exoneris-primer-video.jpg', alt: 'Primer reel de Javier Núñez, de Exoneris Consulting, con 151 mil visualizaciones' },
+    EXONERIS_REEL,
     { src: 'img/results/tatuajes-946mil.webp', alt: 'Reel de un estudio de tatuajes con 946 mil visualizaciones' },
     { src: 'img/results/michel-tobias-80mil.webp', alt: 'Reel de Míchel Tobías, psicólogo deportivo, con 80,3 mil visualizaciones' },
   ],
@@ -55,13 +65,19 @@ export const PAINS = [
   'Has pagado anuncios que no traían nada.',
 ];
 
+// Titulares con cifras (los demás titulares de sección están en la plantilla).
+export const HEADLINES = {
+  results: { before: 'Más de 10 millones de ', serif: 'visitas', after: '.' },
+  accounts: 'Únete a las más de 25 cuentas que ya confían en nosotros.',
+};
+
 // Cifra exacta de cada captura sacada del alt de index.html del origen.
 export const RESULTS = [
   { src: 'img/results/tatuajes-946mil.webp', views: '946 mil', who: 'Estudio de tatuajes', alt: 'Reel de un estudio de tatuajes con 946 mil visualizaciones' },
   { src: 'img/results/vdn-performance-406mil.webp', views: '+406 mil', who: 'VDN Performance', alt: 'Reel de VDN Performance sobre los mejores coches por menos de 3.000 euros, con más de 406 mil visualizaciones' },
   { src: 'img/results/vdn-performance-307mil.webp', views: '306,9 mil', who: 'VDN Performance', alt: 'Reel de VDN Performance sobre los mejores coches por menos de 5.000 euros, con 306,9 mil visualizaciones' },
   { src: 'img/results/tatuajes-250mil.webp', views: '257 mil', who: 'Estudio de tatuajes', alt: 'Reel de un estudio de tatuajes sobre las zonas que más duelen al tatuarse, con 257 mil visualizaciones' },
-  { src: 'img/cases/exoneris-primer-video.jpg', views: '151 mil', who: 'Exoneris Consulting', alt: 'Primer reel de Javier Núñez, de Exoneris Consulting, con 151 mil visualizaciones' },
+  { ...EXONERIS_REEL, views: '151 mil', who: 'Exoneris Consulting' },
   { src: 'img/results/wash-go-detailing-110mil.webp', views: '110 mil', who: 'Wash & Go Detailing', alt: 'Reel de presentación de Wash & Go Detailing con 110 mil visualizaciones' },
   { src: 'img/results/michel-tobias-80mil.webp', views: '80,3 mil', who: 'Míchel Tobías, psicólogo deportivo', alt: 'Reel de Míchel Tobías, psicólogo deportivo, con 80,3 mil visualizaciones' },
   { src: 'img/results/vdn-performance-54mil.webp', views: '53,8 mil', who: 'VDN Performance', alt: 'Reel de VDN Performance con 53,8 mil visualizaciones' },
@@ -81,6 +97,10 @@ export const VDN = {
     { value: '<3', label: 'meses de trabajo' },
     { value: '+2.500', label: 'leads con Meta Ads en 2 meses' },
   ],
+  profiles: {
+    instagram: 'Perfil de Instagram de VDN Performance con 1.768 seguidores',
+    tiktok: 'Perfil de TikTok de VDN Performance con 3.541 seguidores y 74,2 mil me gusta',
+  },
 };
 
 // Cifras actualizadas con las capturas de octubre de 2026 (estadísticas del
@@ -89,11 +109,16 @@ export const VDN = {
 export const EXONERIS = {
   titleA: 'Su primer vídeo.',
   titleB: '+1.000 seguidores nuevos.',
-  text: 'Javier Núñez, de Exoneris Consulting, ayuda a inversores en subastas, NPL y REO. Fue el primer vídeo que subimos a su cuenta.',
+  text: 'Javier Núñez, de Exoneris Consulting, ayuda a inversores en subastas, NPL y REO. Ese vídeo fue el primero que subimos a su cuenta.',
+  reel: EXONERIS_REEL,
   stats: [
-    { value: '151 mil', label: 'visitas del primer vídeo' },
+    { value: '151 mil', label: 'visitas' },
     { value: '126 mil', label: 'personas lo vieron' },
-    { value: '1.058', label: 'seguidores nuevos con ese vídeo' },
+    { value: '1.058', label: 'seguidores nuevos' },
+  ],
+  shots: [
+    { src: 'img/cases/exoneris-estadisticas.jpg', alt: 'Estadísticas del primer vídeo: 151.155 reproducciones, 126.433 espectadores, 15 segundos de tiempo medio de reproducción y 1.058 seguidores nuevos' },
+    { src: 'img/cases/exoneris-perfil.jpg', alt: 'Perfil de Instagram de Javier Núñez (Subastas y NPL), de Exoneris Consulting, con 4 publicaciones y 1.032 seguidores' },
   ],
 };
 

@@ -44,7 +44,10 @@ function startSheet() {
         res.end('{"ok":true}');
       };
       if (sheetState.mode === 'slow') setTimeout(reply, 9000);
-      else reply();
+      else if (sheetState.mode === 'fail') {
+        res.writeHead(500);
+        res.end('error');
+      } else reply();
     });
     srv.listen(0, '127.0.0.1', () => resolve(srv));
   });
@@ -257,7 +260,11 @@ test('éxito aunque /api/lead falle, tarde o no haya red; reintento en la próxi
   await fillForm(ctx.page, { otro: false });
   await ctx.page.click('[data-submit]');
   await ctx.page.locator('[data-done]').waitFor({ state: 'visible', timeout: 9000 });
-  assert.equal(await ctx.page.evaluate(() => JSON.parse(localStorage.getItem('aas_pending')).length), 1);
+  const copy = await ctx.page.evaluate(() => JSON.parse(localStorage.getItem('aas_pending')));
+  assert.equal(copy.length, 1);
+  // Sin consentimiento de marketing, la copia del navegador no guarda identificadores de Meta.
+  assert.deepEqual([copy[0].p.fbp, copy[0].p.fbc, copy[0].p.fbclid, copy[0].p.nombre], ['', '', '', 'PRUEBA']);
+  assert.match(ctx.log.leads.at(-1).fbp, /^fb\.1\.\d+\.\d+$/, 'la petición sí lleva el fbp (medición por servidor)');
   await ctx.browser.close();
 
   // b) Respuesta lenta: éxito antes de 7 s.
@@ -293,6 +300,30 @@ test('éxito aunque /api/lead falle, tarde o no haya red; reintento en la próxi
   await next.waitForFunction(() => !localStorage.getItem('aas_pending'), null, { timeout: 15000 });
   assert.equal(sheetState.calls.at(-1).lead.nombre, 'PRUEBA');
   await browser.close();
+
+  // d) El Sheet no responde: /api/lead contesta 503, el navegador conserva la
+  // solicitud y la reintenta en la siguiente visita, cuando el Sheet ya funciona.
+  sheetState.mode = 'fail';
+  const b2 = await pw.webkit.launch();
+  const c2 = await b2.newContext(MOBILE);
+  await c2.route('https://wa.me/**', (r) => r.fulfill({ contentType: 'text/html', body: 'wa' }));
+  const p2 = await c2.newPage();
+  const status = [];
+  p2.on('response', (r) => r.url().endsWith('/api/lead') && status.push(r.status()));
+  await p2.goto(base);
+  await p2.click('[data-ck="reject"]');
+  await fillForm(p2, { otro: false });
+  await p2.click('[data-submit]');
+  await p2.locator('[data-done]').waitFor({ state: 'visible', timeout: 9000 });
+  assert.deepEqual(status, [503]);
+  assert.equal(await p2.evaluate(() => JSON.parse(localStorage.getItem('aas_pending')).length), 1);
+  sheetState.mode = 'ok';
+  sheetState.calls.length = 0;
+  const p3 = await c2.newPage();
+  await p3.goto(base);
+  await p3.waitForFunction(() => !localStorage.getItem('aas_pending'), null, { timeout: 15000 });
+  assert.equal(sheetState.calls.at(-1).lead.nombre, 'PRUEBA');
+  await b2.close();
 });
 
 test('escritorio (Chromium 1440): formulario solo con teclado y sin errores', { skip, timeout: 60000 }, async () => {
@@ -347,7 +378,10 @@ test('cookies: el píxel solo carga con consentimiento y usa los mismos event_id
     const pageView = log.events.find((e) => e.event_name === 'PageView');
     assert.ok(pageView, 'PageView por servidor sin consentimiento');
     assert.equal(pageView.consent, false);
+    assert.equal(pageView.optout, false);
     assert.match(pageView.fbp, /^fb\.1\.\d+\.\d+$/);
+    // Sin consentimiento, los identificadores de Meta no se guardan en el navegador.
+    assert.equal(await page.evaluate(() => sessionStorage.getItem('aas_attr')), null);
 
     assert.equal(await page.evaluate(() => window.__vercelScripts || 0), 0, 'la analítica no carga sin consentimiento');
     await page.click('[data-ck="accept"]');
@@ -355,6 +389,9 @@ test('cookies: el píxel solo carga con consentimiento y usa los mismos event_id
     await page.waitForFunction(() => window.__vercelScripts === 2);
     assert.equal(typeof (await page.evaluate(() => window.vaq && window.vaq[0] && window.vaq[0][0])), 'string', 'cola de Web Analytics con beforeSend');
     const calls = await page.evaluate(() => window.__fbq);
+    // Sin PageView automáticos de Meta al cambiar el #ancla o el historial.
+    assert.equal(await page.evaluate(() => window.fbq.disablePushState), true);
+    assert.equal(await page.evaluate(() => JSON.parse(sessionStorage.getItem('aas_attr')).fbp), pageView.fbp, 'con consentimiento se guarda aas_attr');
     const pv = calls.filter((c) => c[0] === 'track' && c[1] === 'PageView');
     assert.equal(pv.length, 1, 'un solo PageView en el navegador');
     assert.equal(pv[0][3].eventID, pageView.event_id, 'mismo event_id que el servidor');
@@ -362,9 +399,10 @@ test('cookies: el píxel solo carga con consentimiento y usa los mismos event_id
     const cookies = await page.context().cookies();
     assert.equal(cookies.find((c) => c.name === '_fbp')?.value, pageView.fbp, 'la cookie _fbp coincide con el fbp del servidor');
     // Sin "Configurar cookies" duplicado: el pie lo vuelve a abrir.
-    await page.click('[data-open-cookies]');
+    await page.click('.ftr [data-open-cookies]');
     assert.equal(await page.isVisible('#ck-panel'), true);
     assert.equal(await page.isChecked('#ck-mkt'), true);
+    assert.equal(await page.isChecked('#ck-srv'), true);
 
     // Lead: mismo event_id en el navegador y en /api/lead.
     await page.click('[data-ck="save"]');
@@ -534,30 +572,41 @@ test('cookies: rechazar se recuerda, configurar activa y desactivar revoca', { s
     assert.equal(await page.isVisible('#ck'), false, 'la decisión se recuerda');
     assert.equal(await page.evaluate(() => window.__vercelScripts || 0), 0, 'rechazar: sin analítica');
     // Solo analítica: carga Vercel Analytics y no el píxel.
-    await page.click('[data-open-cookies]');
+    await page.click('.ftr [data-open-cookies]');
     assert.equal(await page.isVisible('#ck-panel'), true);
     assert.equal(await page.isChecked('#ck-ana'), false);
     assert.equal(await page.isChecked('#ck-mkt'), false);
+    assert.equal(await page.isChecked('#ck-srv'), true, '«Rechazar» no es oponerse a la medición por servidor');
     await page.check('#ck-ana');
     await page.click('[data-ck="save"]');
     await page.waitForFunction(() => window.__vercelScripts === 2);
     assert.equal(await page.evaluate(() => typeof window.fbq), 'undefined', 'solo analítica: sin píxel');
     const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('aas_consent')));
-    assert.deepEqual([stored.v, stored.analytics, stored.marketing], [2, true, false]);
+    assert.deepEqual([stored.v, stored.analytics, stored.marketing, stored.optout], [2, true, false, false]);
+    assert.deepEqual(stored.cats, ['analytics', 'marketing', 'server']);
+    // La analítica envía mientras está aceptada (beforeSend devuelve el evento sin el fbclid)...
+    const sendWith = () => page.evaluate(() => {
+      const fn = window.vaq.find((a) => a[0] === 'beforeSend')[1];
+      return fn({ type: 'pageview', url: 'https://vsl.aasmarketing.com/?utm_source=ig&fbclid=abc' });
+    });
+    assert.equal((await sendWith()).url, 'https://vsl.aasmarketing.com/?utm_source=ig');
     // Y ahora también marketing.
-    await page.click('[data-open-cookies]');
+    await page.click('.ftr [data-open-cookies]');
     assert.equal(await page.isChecked('#ck-ana'), true);
     await page.check('#ck-mkt');
     await page.click('[data-ck="save"]');
     await page.waitForFunction(() => Array.isArray(window.__fbq));
     assert.ok((await page.context().cookies()).some((c) => c.name === '_fbp'));
-    await page.click('[data-open-cookies]');
+    await page.click('.ftr [data-open-cookies]');
     assert.equal(await page.isChecked('#ck-mkt'), true);
     await page.uncheck('#ck-mkt');
+    await page.uncheck('#ck-ana');
     await page.click('[data-ck="save"]');
     await page.waitForTimeout(200);
     assert.ok(!(await page.context().cookies()).some((c) => c.name.startsWith('_fb')), 'se borran _fbp y _fbc');
     assert.ok((await page.evaluate(() => window.__fbq)).some((c) => c[0] === 'consent' && c[1] === 'revoke'));
+    // ...y al retirarla deja de enviar en esa misma página.
+    assert.equal(await sendWith(), null);
   } finally {
     await browser.close();
   }
@@ -656,6 +705,133 @@ test('"Enviar otra solicitud" antes de 1,5 s cancela la apertura de WhatsApp', {
     assert.deepEqual(log.wa, [], 'no debe abrir WhatsApp');
     assert.equal(await page.isVisible('[data-step="1"]'), true);
     assert.equal(log.events.filter((e) => e.event_name === 'Contact').length, 0);
+  } finally {
+    await browser.close();
+  }
+});
+
+test('cookies: panel con «Rechazar todo», «Aceptar todo» y «Guardar selección», foco y Escape', { skip, timeout: 60000 }, async () => {
+  const { browser, page, log } = await open(pw.chromium, DESKTOP);
+  try {
+    await page.locator('#ck').waitFor({ state: 'visible', timeout: 6000 });
+    assert.equal(await page.textContent('[data-ck="reject"]'), 'Rechazar');
+    assert.equal(await page.isVisible('[data-ck="save"]'), false);
+    // El banner habla de la medición por servidor aunque se rechace.
+    assert.match(await page.textContent('#ck p'), /Aunque rechaces, mi servidor envía a Meta datos de tu visita/);
+    await page.click('[data-ck="config"]');
+    assert.equal(await page.textContent('[data-ck="reject"]'), 'Rechazar todo');
+    assert.equal(await page.textContent('[data-ck="accept"]'), 'Aceptar todo');
+    assert.equal(await page.isVisible('[data-ck="config"]'), false);
+    assert.equal(await page.isVisible('[data-ck="save"]'), true);
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'ck-ana', 'el foco va al primer interruptor');
+    // Sin decisión, Escape solo pliega el panel.
+    await page.keyboard.press('Escape');
+    assert.equal(await page.isVisible('#ck-panel'), false);
+    assert.equal(await page.isVisible('#ck'), true);
+    // «Rechazar todo» con el panel abierto también es oponerse a la medición por servidor.
+    await page.click('[data-ck="config"]');
+    await page.click('[data-ck="reject"]');
+    const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('aas_consent')));
+    assert.deepEqual([stored.analytics, stored.marketing, stored.optout], [false, false, true]);
+    // Desde el pie: al cerrar con Escape, el foco vuelve a «Configurar cookies».
+    await page.focus('.ftr [data-open-cookies]');
+    await page.keyboard.press('Enter');
+    assert.equal(await page.isVisible('#ck-panel'), true);
+    assert.equal(await page.isChecked('#ck-srv'), false);
+    await page.keyboard.press('Escape');
+    assert.equal(await page.isVisible('#ck'), false);
+    assert.equal(await page.evaluate(() => document.activeElement.textContent.trim()), 'Configurar cookies');
+    assert.deepEqual(log.errors, []);
+  } finally {
+    await browser.close();
+  }
+});
+
+test('oposición a la medición por servidor: nada a Meta hasta que acepten', { skip, timeout: 60000 }, async () => {
+  const { browser, page, log } = await open(pw.chromium, DESKTOP, { url: `${base}?utm_source=ig&fbclid=IwAR0prueba` });
+  try {
+    await page.locator('#ck').waitFor({ state: 'visible', timeout: 6000 });
+    assert.equal(log.events.filter((e) => e.event_name === 'PageView').length, 1, 'PageView por servidor antes de decidir');
+    await page.click('[data-ck="config"]');
+    await page.uncheck('#ck-srv');
+    await page.click('[data-ck="save"]');
+    const before = log.events.length;
+    // ViewContent y Lead después de oponerse: no salen por servidor ni llevan identificadores.
+    await fillForm(page, { otro: false });
+    await page.waitForTimeout(400);
+    assert.equal(log.events.length, before, 'nada por /api/event tras oponerse');
+    // El enlace «Configurar cookies» del aviso del formulario abre el mismo panel.
+    await page.click('.lf-legal [data-open-cookies]');
+    assert.equal(await page.isVisible('#ck-panel'), true);
+    assert.equal(await page.isChecked('#ck-srv'), false);
+    await page.keyboard.press('Escape');
+    assert.equal(await page.evaluate(() => document.activeElement.closest('.lf-legal') !== null), true, 'el foco vuelve al enlace');
+    await page.click('[data-submit]');
+    await page.locator('[data-done]').waitFor({ state: 'visible', timeout: 9000 });
+    const lead = log.leads.at(-1);
+    assert.deepEqual([lead.optout, lead.consent, lead.fbp, lead.fbc, lead.fbclid, lead.utm_source], [true, false, '', '', '', 'ig']);
+    assert.equal(log.events.filter((e) => e.event_name === 'Contact').length, 0);
+  } finally {
+    await browser.close();
+  }
+  // Si después acepta todo, lo que no salió por servidor sale entonces (con el mismo event_id que el píxel).
+  const second = await open(pw.chromium, DESKTOP);
+  try {
+    await second.page.locator('#ck').waitFor({ state: 'visible', timeout: 6000 });
+    await second.page.click('[data-ck="config"]');
+    await second.page.uncheck('#ck-srv');
+    await second.page.click('[data-ck="save"]');
+    await second.page.locator('#formulario').scrollIntoViewIfNeeded();
+    await second.page.waitForTimeout(400);
+    const pending = second.log.events.length;
+    await second.page.click('.ftr [data-open-cookies]');
+    await second.page.click('[data-ck="accept"]');
+    await second.page.waitForFunction(() => Array.isArray(window.__fbq) && window.__fbq.some((c) => c[1] === 'ViewContent'));
+    await second.page.waitForTimeout(300);
+    const late = second.log.events.slice(pending);
+    const vc = late.find((e) => e.event_name === 'ViewContent');
+    assert.ok(vc && !vc.replay && vc.consent === true && vc.optout === false, JSON.stringify(late));
+    const pixelVc = (await second.page.evaluate(() => window.__fbq)).find((c) => c[0] === 'track' && c[1] === 'ViewContent');
+    assert.equal(pixelVc[3].eventID, vc.event_id);
+  } finally {
+    await second.browser.close();
+  }
+});
+
+test('cookies: la decisión se sincroniza entre pestañas', { skip, timeout: 60000 }, async () => {
+  const { browser, context, page: a } = await open(pw.chromium, DESKTOP);
+  try {
+    const b = await context.newPage();
+    await b.goto(base, { waitUntil: 'load' });
+    await a.locator('#ck').waitFor({ state: 'visible', timeout: 6000 });
+    await a.click('[data-ck="accept"]');
+    // La otra pestaña quita su banner y carga el píxel sin recargar.
+    await b.waitForFunction(() => Array.isArray(window.__fbq) && window.__fbq.some((c) => c[0] === 'track' && c[1] === 'PageView'));
+    assert.equal(await b.isVisible('#ck'), false);
+    await a.click('.ftr [data-open-cookies]');
+    await a.click('[data-ck="reject"]'); // «Rechazar todo»
+    await b.waitForFunction(() => window.__fbq.some((c) => c[0] === 'consent' && c[1] === 'revoke'));
+    assert.equal(await b.evaluate(() => JSON.parse(localStorage.getItem('aas_consent')).marketing), false);
+  } finally {
+    await browser.close();
+  }
+});
+
+test('móvil pequeño (320x480): el banner no tapa el botón del hero', { skip, timeout: 60000 }, async () => {
+  const { browser, page, log } = await open(pw.webkit, { ...MOBILE, viewport: { width: 320, height: 480 } });
+  try {
+    await page.waitForTimeout(3500);
+    assert.equal(await page.isVisible('#ck'), false, 'a los 3 s taparía el CTA: espera');
+    await page.evaluate(() => window.scrollTo(0, 500));
+    await page.locator('#ck').waitFor({ state: 'visible', timeout: 3000 });
+    const ck = await page.locator('#ck').boundingBox();
+    const cta = await page.locator('[data-hero-cta]').boundingBox();
+    assert.ok(cta.y + cta.height <= ck.y || cta.y + cta.height <= 0, 'el banner no solapa el CTA');
+    // Con el panel abierto cabe en la pantalla (se desplaza por dentro si hace falta).
+    await page.click('[data-ck="config"]');
+    const panel = await page.locator('#ck').boundingBox();
+    assert.ok(panel.y >= 0 && panel.y + panel.height <= 480, `el panel se sale (${panel.y}, ${panel.height})`);
+    assert.deepEqual(log.errors, []);
   } finally {
     await browser.close();
   }

@@ -216,9 +216,19 @@
 .ex-title span { display: block; color: var(--ink-mute); }
 .ex-stats { display: grid; grid-template-columns: repeat(3, auto); justify-content: start; gap: 12px clamp(18px, 4vw, 40px); margin-top: 28px; }
 .ex-stats dt { font-size: clamp(1.5rem, 1.1rem + 2vw, 3rem); font-weight: 640; line-height: 1; letter-spacing: -0.045em; white-space: nowrap; }
-.ex-stats dd { margin-top: 6px; font-size: 0.9375rem; color: var(--ink-mute); }
+.ex-stats dd { margin-top: 6px; font-size: 0.9375rem; line-height: 1.35; color: var(--ink-mute); text-wrap: balance; }
 .ex-shots { display: grid; gap: 12px; margin-top: 28px; }
-.ex-shots .shot-img { border-color: var(--line); background: #0c0c0d; box-shadow: var(--shadow-s); }
+/* Mismo fondo que las capturas (modo oscuro de Instagram): si una es algo más
+   baja que la otra, el marco termina a la misma altura sin que se note. */
+.ex-shots .shot-img {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  border-color: var(--line);
+  background: #0b0f15;
+  box-shadow: var(--shadow-s);
+}
+.ex-shots .shot-img > picture { flex: 1; min-width: 0; }
 @media (min-width: 640px) {
   .ex-shots { grid-template-columns: 1fr 1fr; }
 }
@@ -413,11 +423,14 @@
   grid-auto-columns: min(300px, 78vw);
 }
 .acc {
+  display: flex;
+  align-items: center;
   overflow: hidden;
   border-radius: var(--r-s);
-  background: #0c0c0d;
+  background: #0c1015; /* el de las capturas: no asoma una franja de otro negro */
   box-shadow: var(--shadow-s);
 }
+.acc > picture { flex: 1; min-width: 0; }
 .acc img { width: 100%; height: auto; }
 @media (min-width: 1024px) {
   .accounts { grid-auto-columns: 340px; gap: 14px; }
@@ -702,7 +715,8 @@
 .lf-prefix:focus-within { border-color: var(--ink); box-shadow: 0 0 0 3px rgba(12, 12, 13, 0.1); }
 .lf-phone .lf-input { flex: 1; min-width: 0; }
 .lf-legal { margin-top: 14px; font-size: 0.8125rem; line-height: 1.5; color: var(--ink-mute); text-align: center; }
-.lf-legal a { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
+.lf-legal a, .lf-link { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
+.lf-link { padding: 0; border: 0; background: none; font: inherit; }
 .hp { position: absolute; left: -10000px; top: auto; width: 1px; height: 1px; overflow: hidden; }
 
 /* Pantalla de éxito */

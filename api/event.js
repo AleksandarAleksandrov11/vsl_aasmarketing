@@ -2,7 +2,7 @@
 // (El Lead se envía desde /api/lead.) Llega por fetch keepalive o sendBeacon.
 
 import { readJson, json, clientIp, sameOrigin, envFlag } from '../lib/http.js';
-import { sendEvent, cleanEventId, cleanFbc, cleanFbp, sourceUrl } from '../lib/meta.js';
+import { sendEvent, capiAllowed, cleanEventId, cleanFbc, cleanFbp, sourceUrl } from '../lib/meta.js';
 
 const EVENTS = new Set(['PageView', 'ViewContent', 'Contact']);
 const CUSTOM = {
@@ -26,10 +26,11 @@ export default {
     const id = cleanEventId(p.event_id);
     if (!EVENTS.has(name) || !id) return json({ ok: false, error: 'event' }, 400);
 
-    const withoutConsent = envFlag('CAPI_WITHOUT_CONSENT', true);
     // Repetición al aceptar las cookies: solo hace falta si al cargar no se mandó.
-    if (p.replay === true && withoutConsent) return json({ ok: true, sent: false, reason: 'already-sent' });
-    if (p.consent !== true && !withoutConsent) return json({ ok: true, sent: false, reason: 'no-consent' });
+    if (p.replay === true && envFlag('CAPI_WITHOUT_CONSENT', true)) return json({ ok: true, sent: false, reason: 'already-sent' });
+    if (!capiAllowed(p.consent === true, p.optout === true)) {
+      return json({ ok: true, sent: false, reason: p.optout === true ? 'optout' : 'no-consent' });
+    }
 
     const result = await sendEvent({
       name,

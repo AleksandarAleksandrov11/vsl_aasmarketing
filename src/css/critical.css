@@ -439,11 +439,20 @@ button { cursor: pointer; }
   color: var(--ink-soft);
   transform: translateY(calc(-1 * var(--sticky-h)));
   transition: transform 0.35s var(--ease);
+  /* En pantallas bajas (móvil apaisado, zoom) el panel se desplaza por dentro. */
+  max-height: calc(100vh - 20px - var(--sticky-h));
+  max-height: calc(100svh - 20px - env(safe-area-inset-bottom) - var(--sticky-h));
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 .ck p { margin: 0 2px 8px; }
 .ck a { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
 .ck-actions { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: center; }
 .ck-actions .btn { min-height: 44px; padding: 0 0.8em; font-size: 0.9375rem; }
+/* Con el panel abierto: Rechazar todo y Aceptar todo, y debajo Guardar selección. */
+.ck.is-config .ck-actions { grid-template-columns: 1fr 1fr; }
+.ck.is-config [data-ck="save"] { grid-column: 1 / -1; }
+.btn-line { background: #fff; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--ink); }
 .ck-link {
   min-height: 44px;
   padding: 0 6px;
@@ -494,7 +503,7 @@ button { cursor: pointer; }
   to { opacity: 1; translate: 0 0; }
 }
 @media (min-width: 1024px) {
-  .ck { left: auto; right: 24px; bottom: 24px; transform: none; }
+  .ck { left: auto; right: 24px; bottom: 24px; transform: none; max-height: calc(100vh - 48px); }
 }
 
 @media (prefers-reduced-motion: reduce) {

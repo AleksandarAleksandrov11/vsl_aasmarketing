@@ -21,7 +21,13 @@ function stripClickIds(url) {
   }
 }
 
-const clean = (event) => (event && typeof event.url === 'string' ? { ...event, url: stripClickIds(event.url) } : event);
+// Vercel llama a beforeSend antes de cada envío: si se retira la analítica con la
+// página abierta, devolver null descarta el evento (los scripts ya cargados no se
+// pueden quitar, pero dejan de enviar desde ese momento).
+const clean = (event) => {
+  if (!hasAnalytics()) return null;
+  return event && typeof event.url === 'string' ? { ...event, url: stripClickIds(event.url) } : event;
+};
 
 function inject(src) {
   const s = document.createElement('script');

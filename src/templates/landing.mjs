@@ -4,12 +4,12 @@
 
 import { esc, icon, picture, sprite, stars } from '../../scripts/lib/html.mjs';
 import {
-  SITE, CTA, META, HERO, STATS, PAINS, RESULTS, VDN, EXONERIS, SERVICES, COMPARE, STEPS,
+  SITE, CTA, RATING, META, HERO, HEADLINES, STATS, PAINS, RESULTS, VDN, EXONERIS, SERVICES, COMPARE, STEPS,
   VIDEOS, ACCOUNTS, TESTIMONIALS, ABOUT, FORM, FAQS, CLOSING,
 } from '../data/content.mjs';
 import { SERVICIOS, SECTORES } from '../../shared/options.js';
 import { COUNTRIES, OTHER } from '../../shared/phone.js';
-import { head, header, footer, stickyCta, cookieBanner } from './layout.mjs';
+import { head, header, footer, stickyCta, cookieBanner, serverMeasurement } from './layout.mjs';
 
 const ctaBtn = (cls = 'btn', attrs = '') => `<a class="${cls}" href="#formulario"${attrs}>${CTA} ${icon.arrow()}</a>`;
 const initials = (name) => name.replace(/[^\p{L}\s]/gu, '').split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join('');
@@ -30,9 +30,7 @@ async function hero(ctx) {
       <div class="hero-cta">${ctaBtn('btn', ' data-hero-cta')}</div>
       <p class="hero-note">${esc(HERO.note)}</p>
       <ul class="trust">
-        <li>${icon.star()} 5,0 en Google</li>
-        <li>+25 cuentas</li>
-        <li>+10 M de visitas</li>
+        ${HERO.trust.map((t, i) => `<li>${i === 0 ? `${icon.star()} ` : ''}${esc(t)}</li>`).join('\n        ')}
       </ul>
     </div>
     <div class="hero-visual">
@@ -73,7 +71,7 @@ async function results(ctx) {
       </figure>`));
   return `<section class="sec" aria-labelledby="t-resultados">
   <div class="wrap">
-    <div class="sec-head"><h2 class="h2" id="t-resultados">Más de 10 millones de <span class="serif">visitas</span>.</h2></div>
+    <div class="sec-head"><h2 class="h2" id="t-resultados">${esc(HEADLINES.results.before)}<span class="serif">${esc(HEADLINES.results.serif)}</span>${esc(HEADLINES.results.after)}</h2></div>
     <div class="scroller results" tabindex="0" role="region" aria-label="Capturas de reels de clientes con sus visitas">
       ${cards.join('\n      ')}
     </div>
@@ -103,8 +101,8 @@ async function vdn(ctx) {
     </dl>
     <div class="case-media">
       <div class="case-side">
-        ${await shot('img/cases/vdn-perfil-instagram.webp', 'Perfil de Instagram de VDN Performance con 1.768 seguidores', 'Instagram', [450, 900], '(min-width: 900px) 420px, 92vw', 'shot-wide')}
-        ${await shot('img/cases/vdn-perfil-tiktok.webp', 'Perfil de TikTok de VDN Performance con 3.541 seguidores y 74,2 mil me gusta', 'TikTok', [450, 900], '(min-width: 900px) 420px, 92vw', 'shot-wide')}
+        ${await shot('img/cases/vdn-perfil-instagram.webp', VDN.profiles.instagram, 'Instagram', [450, 900], '(min-width: 900px) 420px, 92vw', 'shot-wide')}
+        ${await shot('img/cases/vdn-perfil-tiktok.webp', VDN.profiles.tiktok, 'TikTok', [450, 900], '(min-width: 900px) 420px, 92vw', 'shot-wide')}
         <figure class="shot shot-wide">
           <div class="shot-pair">
             <div class="shot-img">${await picture(ctx.assets, 'img/cases/vdn-anuncio-meta-1.webp', { alt: 'Anuncio de VDN Performance en Meta Ads sobre la reprogramación Stage 1', widths: [220, 396], sizes: '(min-width: 900px) 200px, 45vw' })}</div>
@@ -122,10 +120,11 @@ async function vdn(ctx) {
 }
 
 async function exoneris(ctx) {
+  const shot = async (s) => `<figure class="shot"><div class="shot-img">${await picture(ctx.assets, s.src, { alt: s.alt, widths: [450, 900, 1206], sizes: '(min-width: 900px) 330px, (min-width: 640px) 45vw, 92vw' })}</div></figure>`;
   return `<section class="sec" id="caso-exoneris" aria-labelledby="t-exoneris">
   <div class="wrap ex-grid">
-    <figure class="phone ex-phone">${await picture(ctx.assets, 'img/cases/exoneris-primer-video.jpg', {
-      alt: 'Primer vídeo de Javier Núñez en Instagram, con 151 mil visualizaciones', widths: [280, 405], sizes: '(min-width: 900px) 320px, 62vw',
+    <figure class="phone ex-phone">${await picture(ctx.assets, EXONERIS.reel.src, {
+      alt: EXONERIS.reel.alt, widths: [280, 405], sizes: '(min-width: 900px) 320px, 62vw',
     })}</figure>
     <div>
       <h2 class="h2 ex-title" id="t-exoneris"><b>${esc(EXONERIS.titleA)}</b> <span>${esc(EXONERIS.titleB)}</span></h2>
@@ -134,8 +133,7 @@ async function exoneris(ctx) {
         ${EXONERIS.stats.map((s) => `<div><dt>${esc(s.value)}</dt><dd>${esc(s.label)}</dd></div>`).join('\n        ')}
       </dl>
       <div class="ex-shots">
-        <figure class="shot"><div class="shot-img">${await picture(ctx.assets, 'img/cases/exoneris-estadisticas.jpg', { alt: 'Estadísticas del primer vídeo: 151.155 reproducciones, 126.433 espectadores, 15 segundos de tiempo medio y 1.058 seguidores nuevos', widths: [450, 900, 1206], sizes: '(min-width: 900px) 330px, (min-width: 640px) 45vw, 92vw' })}</div></figure>
-        <figure class="shot"><div class="shot-img">${await picture(ctx.assets, 'img/cases/exoneris-perfil.jpg', { alt: 'Perfil de Instagram de Javier Núñez, de Exoneris Consulting, con 1.032 seguidores', widths: [450, 900, 1206], sizes: '(min-width: 900px) 330px, (min-width: 640px) 45vw, 92vw' })}</div></figure>
+        ${(await Promise.all(EXONERIS.shots.map(shot))).join('\n        ')}
       </div>
     </div>
   </div>
@@ -235,7 +233,7 @@ async function accounts(ctx) {
   }));
   return `<section class="sec" id="cuentas" aria-labelledby="t-cuentas">
   <div class="wrap">
-    <div class="sec-head"><h2 class="h2" id="t-cuentas">Únete a las más de 25 cuentas que ya confían en nosotros.</h2></div>
+    <div class="sec-head"><h2 class="h2" id="t-cuentas">${esc(HEADLINES.accounts)}</h2></div>
     <div class="scroller accounts" data-carousel="cuentas" tabindex="0" role="region" aria-label="Perfiles de Instagram de clientes">
       ${items.join('\n      ')}
     </div>
@@ -258,8 +256,8 @@ function testimonials() {
   return `<section class="sec sec-soft" id="opiniones" aria-labelledby="t-opiniones">
   <div class="wrap">
     <div class="sec-head">
-      <h2 class="h2" id="t-opiniones">5,0 en Google.</h2>
-      <a class="g-link" href="${SITE.reviews}" target="_blank" rel="noopener"><span class="stars">${stars(17)}</span> <u>5,0 en Google</u> <span class="g-more">Ver reseñas ${icon.arrow({ size: 16 })}</span></a>
+      <h2 class="h2" id="t-opiniones">${esc(RATING)}.</h2>
+      <a class="g-link" href="${SITE.reviews}" target="_blank" rel="noopener"><span class="stars">${stars(17)}</span> <u>${esc(RATING)}</u> <span class="g-more">Ver reseñas ${icon.arrow({ size: 16 })}</span></a>
     </div>
     <div class="scroller tcards" data-carousel="opiniones">
       ${cards.join('\n      ')}
@@ -288,7 +286,18 @@ async function about(ctx) {
 </section>`;
 }
 
-function form() {
+// Primera capa de información junto al botón de envío (art. 13 RGPD). Cambia
+// según lo que mida la build: sin Meta, sin oposición que ofrecer.
+function formNotice(ctx) {
+  const policy = '<a href="/privacidad" target="_blank" rel="noopener">política de privacidad</a>';
+  if (!ctx.pixelId) return `En AAS Marketing usamos tus datos para responderte. Más información y tus derechos en la ${policy}.`;
+  const measure = serverMeasurement(ctx)
+    ? 'convertidos en un código, para medir nuestros anuncios en Meta. Puedes oponerte a esa medición en <button type="button" class="lf-link" data-open-cookies>Configurar cookies</button>.'
+    : 'si aceptaste las cookies de marketing, para medir nuestros anuncios en Meta.';
+  return `En AAS Marketing usamos tus datos para responderte y, ${measure} Más información y tus derechos en la ${policy}.`;
+}
+
+function form(ctx) {
   const options = SERVICIOS.map((s) => `<label class="lf-opt"><input type="radio" name="servicio" value="${s.id}"><span>${esc(s.label)}</span></label>`).join('\n          ');
   const chips = SECTORES.map((s) => `<label class="lf-chip"><input type="radio" name="sector" value="${s.id}"><span>${esc(s.label)}</span></label>`).join('\n          ');
   const prefixes = COUNTRIES.map((c) => `<option value="${c.iso}"${c.iso === 'ES' ? ' selected' : ''}>${esc(c.name)} +${c.code}</option>`).join('')
@@ -361,7 +370,7 @@ function form() {
           </div>
           <p class="lf-err" id="e-tel" data-err></p>
           <button type="submit" class="btn lf-submit" data-submit>Enviar y abrir WhatsApp ${icon.arrow()}</button>
-          <p class="lf-legal">Al enviar aceptas la <a href="/privacidad" target="_blank" rel="noopener">política de privacidad</a>. Usamos tus datos solo para responderte.</p>
+          <p class="lf-legal">${formNotice(ctx)}</p>
         </div>
         <noscript><p class="lf-help">Para enviar el formulario necesitas activar JavaScript.</p></noscript>
       </form>
@@ -415,6 +424,7 @@ export async function landing(ctx) {
 <body>
 ${sprite()}
 <a class="skip" href="#formulario">Saltar al formulario</a>
+${cookieBanner(ctx)}
 ${header()}
 <main id="main">
 ${await hero(ctx)}
@@ -431,13 +441,12 @@ ${await videos(ctx)}
 ${await accounts(ctx)}
 ${testimonials()}
 ${await about(ctx)}
-${form()}
+${form(ctx)}
 ${faq()}
 ${closing()}
 </main>
-${footer()}
+${footer(ctx)}
 ${stickyCta()}
-${cookieBanner()}
 </body>
 </html>`;
 }

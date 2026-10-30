@@ -8,7 +8,7 @@ import { servicioLabel, negocioLabel, clean } from '../../shared/options.js';
 import { normalizePhone, detectCountry, PHONE_ERRORS, OTHER, COUNTRIES } from '../../shared/phone.js';
 import { normalizeProfile } from '../../shared/profile.js';
 import { getAttribution } from './attribution.js';
-import { hasMarketing } from './consent.js';
+import { hasMarketing, hasOptedOut } from './consent.js';
 import { pixelTrack } from './pixel.js';
 import { track } from './track.js';
 
@@ -57,7 +57,8 @@ async function postLead(payload) {
       body: JSON.stringify(payload),
       keepalive: true,
     });
-    return res.status < 500; // 2xx/4xx: el servidor lo ha recibido (y lo deja en el log si no pudo guardarlo)
+    // 2xx/4xx: recibido. 5xx (incluido el 503 si no se pudo guardar): se reintenta.
+    return res.status < 500;
   } catch {
     return false;
   } finally {
@@ -300,6 +301,8 @@ export function initForm() {
     if (elapsed < MIN_MS) await sleep(MIN_MS - elapsed);
 
     const a = getAttribution();
+    // Quien se ha opuesto a la medición no manda identificadores de Meta.
+    const ids = hasOptedOut() ? {} : a;
     const profile = normalizeProfile(val('perfil'));
     const answers = {
       nombre: clean(val('nombre'), 60),
@@ -319,9 +322,10 @@ export function initForm() {
       hp: val('hp_check'),
       elapsed_ms: Date.now() - t0,
       consent: hasMarketing(),
-      fbp: a.fbp || '',
-      fbc: a.fbc || '',
-      fbclid: a.fbclid || '',
+      optout: hasOptedOut(),
+      fbp: ids.fbp || '',
+      fbc: ids.fbc || '',
+      fbclid: ids.fbclid || '',
       utm_source: a.utm_source || '',
       utm_medium: a.utm_medium || '',
       utm_campaign: a.utm_campaign || '',
@@ -335,7 +339,9 @@ export function initForm() {
     // 1. Lead en el navegador (solo con consentimiento), mismo event_id que el servidor.
     pixelTrack('Lead', { content_name: 'Estrategia gratis' }, payload.event_id);
     // 2. Guardar primero: si la red falla o se cierra la página, se reenvía después.
-    savePending([...pending(), { p: payload, n: 1, at: Date.now() }]);
+    // Sin consentimiento de marketing, la copia del navegador no guarda identificadores de Meta.
+    const copy = hasMarketing() ? payload : { ...payload, fbp: '', fbc: '', fbclid: '' };
+    savePending([...pending(), { p: copy, n: 1, at: Date.now() }]);
     // 3. Enviar y esperar como mucho 6 s. El Lead por servidor no depende del Sheet.
     const request = postLead(payload).then((ok) => {
       if (ok) dropPending(payload.event_id);

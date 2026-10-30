@@ -3,7 +3,10 @@
 // Uso: npm run build   (Vercel lo ejecuta en cada despliegue)
 //
 // Variables de entorno que lee en el build (las mismas de Vercel):
-//   META_PIXEL_ID     ID del píxel. Si falta, la página no carga el píxel.
+//   META_PIXEL_ID     ID del píxel. Si falta, la página no carga el píxel y los
+//                     textos legales y el aviso de cookies no hablan de Meta.
+//   CAPI_WITHOUT_CONSENT  Medición por servidor sin consentimiento (por defecto sí).
+//                     Cambia el aviso de cookies y la política de privacidad.
 //   VERCEL_ANALYTICS  Vercel Web Analytics y Speed Insights (por defecto sí; "false" los quita).
 //                     Se cargan solo si aceptan la analítica en el aviso de cookies.
 //   LEADS_DB_ENABLED  "true" si se usa la copia en Upstash (la política de privacidad la nombra).
@@ -17,6 +20,7 @@ import { fileURLToPath } from 'node:url';
 import * as esbuild from 'esbuild';
 import { Assets } from './lib/assets.mjs';
 import { minifyHtml } from './lib/html.mjs';
+import { envFlag } from '../lib/http.js';
 import { landing } from '../src/templates/landing.mjs';
 import { legalPages, notFound } from '../src/templates/legal.mjs';
 
@@ -24,7 +28,6 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const out = path.resolve(root, process.env.OUT_DIR || 'dist');
 const started = Date.now();
 
-const flag = (v) => /^(1|true|yes|on)$/i.test(String(v || '').trim());
 
 function pixelIdFromEnv() {
   const id = String(process.env.META_PIXEL_ID || '').trim();
@@ -93,8 +96,10 @@ async function main() {
     assets,
     criticalCss,
     pixelId: pixelIdFromEnv(),
-    analytics: !/^(0|false|no|off)$/i.test(String(process.env.VERCEL_ANALYTICS ?? '').trim()),
-    leadsDb: flag(process.env.LEADS_DB_ENABLED),
+    // Mismo criterio que las funciones de /api (vacía = valor por defecto).
+    capiWithoutConsent: envFlag('CAPI_WITHOUT_CONSENT', true),
+    analytics: envFlag('VERCEL_ANALYTICS', true),
+    leadsDb: envFlag('LEADS_DB_ENABLED', false),
     aleksPhoto: await findAleksPhoto(),
     mapSize: await svgSize('img/mapa-europa.svg'),
     asset: {
@@ -145,6 +150,7 @@ async function report(ctx) {
   console.log(line('main.css', css));
   console.log(line('app.js', js));
   console.log(`  Píxel de Meta: ${ctx.pixelId ? ctx.pixelId : 'no configurado (META_PIXEL_ID vacío)'}`);
+  if (ctx.pixelId) console.log(`  Medición por servidor: ${ctx.capiWithoutConsent ? 'acepten o no las cookies, salvo oposición (CAPI_WITHOUT_CONSENT=true)' : 'solo con las cookies de marketing aceptadas (CAPI_WITHOUT_CONSENT=false)'}`);
   console.log(`  Vercel Analytics: ${ctx.analytics ? 'sí (tras el consentimiento de analítica)' : 'no'}  ·  Foto de Aleks: ${ctx.aleksPhoto || 'no (se muestra el logo)'}`);
 }
 
