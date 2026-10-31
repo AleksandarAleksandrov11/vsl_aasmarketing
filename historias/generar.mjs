@@ -201,6 +201,7 @@ img,svg{display:block}
 .t-text.l{font-size:42px}
 .t-text.xl{font-size:35px;line-height:1.5;margin-top:40px}
 .t-text.s{font-size:60px;line-height:1.3;font-weight:650;letter-spacing:-.02em}
+.stat-t{font-size:27px;font-weight:700;color:rgba(245,245,243,.7)}
 .hl{margin-top:40px;padding:36px 34px;border-radius:30px;background:#1a1a1c}
 .hl-t{margin-top:16px;font-size:52px;font-weight:800;line-height:1.1;letter-spacing:-.03em}
 .t-who{display:flex;align-items:center;gap:24px;margin-top:56px}
@@ -293,14 +294,14 @@ const dm = (eyebrow) => doc(`${top('Escríbeme')}
 const items = (list, ic) => `<div class="items">${list.map(([t, d]) => `<div class="item"><span class="ic">${ic}</span><div><b>${esc(t)}</b><span>${esc(d)}</span></div></div>`).join('')}</div>`;
 
 async function clientes() {
-  const accs = await Promise.all(ACCOUNTS.map((a) => cropped(`img/accounts/${a.file}.webp`)));
+  // Sin CreArte en las historias (por petición suya).
+  const accs = await Promise.all(ACCOUNTS.filter((a) => a.file !== 'crearte').map((a) => cropped(`img/accounts/${a.file}.webp`)));
   // "+10 millones": las 9 con más visitas. "Vídeos que traen clientes": las
   // demás y tres más de VDN, de más a menos visitas.
   const vdnBest = [...RESULTS.filter((r) => r.who === 'VDN Performance'), ...VDN_EXTRA]
     .sort((a, b) => parseFloat(b.views.replace(',', '.')) - parseFloat(a.views.replace(',', '.')));
   const more = [...RESULTS.slice(9), ...VDN_MORE].sort((a, b) => parseFloat(b.views.replace(',', '.')) - parseFloat(a.views.replace(',', '.')));
   const vdnLogo = await cropped(VDN.logo);
-  const vdnShots = await Promise.all(VDN.shots.map((s) => cropped(s.src)));
   const exAvatar = await cropped(EXONERIS.avatar.src, EXONERIS.avatar.crop);
   const exProfile = await cropped(EXONERIS.profile.src);
   const exStats = await Promise.all(EXONERIS.shots.map((s) => cropped(s.src)));
@@ -332,19 +333,14 @@ async function clientes() {
     ['04-caso-vdn', doc(`${top('Caso de éxito')}
 <div class="safe center">
   ${who(vdnLogo, VDN)}
-  <h2 class="case-t">${esc(VDN.title)}</h2>
-  <div class="kpis">${VDN.kpis.map((k) => `<div><b>${esc(k.value)}</b><span>${esc(k.label)}</span></div>`).join('')}</div>
-  <div class="proof">${vdnShots.map((s) => `<img src="${s}">`).join('')}</div>
-</div>${foot()}`, 'dark')],
-    ['05-videos-vdn', doc(`${top('Caso de éxito')}
-<div class="safe center">
-  <p class="eyebrow">VDN Performance en Instagram y TikTok</p>
-  <h2 class="h m">Sus mejores vídeos</h2>
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:48px">
+  <h2 class="case-t" style="margin-top:32px;font-size:64px">${esc(VDN.title)}</h2>
+  <div class="kpis" style="margin-top:30px;padding:24px 0"><div><b style="font-size:58px">+2.500</b><span>leads con Meta Ads en 2 meses</span></div><div><b style="font-size:58px">+5.000</b><span>seguidores entre todas las plataformas</span></div></div>
+  <p class="stat-t" style="margin-top:28px;text-align:center">Sus 6 mejores vídeos</p>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;width:660px;margin:16px auto 0">
     ${(await Promise.all(vdnBest.map((r) => reel(r, { small: true, caption: false })))).join('')}
   </div>
 </div>${foot()}`, 'dark')],
-    ['06-caso-javier', doc(`${top('Caso de éxito')}
+    ['05-caso-javier', doc(`${top('Caso de éxito')}
 <div class="safe center">
   ${who(exAvatar, EXONERIS)}
   <h2 class="case-t" style="font-size:70px">${esc(EXONERIS.title)}</h2>
@@ -354,7 +350,7 @@ async function clientes() {
   </div>
   <div class="proof" style="margin-top:26px"><img src="${exProfile}"></div>
 </div>${foot()}`, 'dark')],
-    ['07-javier-estadisticas', doc(`${top('Caso de éxito')}
+    ['06-javier-estadisticas', doc(`${top('Caso de éxito')}
 <div class="safe center">
   <p class="eyebrow">Javier Núñez · sus estadísticas</p>
   <h2 class="h m">Lo que dicen los números</h2>
@@ -367,7 +363,7 @@ async function clientes() {
     <div class="proof" style="margin-top:26px"><img src="${exEngagement}"></div>
   </div>
 </div>${foot()}`, 'dark')],
-    ['08-mas-resultados', doc(`${top('Resultados')}
+    ['07-mas-resultados', doc(`${top('Resultados')}
 <div class="safe center">
   <p class="eyebrow">Y muchos más</p>
   <h2 class="h m">Vídeos que traen clientes</h2>
@@ -375,7 +371,7 @@ async function clientes() {
     ${(await Promise.all(more.map((r) => reel(r, { small: true })))).join('')}
   </div>
 </div>${foot()}`)],
-    ['09-escribeme', dm('¿Quieres resultados así?')],
+    ['08-escribeme', dm('¿Quieres resultados así?')],
   ];
 }
 
