@@ -117,8 +117,8 @@ sin punto final y con una sola tipografía.
    Están quietos hasta que se ve la sección; se pueden arrastrar con el dedo o
    con el ratón y vuelven a moverse solos 5 s después. Todas las opiniones miden lo mismo: las largas se cortan con "Leer
    más", que abre la opinión entera en una ventana. Fuera las opiniones de
-   "Aleks Nikolaev Antonov" y "Adriana Aleksandrova" (podían parecer tuyas) y la
-   de Maram Psicología (no quiere que salga su nombre). Son 24 opiniones: las
+   "Adriana Aleksandrova" y la de Maram Psicología (no quiere que salga su
+   nombre). La de "Aleks Nikolaev Antonov" se queda. Son 25 opiniones: las
    de la ficha de Google (octubre de 2026) más las que ya había; si añades una
    nueva, va a `TESTIMONIALS` en `src/data/content.mjs` y sale también, una por
    historia, en la destacada de Testimonios.
