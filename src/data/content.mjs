@@ -166,7 +166,6 @@ export const ACCOUNTS = [
   ['wash-go-detailing', 'Wash & Go Detailing', '', '3.159'],
   ['logolea', 'LogoLEA', 'logopedia y psicología en Madrid', '2.616'],
   ['javier-nunez-exoneris', 'Javier Núñez', 'subastas y NPL', '2.195'],
-  ['maram-psicologia', 'MARAM Psicología', '', '1.777'],
   ['vdn-performance', 'VDN Performance', 'reprogramaciones en Madrid', '1.768'],
   ['carlos-sanchez', 'Carlos Sánchez', 'entrenador online', '1.377'],
   ['creaciones-jmc', 'Creaciones JMC', 'regalos personalizados', '1.368'],

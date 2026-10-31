@@ -38,7 +38,7 @@ async function cropped(rel, box) {
 // ---------- Textos propios de las historias (el resto viene de content.mjs)
 
 const HANDLE = '@aas_webmarketing';
-const LINK = 'vsl.aasmarketing.com';
+const LINK = 'aasmarketing.com';
 const stat = (value) => STATS.find((s) => s.value === value);
 // Servicios: cada punto con una frase que lo explica.
 const SERVICIOS = {
@@ -66,6 +66,13 @@ const PASOS_ESTRATEGIA = [
   'Me escribes «INFO» por mensaje.',
   'Analizo tu perfil y preparo tu estrategia con los cambios que haría.',
   'Te la mando en menos de 24 horas, gratis.',
+];
+// Más vídeos de VDN, recortados de sus cuadrículas de Instagram y TikTok (la
+// cifra es la que se ve en cada celda; el contador original queda fuera del recorte).
+const VDN_EXTRA = [
+  { src: '../historias/img/vdn-videos-instagram.webp', crop: { left: 234, top: 436, width: 231, height: 289 }, views: '144 mil', who: 'VDN Performance' },
+  { src: '../historias/img/vdn-videos-tiktok.webp', crop: { left: 8, top: 944, width: 216, height: 270 }, views: '114,5 mil', who: 'VDN Performance' },
+  { src: '../historias/img/vdn-videos-instagram.webp', crop: { left: 0, top: 850, width: 232, height: 290 }, views: '60,9 mil', who: 'VDN Performance' },
 ];
 // Lo que me diferencia (lo que era "Lo de siempre vs AAS" en la web).
 const DIFERENCIA = [
@@ -188,7 +195,8 @@ img,svg{display:block}
 .t-text.l{font-size:42px}
 .t-text.xl{font-size:35px;line-height:1.5;margin-top:40px}
 .t-text.s{font-size:60px;line-height:1.3;font-weight:650;letter-spacing:-.02em}
-.stat-t{font-size:27px;font-weight:700;color:rgba(245,245,243,.7)}
+.hl{margin-top:40px;padding:36px 34px;border-radius:30px;background:#1a1a1c}
+.hl-t{margin-top:16px;font-size:52px;font-weight:800;line-height:1.1;letter-spacing:-.03em}
 .t-who{display:flex;align-items:center;gap:24px;margin-top:56px}
 .t-who .t-av{display:grid;margin:0;color:#0c0c0d;place-items:center;width:96px;height:96px;border-radius:50%;background:#f1f1ef;border:2px solid rgba(12,12,13,.08);font-size:32px;font-weight:800}
 .t-who b{display:block;font-size:40px;font-weight:800;line-height:1.2}
@@ -236,8 +244,7 @@ img,svg{display:block}
 .dm-t{margin-top:30px;font-size:132px;font-weight:800;line-height:.95;letter-spacing:-.05em;text-transform:uppercase}
 .dm-info{display:inline-block;margin-top:30px;padding:14px 56px 22px;border:5px solid #f5f5f3;border-radius:999px;font-size:150px;font-weight:800;letter-spacing:-.04em;line-height:1}
 .dm .lead{max-width:22ch;margin-top:44px}
-.dm-arrow{position:absolute;left:150px;top:1330px;color:#f5f5f3}
-.dm-hint{position:absolute;left:420px;top:1560px;font-size:30px;font-weight:700;color:rgba(245,245,243,.6)}
+.dm-arrow{position:absolute;left:480px;top:1330px;color:#f5f5f3}
 `;
 
 // ---------- Piezas
@@ -264,7 +271,7 @@ const bubble = (ico, light = false) => doc(`<div class="bubble${light ? ' light'
 // ---------- Historias
 
 // Cierre de cada destacada: que escriban «INFO» por mensaje. La flecha baja
-// hacia el campo «Enviar mensaje» de Instagram (abajo a la izquierda).
+// recta hacia el campo «Enviar mensaje» de Instagram, centrado abajo.
 const dm = (eyebrow) => doc(`${top('Escríbeme')}
 <div class="dm">
   <p class="eyebrow">${esc(eyebrow)}</p>
@@ -272,19 +279,18 @@ const dm = (eyebrow) => doc(`${top('Escríbeme')}
   <span class="dm-info">INFO</span>
   <p class="lead">por mensaje y te cuento cómo conseguir más clientes desde tus redes.</p>
 </div>
-<svg class="dm-arrow" width="300" height="300" viewBox="0 0 300 300" fill="none" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-  <path d="M250 20C250 150 180 230 50 262"/>
-  <path d="M96 210L46 263l70 22"/>
-</svg>
-<p class="dm-hint">Aquí abajo, en «Enviar mensaje»</p>`, 'dark');
+<svg class="dm-arrow" width="120" height="300" viewBox="0 0 120 300" fill="none" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  <path d="M60 10v270"/>
+  <path d="M14 232l46 48 46-48"/>
+</svg>`, 'dark');
 
 const items = (list, ic) => `<div class="items">${list.map(([t, d]) => `<div class="item"><span class="ic">${ic}</span><div><b>${esc(t)}</b><span>${esc(d)}</span></div></div>`).join('')}</div>`;
 
 async function clientes() {
   const accs = await Promise.all(ACCOUNTS.map((a) => cropped(`img/accounts/${a.file}.webp`)));
-  const [r1, r2, r3, r4] = RESULTS;
-  // Los de Exoneris ya salen en su caso: en "más resultados", los demás.
-  const more = RESULTS.slice(4).filter((r) => r.who !== 'Exoneris Consulting').slice(0, 6);
+  // "+10 millones": las 9 con más visitas. "Vídeos que traen clientes": las
+  // demás y tres más de VDN, de más a menos visitas.
+  const more = [...VDN_EXTRA, ...RESULTS.slice(9)];
   const vdnLogo = await cropped(VDN.logo);
   const vdnShots = await Promise.all(VDN.shots.map((s) => cropped(s.src)));
   const vdnGrids = await Promise.all(['vdn-videos-instagram', 'vdn-videos-tiktok'].map((f) => cropped(`../historias/img/${f}.webp`)));
@@ -312,8 +318,8 @@ async function clientes() {
 <div class="safe center">
   <p class="eyebrow">Visitas generadas</p>
   <h2 class="h">+10 millones</h2>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px 26px;width:720px;margin:48px auto 0">
-    ${(await Promise.all([r1, r2, r3, r4].map((r) => reel(r)))).join('')}
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px;width:790px;margin:44px auto 0">
+    ${(await Promise.all(RESULTS.slice(0, 9).map((r) => reel(r, { small: true, caption: false })))).join('')}
   </div>
 </div>${foot()}`)],
     ['04-caso-vdn', doc(`${top('Caso de éxito')}
@@ -344,15 +350,18 @@ async function clientes() {
   <p class="eyebrow">Javier Núñez · sus estadísticas</p>
   <h2 class="h m">Lo que dicen los números</h2>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:44px">
-    ${EXONERIS.reels.map((r, i) => `<div><p class="stat-t">${i ? '¿Dónde comprar pisos baratos?' : '¿De quién es esta casa?'}</p><div class="proof" style="margin-top:14px"><img src="${exStats[i]}"></div></div>`).join('')}
+    ${exStats.map((src) => `<div class="proof" style="margin:0"><img src="${src}"></div>`).join('')}
   </div>
-  <p class="stat-t" style="margin-top:36px">¿De quién es esta casa? · interacciones</p>
-  <div class="proof" style="margin-top:14px"><img src="${exEngagement}"></div>
+  <div class="hl">
+    <p class="eyebrow">Además de visitas, clientes</p>
+    <p class="hl-t">+200 comentarios de personas interesadas en un solo vídeo</p>
+    <div class="proof" style="margin-top:26px"><img src="${exEngagement}"></div>
+  </div>
 </div>${foot()}`, 'dark')],
     ['08-mas-resultados', doc(`${top('Resultados')}
 <div class="safe center">
   <p class="eyebrow">Y muchos más</p>
-  <h2 class="h m">Vídeos que traen visitas</h2>
+  <h2 class="h m">Vídeos que traen clientes</h2>
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:52px">
     ${(await Promise.all(more.map((r) => reel(r, { small: true })))).join('')}
   </div>
@@ -551,8 +560,8 @@ La 00 de cada carpeta es la portada de la destacada (título), sin numerar.
 00-portadas-destacadas: los iconos para la portada redonda de cada destacada.
 En Instagram: Editar destacada > Editar portada > elige la imagen del icono.
 
-Cada destacada termina con «Escríbeme INFO por mensaje» y una flecha que
-apunta al campo «Enviar mensaje» de Instagram.
+Cada destacada termina con «Escríbeme INFO por mensaje» y una flecha centrada
+que apunta al campo «Enviar mensaje» de Instagram.
 `);
 execFileSync('zip', ['-qr', 'historias-aas.zip', '.', '-x', 'historias-aas.zip'], { cwd: OUT });
 console.log(`${n} imágenes en historias/salida (y historias-aas.zip)`);
