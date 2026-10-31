@@ -180,7 +180,7 @@ img,svg{display:block}
 .sign img{width:110px;height:110px;border-radius:50%;object-fit:cover}
 .sign b{display:block;font-size:34px;font-weight:800}
 .sign span{display:block;font-size:26px;color:#7a7a82;margin-top:2px}
-/* Llamada a la acción: hueco libre para el sticker de enlace */
+/* Cierre con botón: hueco libre para el sticker de enlace */
 .cta-link{margin-top:56px;display:flex;flex-direction:column;align-items:center;gap:18px;font-size:30px;font-weight:700;color:#7a7a82}
 .cta-link .arrow{display:grid;place-items:center;width:76px;height:76px;border-radius:50%;border:2px solid rgba(12,12,13,.18);color:#0c0c0d}
 .dark .cta-link{color:rgba(245,245,243,.6)}
