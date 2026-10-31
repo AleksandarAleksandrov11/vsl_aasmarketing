@@ -430,8 +430,6 @@ async function sobreMi() {
 async function servicios() {
   const check = icon.check({ size: 28 });
   const stepIcons = { search: icon.search({ size: 34 }), pen: icon.pen({ size: 34 }), camera: icon.camera({ size: 34 }), film: icon.film({ size: 34 }), chart: icon.chart({ size: 34 }) };
-  const [r1] = RESULTS;
-  const casa = EXONERIS.reels[0];
   return [
     ['00-portada', cover('Servicios', 'Redes sociales, Meta Ads y todo lo demás.', line(extra.grid, 96, 1.6))],
     ['01-gestion-de-redes', doc(`${top('Servicios')}
@@ -450,10 +448,11 @@ async function servicios() {
 <div class="safe center">
   <p class="eyebrow">Resultados</p>
   <h2 class="h m">Lo que consigue</h2>
-  <div class="nums">
-    ${[stat('+10 M'), stat('946 mil'), { value: '+2.000', label: 'seguidores nuevos con 2 vídeos' }, stat('+5.000')].map((x) => `<div class="num"><b>${esc(x.value)}</b><span>${esc(x.label)}</span></div>`).join('')}
+  <div class="nums" style="margin-top:30px">
+    ${[stat('+10 M'), stat('946 mil'), { value: '+20.000', label: 'seguidores generados' }].map((x) => `<div class="num" style="padding:18px 0"><b>${esc(x.value)}</b><span>${esc(x.label)}</span></div>`).join('')}
   </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;width:520px;margin:40px auto 0">${await reel(r1, { small: true, caption: false })}${await reel(casa, { small: true, caption: false })}</div>
+  <p class="stat-t" style="margin-top:26px;text-align:center">Vídeos virales de mis clientes</p>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;width:660px;margin:16px auto 0">${(await Promise.all(RESULTS.slice(0, 6).map((r) => reel(r, { small: true, caption: false })))).join('')}</div>
 </div>${foot()}`, 'dark')],
     ['04-gestion-de-meta-ads', doc(`${top('Servicios')}
 <div class="safe center">
