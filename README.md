@@ -73,6 +73,20 @@ Abre http://localhost:3000. Para probar el formulario contra un Sheet, copia
   `node scripts/og.mjs` con el mismo estilo de la web (la de aasmarketing.com
   hablaba de webs y demo gratuita).
 
+## Historias destacadas de Instagram
+
+`historias/generar.mjs` crea las historias destacadas (1080x1920, blanco, gris y
+negro, con las capturas reales) en `historias/salida/`, una carpeta por
+destacada: clientes, sobre mí, servicios y testimonios. Cada una empieza por su
+portada (00) y aparte van los iconos para la portada redonda. Las cifras, los
+casos, las cuentas y las opiniones salen de `src/data/content.mjs`: si cambia un
+caso en la web, se vuelve a generar y quedan iguales. Necesita Playwright, como
+`scripts/og.mjs`:
+
+```bash
+node historias/generar.mjs
+```
+
 ## Secciones de la landing
 
 Pensada para el móvil: 9,7 pantallas a 390x844 y el formulario empieza a los
