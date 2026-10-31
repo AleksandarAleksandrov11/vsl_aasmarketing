@@ -74,6 +74,12 @@ const VDN_EXTRA = [
   { src: '../historias/img/vdn-videos-tiktok.webp', crop: { left: 8, top: 944, width: 216, height: 270 }, views: '114,5 mil', who: 'VDN Performance' },
   { src: '../historias/img/vdn-videos-instagram.webp', crop: { left: 0, top: 850, width: 232, height: 290 }, views: '60,9 mil', who: 'VDN Performance' },
 ];
+// Otros tres de VDN para "Vídeos que traen clientes" (así no se repiten los de su historia).
+const VDN_MORE = [
+  { src: '../historias/img/vdn-videos-tiktok.webp', crop: { left: 242, top: 634, width: 216, height: 270 }, views: '32,7 mil', who: 'VDN Performance' },
+  { src: '../historias/img/vdn-videos-tiktok.webp', crop: { left: 242, top: 14, width: 216, height: 270 }, views: '30,3 mil', who: 'VDN Performance' },
+  { src: '../historias/img/vdn-videos-instagram.webp', crop: { left: 467, top: 436, width: 232, height: 290 }, views: '28,9 mil', who: 'VDN Performance' },
+];
 // Lo que me diferencia (lo que era "Lo de siempre vs AAS" en la web).
 const DIFERENCIA = [
   ['Te piden que grabes tú.', 'Voy yo a grabar a tu negocio.'],
@@ -290,10 +296,11 @@ async function clientes() {
   const accs = await Promise.all(ACCOUNTS.map((a) => cropped(`img/accounts/${a.file}.webp`)));
   // "+10 millones": las 9 con más visitas. "Vídeos que traen clientes": las
   // demás y tres más de VDN, de más a menos visitas.
-  const more = [...VDN_EXTRA, ...RESULTS.slice(9)];
+  const vdnBest = [...RESULTS.filter((r) => r.who === 'VDN Performance'), ...VDN_EXTRA]
+    .sort((a, b) => parseFloat(b.views.replace(',', '.')) - parseFloat(a.views.replace(',', '.')));
+  const more = [...RESULTS.slice(9), ...VDN_MORE].sort((a, b) => parseFloat(b.views.replace(',', '.')) - parseFloat(a.views.replace(',', '.')));
   const vdnLogo = await cropped(VDN.logo);
   const vdnShots = await Promise.all(VDN.shots.map((s) => cropped(s.src)));
-  const vdnGrids = await Promise.all(['vdn-videos-instagram', 'vdn-videos-tiktok'].map((f) => cropped(`../historias/img/${f}.webp`)));
   const exAvatar = await cropped(EXONERIS.avatar.src, EXONERIS.avatar.crop);
   const exProfile = await cropped(EXONERIS.profile.src);
   const exStats = await Promise.all(EXONERIS.shots.map((s) => cropped(s.src)));
@@ -332,8 +339,10 @@ async function clientes() {
     ['05-videos-vdn', doc(`${top('Caso de éxito')}
 <div class="safe center">
   <p class="eyebrow">VDN Performance en Instagram y TikTok</p>
-  <h2 class="h m">Vídeo a vídeo</h2>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:44px">${vdnGrids.map((s) => `<img src="${s}" style="width:100%;border-radius:22px;border:2px solid rgba(245,245,243,.12)">`).join('')}</div>
+  <h2 class="h m">Sus mejores vídeos</h2>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:48px">
+    ${(await Promise.all(vdnBest.map((r) => reel(r, { small: true, caption: false })))).join('')}
+  </div>
 </div>${foot()}`, 'dark')],
     ['06-caso-javier', doc(`${top('Caso de éxito')}
 <div class="safe center">
