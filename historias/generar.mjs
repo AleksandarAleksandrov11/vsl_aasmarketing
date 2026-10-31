@@ -200,6 +200,7 @@ img,svg{display:block}
 .t-text{margin-top:30px;font-size:46px;line-height:1.48;font-weight:550;letter-spacing:-.01em;color:#25252a}
 .t-text.l{font-size:42px}
 .t-text.xl{font-size:35px;line-height:1.5;margin-top:40px}
+.t-text.xxl{font-size:30px;line-height:1.46;margin-top:34px}
 .t-text.s{font-size:60px;line-height:1.3;font-weight:650;letter-spacing:-.02em}
 .stat-t{font-size:27px;font-weight:700;color:rgba(245,245,243,.7)}
 .hl{margin-top:40px;padding:36px 34px;border-radius:30px;background:#1a1a1c}
@@ -500,11 +501,11 @@ async function testimonios() {
   const slug = (n) => n.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   // Una opinión por historia, entera; las muy largas, con la letra algo menor.
   const one = (t) => {
-    const size = t.text.length > 600 ? ' xl' : t.text.length > 300 ? ' l' : t.text.length < 160 ? ' s' : '';
+    const size = t.text.length > 900 ? ' xxl' : t.text.length > 600 ? ' xl' : t.text.length > 300 ? ' l' : t.text.length < 160 ? ' s' : '';
     return doc(`${top('Testimonios')}
 <div class="safe center">
   <div class="t-stars">${stars(46)}</div>
-  ${size === ' xl' ? '' : `<div class="t-quote">${quote}</div>`}
+  ${size === ' xl' || size === ' xxl' ? '' : `<div class="t-quote">${quote}</div>`}
   <p class="t-text${size}">${esc(t.text)}</p>
   <div class="t-who"><span class="t-av">${esc(initials(t.name))}</span><div><b>${esc(t.name)}</b><span>${esc(t.role)}</span></div></div>
 </div>${foot()}`, 'white');

@@ -101,11 +101,18 @@ const routeWa = (context, log = { wa: [], waAt: [] }, delay = 4000) => context.r
   route.fulfill({ contentType: 'text/html', body: '<!doctype html><title>WhatsApp</title><p>WhatsApp</p>' }).catch(() => {});
 });
 
-/** Pantalla de éxito a la vista (sin esperar a que termine la navegación a WhatsApp). */
-const doneVisible = (page, timeout = 9000) => page.waitForFunction(() => {
-  const d = document.querySelector('[data-done]');
-  return d && !d.hidden;
-}, null, { timeout });
+/**
+ * Pantalla de éxito a la vista (sin esperar a que termine la navegación a
+ * WhatsApp). Como WhatsApp se abre a los 0,15 s, también vale haber llegado a
+ * wa.me: solo ocurre después de mostrar el éxito.
+ */
+const doneVisible = (page, timeout = 9000) => Promise.any([
+  page.waitForFunction(() => {
+    const d = document.querySelector('[data-done]');
+    return d && !d.hidden;
+  }, null, { timeout }),
+  page.waitForURL(/wa\.me/, { timeout }),
+]).then(() => {}, (e) => { throw e.errors?.[0] || e; });
 
 /** Abre una página con registro de errores, eventos y peticiones a Meta simuladas. */
 async function open(browserType, ctxOptions, { url = base, before: setup } = {}) {
