@@ -663,10 +663,9 @@ test('formulario: borrador al recargar, doble clic, mínimo de 3 s y Contact una
     const before = log.leads.length;
     // Momento en que la app dio el formulario por abierto (lo guarda en el borrador).
     const t0 = await page.evaluate(() => JSON.parse(sessionStorage.getItem('aas_form')).t0);
-    const sent = page.waitForRequest('**/api/lead');
-    await page.locator('[data-submit]').dblclick();
-    await sent;
-    const sentAt = await page.evaluate(() => Date.now());
+    const sent = page.waitForRequest('**/api/lead').then(() => Date.now());
+    await page.locator('[data-submit]').dblclick({ noWaitAfter: true });
+    const sentAt = await sent;
     assert.ok(sentAt - t0 >= 3000, `se respeta el mínimo de 3 s (${sentAt - t0} ms)`);
     await doneVisible(page);
     await page.waitForURL(/wa\.me/, { timeout: 10000 }); // WhatsApp abierto

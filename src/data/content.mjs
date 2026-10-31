@@ -31,12 +31,24 @@ export const META = {
 // Todas las capturas de reels se recortan a 4:5 con el mismo encuadre (`crop`,
 // en píxeles del original): fuera queda la franja de abajo con el contador de
 // Instagram o TikTok, que la página pone igual en todas, y no hay franjas negras.
-// Primer reel de Exoneris: sale en el muro de resultados.
-const EXONERIS_REEL = {
-  src: 'img/cases/exoneris-primer-video.jpg',
-  alt: 'Primer reel de Javier Núñez, de Exoneris Consulting, sobre dónde comprar pisos baratos, con 151 mil visualizaciones',
-  crop: { left: 0, top: 60, width: 405, height: 506 },
-};
+// Los dos reels de Exoneris (capturas de octubre de 2026): salen en el muro de
+// resultados, en el caso de éxito y en las historias destacadas.
+const EXONERIS_REELS = [
+  {
+    src: 'img/cases/exoneris-de-quien-es-esta-casa.jpg',
+    views: '234 mil',
+    who: 'Exoneris Consulting',
+    alt: 'Reel de Javier Núñez, de Exoneris Consulting, sobre de quién es una casa abandonada, con 234 mil visualizaciones',
+    crop: { left: 0, top: 60, width: 393, height: 491 },
+  },
+  {
+    src: 'img/cases/exoneris-pisos-baratos.jpg',
+    views: '171 mil',
+    who: 'Exoneris Consulting',
+    alt: 'Reel de Javier Núñez, de Exoneris Consulting, sobre dónde comprar pisos baratos, con 171 mil visualizaciones',
+    crop: { left: 0, top: 60, width: 398, height: 498 },
+  },
+];
 
 // Cifra exacta de cada captura sacada del alt de index.html del origen. De más a menos visitas.
 export const RESULTS = [
@@ -44,7 +56,7 @@ export const RESULTS = [
   { src: 'img/results/vdn-performance-406mil.webp', views: '406 mil', who: 'VDN Performance', alt: 'Reel de VDN Performance sobre los mejores coches por menos de 3.000 euros, con más de 406 mil visualizaciones', crop: { left: 44, top: 0, width: 712, height: 890 } },
   { src: 'img/results/vdn-performance-307mil.webp', views: '306,9 mil', who: 'VDN Performance', alt: 'Reel de VDN Performance sobre los mejores coches por menos de 5.000 euros, con 306,9 mil visualizaciones', crop: { left: 19, top: 0, width: 762, height: 952 } },
   { src: 'img/results/tatuajes-250mil.webp', views: '257 mil', who: 'Estudio de tatuajes', alt: 'Reel de un estudio de tatuajes sobre las zonas que más duelen al tatuarse, con 257 mil visualizaciones', crop: { left: 0, top: 255, width: 800, height: 1000 } },
-  { ...EXONERIS_REEL, views: '151 mil', who: 'Exoneris Consulting' },
+  ...EXONERIS_REELS,
   { src: 'img/results/wash-go-detailing-110mil.webp', views: '110 mil', who: 'Wash & Go Detailing', alt: 'Reel de presentación de Wash & Go Detailing con 110 mil visualizaciones', crop: { left: 0, top: 200, width: 800, height: 1000 } },
   { src: 'img/results/michel-tobias-80mil.webp', views: '80,3 mil', who: 'Míchel Tobías, psicólogo deportivo', alt: 'Reel de Míchel Tobías, psicólogo deportivo, con 80,3 mil visualizaciones', crop: { left: 0, top: 0, width: 800, height: 1000 } },
   { src: 'img/results/vdn-performance-54mil.webp', views: '53,8 mil', who: 'VDN Performance', alt: 'Reel de VDN Performance con 53,8 mil visualizaciones', crop: { left: 29, top: 0, width: 742, height: 927 } },
@@ -72,7 +84,7 @@ export const STATS = [
   { value: '+2,5 M', label: 'visitas en menos de 2 meses' },
   { value: '+300', label: 'vídeos editados' },
   { value: '24 h', label: 'para mandarte tu estrategia' },
-  { value: '1.058', label: 'seguidores nuevos con un primer vídeo' },
+  { value: '1.315', label: 'seguidores nuevos con un solo vídeo' },
   { value: '+5.000', label: 'seguidores para un solo cliente' },
   { value: '5,0', label: 'en Google', star: true },
 ];
@@ -104,23 +116,32 @@ export const VDN = {
   ],
 };
 
-// Cifras actualizadas con las capturas de octubre de 2026 (estadísticas del
-// primer vídeo y perfil): 151.155 reproducciones, 126.433 espectadores,
-// 1.058 seguidores nuevos y 1.032 seguidores en la cuenta.
+// Caso actualizado con las capturas de finales de octubre de 2026. Sus dos reels:
+// "¿Dónde comprar pisos baratos?" (171.939 reproducciones, 140.540 espectadores,
+// 1.315 seguidores nuevos) y "¿De quién es esta casa?" (233.953 reproducciones,
+// 202.054 espectadores, 932 seguidores nuevos, 3.106 me gusta y 1.435 veces
+// compartido). Entre los dos: 405.892 reproducciones, 342.594 espectadores y
+// 2.247 seguidores nuevos. La cuenta tiene 2.195 seguidores con 5 publicaciones
+// (en el titular, "+2.000" para no pasar de lo que se ve en el perfil).
 export const EXONERIS = {
-  title: 'Su primer vídeo: +1.000 seguidores nuevos',
+  title: '2 vídeos: +2.000 seguidores nuevos',
   client: 'Javier Núñez',
   sector: 'Exoneris Consulting, subastas y NPL',
   // La foto de su perfil, recortada de la captura.
-  avatar: { src: 'img/cases/exoneris-perfil.jpg', crop: { left: 36, top: 22, width: 280, height: 280 } },
+  avatar: { src: 'img/cases/exoneris-perfil.jpg', crop: { left: 56, top: 40, width: 262, height: 262 } },
   kpis: [
-    { value: '151 mil', label: 'visitas' },
-    { value: '126 mil', label: 'personas lo vieron' },
-    { value: '1.058', label: 'seguidores nuevos' },
+    { value: '+405 mil', label: 'visitas' },
+    { value: '+342 mil', label: 'personas los vieron' },
+    { value: '2.195', label: 'seguidores en la cuenta' },
   ],
+  reels: EXONERIS_REELS,
   shots: [
-    { src: 'img/cases/exoneris-estadisticas.jpg', alt: 'Estadísticas del primer vídeo: 151.155 reproducciones, 126.433 espectadores, 15 segundos de tiempo medio de reproducción y 1.058 seguidores nuevos' },
+    { src: 'img/cases/exoneris-estadisticas-casa.jpg', alt: 'Estadísticas del reel sobre de quién es una casa abandonada: 233.953 reproducciones, 202.054 espectadores, 16 segundos de tiempo medio de reproducción y 932 seguidores nuevos' },
+    { src: 'img/cases/exoneris-estadisticas-pisos.jpg', alt: 'Estadísticas del reel sobre dónde comprar pisos baratos: 171.939 reproducciones, 140.540 espectadores, 15 segundos de tiempo medio de reproducción y 1.315 seguidores nuevos' },
   ],
+  // Solo en las historias destacadas.
+  profile: { src: 'img/cases/exoneris-perfil.jpg', alt: 'Perfil de Instagram de Javier Núñez (Subastas y NPL) con 5 publicaciones y 2.195 seguidores' },
+  engagement: { src: 'img/cases/exoneris-interacciones-casa.jpg', alt: 'Interacciones del reel sobre de quién es una casa abandonada: 3.106 me gusta, 202 comentarios, 94 republicaciones y 1.435 veces compartido' },
 };
 
 // Así trabajo: cuatro pasos en dos columnas y el último a todo el ancho (`wide`).
@@ -144,6 +165,7 @@ export const ACCOUNTS = [
   ['pao-guarino', 'Pao Guarino', 'registros akáshicos y tarot', '3.878'],
   ['wash-go-detailing', 'Wash & Go Detailing', '', '3.159'],
   ['logolea', 'LogoLEA', 'logopedia y psicología en Madrid', '2.616'],
+  ['javier-nunez-exoneris', 'Javier Núñez', 'subastas y NPL', '2.195'],
   ['maram-psicologia', 'MARAM Psicología', '', '1.777'],
   ['vdn-performance', 'VDN Performance', 'reprogramaciones en Madrid', '1.768'],
   ['carlos-sanchez', 'Carlos Sánchez', 'entrenador online', '1.377'],
@@ -151,7 +173,6 @@ export const ACCOUNTS = [
   ['monica-baena', 'Mónica Baena', 'terapeuta en Málaga', '1.267'],
   ['vanessa', 'Vanessa', 'facilitadora de Kundalini', '1.057'],
   ['gloria', 'Gloria Díaz', 'psicóloga', '1.046'],
-  ['javier-nunez-exoneris', 'Javier Núñez', 'subastas y NPL', '1.032'],
   ['programa-mujeres-30', 'Programa de entrenamiento para mujeres de más de 30', '', '863'],
   ['psiquekarolina', 'Karolina Cieliczka', 'psicóloga', '790'],
   ['aniitatellootattoo', 'Ana Tello', 'tatuadora en Málaga', '732'],

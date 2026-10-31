@@ -333,9 +333,10 @@ la página publicada). Búscalos con `grep -rn "PENDIENTE\|REVISAR" src docs .en
 - Crear el proyecto de Vercel en un equipo con plan Pro (el plan Hobby no admite
   webs comerciales) y activar Web Analytics en el panel (Speed Insights gratis no
   necesita activarse).
-- Opcional: una captura más grande del reel de 151 mil de Exoneris (1080 px de
-  ancho o más, a pantalla completa). La actual mide 405 px y en un iPhone se ve
-  algo blanda; basta con sustituir `assets/img/cases/exoneris-primer-video.jpg`.
+- Opcional: capturas más grandes de los dos reels de Exoneris (1080 px de ancho
+  o más, a pantalla completa). Las actuales miden unos 400 px y en un iPhone se
+  ven algo blandas; basta con sustituir `assets/img/cases/exoneris-pisos-baratos.jpg`
+  y `assets/img/cases/exoneris-de-quien-es-esta-casa.jpg`.
 
 **[REVISAR]**
 - Aviso legal del formulario: lo he cambiado. El texto que pediste ("Al enviar
@@ -404,10 +405,12 @@ la página publicada). Búscalos con `grep -rn "PENDIENTE\|REVISAR" src docs .en
   identificadores publicitarios en el navegador sin permiso no lo admite la
   LSSI. Como el formulario está en la misma página, los eventos llevan los
   mismos datos. Con consentimiento se guardan en sessionStorage como antes.
-- **Caso Exoneris actualizado** con tus capturas nuevas: 151 mil visitas, 126 mil
-  personas lo vieron y 1.058 seguidores nuevos con su primer vídeo, y 1.032
-  seguidores en la cuenta. He quitado "en 24 horas" porque las capturas nuevas no
-  indican plazo; si lo sabes, dímelo y lo añado.
+- **Caso Exoneris actualizado** con las capturas de finales de octubre de 2026:
+  sus dos reels suman más de 405 mil visitas y más de 342 mil personas los
+  vieron ("¿Dónde comprar pisos baratos?", 171 mil y 1.315 seguidores nuevos;
+  "¿De quién es esta casa?", 234 mil y 932 seguidores nuevos), y la cuenta tiene
+  2.195 seguidores. El titular dice "+2.000 seguidores nuevos" aunque las
+  estadísticas suman 2.247, para no pasar de lo que se ve en el perfil.
 - **Perfil del formulario:** acepta @usuario, usuario o una URL de Instagram,
   TikTok o web. Si alguien escribe otra cosa (por ejemplo, el nombre del
   negocio o "no tengo"), se guarda tal cual en lugar de bloquear el envío.

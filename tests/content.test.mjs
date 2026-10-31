@@ -75,20 +75,24 @@ test('el CTA principal dice lo mismo en toda la landing', async () => {
   assert.match(html, /<a class="btn btn-s" href="#formulario">Estrategia gratis<\/a>/);
 });
 
-// Cifras antiguas del caso Exoneris (antes de las capturas de octubre de 2026),
-// buscadas en el texto que se ve y se oye, no en el HTML: ahí </dt><dd> separa
-// la cifra de su etiqueta.
-const OLD_EXONERIS = [/\+\s?600\b/, /\b600\s+seguidores/i, /seguidores[^.]{0,60}\b24\s?(?:h|horas)\b/i, /(?<![\d.,])65[28](?![\d.,])/, /\b106(?:[.,]866|\s?mil)\b/];
+// Cifras antiguas del caso Exoneris (las de antes de las capturas de finales de
+// octubre de 2026), buscadas en el texto que se ve y se oye, no en el HTML: ahí
+// </dt><dd> separa la cifra de su etiqueta.
+const OLD_EXONERIS = [
+  /\+\s?600\b/, /\b600\s+seguidores/i, /seguidores[^.]{0,60}\b24\s?(?:h|horas)\b/i, /(?<![\d.,])65[28](?![\d.,])/, /\b106(?:[.,]866|\s?mil)\b/,
+  /\b151\s?mil\b/, /\b126\s?mil\b/, /(?<![\d.,])1[.,]058(?![\d.,])/, /(?<![\d.,])1[.,]032(?![\d.,])/, /151[.,]155/, /126[.,]433/, /su primer v[ií]deo/i,
+];
 
 test('Exoneris con las cifras nuevas y ninguna antigua', async () => {
   const html = await readFile(path.join(dist, 'index.html'), 'utf8');
   const text = visibleText(html) + ' ' + attrText(html);
   for (const re of OLD_EXONERIS) assert.ok(!re.test(text), `cifra antigua: ${re}`);
-  for (const now of ['151 mil', '126 mil', '+1.000 seguidores nuevos', '1.058 seguidores nuevos', '1.032 seguidores', '151.155', '126.433']) {
+  for (const now of ['2 vídeos: +2.000 seguidores nuevos', '+405 mil', '+342 mil', '2.195 seguidores', '234 mil', '171 mil', '233.953', '202.054', '932 seguidores nuevos', '171.939', '140.540', '1.315 seguidores nuevos']) {
     assert.ok(text.includes(now), `falta: ${now}`);
   }
-  // Y en ningún archivo del repositorio (salvo dependencias, builds y esta prueba).
-  const skip = new Set(['node_modules', 'dist', 'dist-test', '.git', 'test-results', 'package-lock.json', 'content.test.mjs']);
+  // Y en ningún archivo del repositorio (salvo dependencias, builds, la salida
+  // de las historias y esta prueba; el aviso de las 24 h sí puede aparecer en el código).
+  const skip = new Set(['node_modules', 'dist', 'dist-test', '.git', 'test-results', 'salida', 'package-lock.json', 'content.test.mjs']);
   const walk = async (dir) => {
     for (const e of await readdir(dir, { withFileTypes: true })) {
       if (skip.has(e.name)) continue;
@@ -96,7 +100,7 @@ test('Exoneris con las cifras nuevas y ninguna antigua', async () => {
       if (e.isDirectory()) await walk(p);
       else if (/\.(m?js|gs|md|html|css|json|example)$/.test(e.name)) {
         const src = await readFile(p, 'utf8');
-        for (const re of OLD_EXONERIS.slice(0, 2).concat(OLD_EXONERIS.slice(3))) assert.ok(!re.test(src), `${path.relative(root, p)}: ${re}`);
+        for (const re of OLD_EXONERIS.filter((_, i) => i !== 2)) assert.ok(!re.test(src), `${path.relative(root, p)}: ${re}`);
       }
     }
   };
@@ -114,8 +118,9 @@ test('solo cifras confirmadas en la landing', async () => {
   const allowed = [
     // Agencia y casos (sección 3 del encargo y web aasmarketing.com)
     '+10 M', '10 millones', '+2.500', '2.500', '+300', '+25', '25', '5,0', '+5.000', '2,5 millones', '+2,5 M', '<3', '3', '2', '24',
-    // Exoneris (capturas actualizadas de octubre de 2026)
-    '151 mil', '126 mil', '1.058', '+1.000', '1.032', '151.155', '126.433', '15',
+    // Exoneris (capturas de finales de octubre de 2026)
+    '+405 mil', '405 mil', '+342 mil', '342 mil', '+2.000', '2.000', '2.195', '234 mil', '171 mil', '233.953', '202.054', '932',
+    '171.939', '140.540', '1.315', '15', '16',
     // Capturas de reels (alt del origen)
     '946 mil', '+406 mil', '406 mil', '306,9 mil', '257 mil', '110 mil', '80,3 mil', '53,8 mil', '52,4 mil', '37,1 mil', '33,2 mil',
     // Capturas de perfiles y casos (alt del origen)

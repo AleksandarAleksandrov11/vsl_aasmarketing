@@ -112,18 +112,18 @@
 @media (min-width: 640px) and (max-width: 1023.98px) {
   .results { --card: 34%; }
 }
-/* Escritorio: 4 grandes arriba y 7 pequeñas abajo (rejilla de 28 columnas) */
+/* Escritorio: 4 grandes arriba y 8 pequeñas abajo (rejilla de 24 columnas) */
 @media (min-width: 1024px) {
   .results {
     grid-auto-flow: row;
-    grid-template-columns: repeat(28, minmax(0, 1fr));
+    grid-template-columns: repeat(24, minmax(0, 1fr));
     gap: 28px 16px;
     margin: 0;
     padding: 0;
     overflow: visible;
   }
-  .results > * { grid-column: span 4; }
-  .results > :nth-child(-n + 4) { grid-column: span 7; }
+  .results > * { grid-column: span 3; }
+  .results > :nth-child(-n + 4) { grid-column: span 6; }
   .results .rc:nth-child(n + 5) .rc-views { font-size: 0.9375rem; }
 }
 

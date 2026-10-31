@@ -215,12 +215,13 @@ const ctaLink = (text) => `<div class="cta-link"><span>${esc(text)}</span><span 
 async function clientes() {
   const top12 = ACCOUNTS.slice(0, 12);
   const accs = await Promise.all(top12.map((a) => cropped(`img/accounts/${a.file}.webp`)));
-  const [r1, r2, r3, r4, r5, r6, r7, r8, r9, r10] = RESULTS;
+  const [r1, r2, r3, r4] = RESULTS;
+  // Los de Exoneris ya salen en su caso: en "más resultados", los demás.
+  const more = RESULTS.slice(4).filter((r) => r.who !== 'Exoneris Consulting').slice(0, 6);
   const vdnLogo = await cropped(VDN.logo);
   const vdnShots = await Promise.all(VDN.shots.map((s) => cropped(s.src)));
   const exAvatar = await cropped(EXONERIS.avatar.src, EXONERIS.avatar.crop);
-  const exStats = await cropped(EXONERIS.shots[0].src);
-  const exReel = RESULTS.find((r) => r.who === 'Exoneris Consulting');
+  const exProfile = await cropped(EXONERIS.profile.src);
   return [
     ['00-portada', cover('Clientes', 'Resultados reales de las cuentas que llevo.', line(extra.trend, 96, 1.6))],
     ['01-cuentas', doc(`${top('Clientes')}
@@ -248,19 +249,19 @@ async function clientes() {
     ['04-caso-javier', doc(`${top('Caso de éxito')}
 <div class="safe center">
   <div class="who"><img src="${exAvatar}"><div><b>${esc(EXONERIS.client)}</b><span>${esc(EXONERIS.sector)}</span></div></div>
-  <h2 class="case-t">${esc(EXONERIS.title)}</h2>
-  <div class="kpis">${EXONERIS.kpis.map((k) => `<div><b>${esc(k.value)}</b><span>${esc(k.label)}</span></div>`).join('')}</div>
-  <div style="display:grid;grid-template-columns:300px 1fr;gap:24px;align-items:center;margin-top:40px">
-    ${await reel(exReel, { small: true, caption: false })}
-    <div class="proof" style="margin:0"><img src="${exStats}"></div>
+  <h2 class="case-t" style="font-size:70px">${esc(EXONERIS.title)}</h2>
+  <div class="kpis" style="padding:30px 0">${EXONERIS.kpis.map((k) => `<div><b style="font-size:60px">${esc(k.value)}</b><span>${esc(k.label)}</span></div>`).join('')}</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;width:580px;margin:32px auto 0">
+    ${(await Promise.all(EXONERIS.reels.map((r) => reel(r, { small: true, caption: false })))).join('')}
   </div>
+  <div class="proof" style="margin-top:26px"><img src="${exProfile}"></div>
 </div>${foot()}`, 'dark')],
     ['05-mas-resultados', doc(`${top('Resultados')}
 <div class="safe center">
   <p class="eyebrow">Y muchos más</p>
   <h2 class="h m">Vídeos que traen visitas</h2>
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:52px">
-    ${(await Promise.all([r5, r6, r7, r8, r9, r10].map((r) => reel(r, { small: true })))).join('')}
+    ${(await Promise.all(more.map((r) => reel(r, { small: true })))).join('')}
   </div>
 </div>${foot()}`)],
     ['06-tu-turno', doc(`${top('Clientes')}
@@ -342,7 +343,7 @@ async function servicios() {
   <p class="eyebrow">Lo que hemos conseguido</p>
   <h2 class="h m">La meta: clientes</h2>
   <div class="nums">
-    ${[stat('+10 M'), stat('946 mil'), stat('+2.500'), stat('+5.000'), stat('1.058')].map((s) => `<div class="num"><b>${esc(s.value)}</b><span>${esc(s.label)}</span></div>`).join('')}
+    ${[stat('+10 M'), stat('946 mil'), stat('+2.500'), stat('+5.000'), stat('1.315')].map((s) => `<div class="num"><b>${esc(s.value)}</b><span>${esc(s.label)}</span></div>`).join('')}
   </div>
 </div>${foot()}`, 'dark')],
     ['05-estrategia-gratis', doc(`${top('Servicios')}
