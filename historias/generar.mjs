@@ -304,7 +304,7 @@ async function clientes() {
   const more = [...RESULTS.slice(9), ...VDN_MORE].sort((a, b) => parseFloat(b.views.replace(',', '.')) - parseFloat(a.views.replace(',', '.')));
   const vdnLogo = await cropped(VDN.logo);
   const exAvatar = await cropped(EXONERIS.avatar.src, EXONERIS.avatar.crop);
-  const exProfile = await cropped(EXONERIS.profile.src);
+  const exProfile = await cropped(EXONERIS.profile.src, EXONERIS.profile.crop);
   const exStats = await Promise.all(EXONERIS.shots.map((s) => cropped(s.src)));
   const exEngagement = await cropped(EXONERIS.engagement.src);
   const who = (logo, c) => `<div class="who"><img src="${logo}"><div><b>${esc(c.client)}</b><span>${esc(c.sector)}</span></div></div>`;

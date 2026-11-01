@@ -36,21 +36,23 @@ export const META = {
 const EXONERIS_REELS = [
   {
     src: 'img/cases/exoneris-de-quien-es-esta-casa.jpg',
-    views: '234 mil',
+    views: '387 mil',
     who: 'Exoneris Consulting',
-    alt: 'Reel de Javier Núñez, de Exoneris Consulting, sobre de quién es una casa abandonada, con 234 mil visualizaciones',
-    crop: { left: 0, top: 60, width: 393, height: 491 },
+    alt: 'Reel de Javier Núñez, de Exoneris Consulting, sobre de quién es una casa abandonada, con 387 mil visualizaciones',
+    crop: { left: 0, top: 60, width: 396, height: 495 },
   },
   {
     src: 'img/cases/exoneris-pisos-baratos.jpg',
-    views: '171 mil',
+    views: '204 mil',
     who: 'Exoneris Consulting',
-    alt: 'Reel de Javier Núñez, de Exoneris Consulting, sobre dónde comprar pisos baratos, con 171 mil visualizaciones',
-    crop: { left: 0, top: 60, width: 398, height: 498 },
+    alt: 'Reel de Javier Núñez, de Exoneris Consulting, sobre dónde comprar pisos baratos, con 204 mil visualizaciones',
+    crop: { left: 0, top: 60, width: 401, height: 501 },
   },
 ];
 
-// Cifra exacta de cada captura sacada del alt de index.html del origen. De más a menos visitas.
+// Cifra exacta de cada captura sacada del alt de index.html del origen. Se ordena
+// sola de más a menos visitas.
+const num = (views) => parseFloat(views.replace(',', '.'));
 export const RESULTS = [
   { src: 'img/results/tatuajes-946mil.webp', views: '946 mil', who: 'Estudio de tatuajes', alt: 'Reel de un estudio de tatuajes con 946 mil visualizaciones', crop: { left: 0, top: 200, width: 800, height: 1000 } },
   { src: 'img/results/vdn-performance-406mil.webp', views: '406 mil', who: 'VDN Performance', alt: 'Reel de VDN Performance sobre los mejores coches por menos de 3.000 euros, con más de 406 mil visualizaciones', crop: { left: 44, top: 0, width: 712, height: 890 } },
@@ -63,7 +65,7 @@ export const RESULTS = [
   { src: 'img/results/wash-go-detailing-52mil.webp', views: '52,4 mil', who: 'Wash & Go Detailing', alt: 'Reel de Wash & Go Detailing con un Volvo XC40, con 52,4 mil visualizaciones', crop: { left: 0, top: 200, width: 800, height: 1000 } },
   { src: 'img/results/psicologia-gloria-37mil.webp', views: '37,1 mil', who: 'Gloria Díaz, psicóloga', alt: 'Reel de la psicóloga Gloria Díaz con 37,1 mil visualizaciones', crop: { left: 0, top: 100, width: 800, height: 1000 } },
   { src: 'img/results/psicologia-33mil.webp', views: '33,2 mil', who: 'Consulta de psicología', alt: 'Reel de una consulta de psicología con 33,2 mil visualizaciones', crop: { left: 0, top: 267, width: 800, height: 1000 } },
-];
+].sort((a, b) => num(b.views) - num(a.views));
 
 export const HERO = {
   // Una línea por elemento: el titular corta siempre igual (sin saltos al cargar la fuente).
@@ -72,7 +74,7 @@ export const HERO = {
   note: 'Gratis, sin compromiso y en menos de 24 horas.',
   trust: [RATING, '+25 cuentas', '+10 M de visitas'], // la primera lleva la estrella
   // Los tres reels con más visitas: el del centro, el de más.
-  cards: [RESULTS[1], RESULTS[0], RESULTS[2]],
+  cards: ['406 mil', '946 mil', '306,9 mil'].map((v) => RESULTS.find((r) => r.views === v)),
 };
 
 // Banda de cifras en bucle (solo cifras confirmadas: web, casos y capturas).
@@ -84,7 +86,7 @@ export const STATS = [
   { value: '+2,5 M', label: 'visitas en menos de 2 meses' },
   { value: '+300', label: 'vídeos editados' },
   { value: '24 h', label: 'para mandarte tu estrategia' },
-  { value: '1.315', label: 'seguidores nuevos con un solo vídeo' },
+  { value: '2.005', label: 'seguidores nuevos con un solo vídeo' },
   { value: '+5.000', label: 'seguidores para un solo cliente' },
   { value: '5,0', label: 'en Google', star: true },
 ];
@@ -116,31 +118,31 @@ export const VDN = {
   ],
 };
 
-// Caso actualizado con las capturas de finales de octubre de 2026. Sus dos reels:
-// "¿Dónde comprar pisos baratos?" (171.939 reproducciones, 140.540 espectadores,
-// 1.315 seguidores nuevos) y "¿De quién es esta casa?" (233.953 reproducciones,
-// 202.054 espectadores, 932 seguidores nuevos, 3.106 me gusta y 1.435 veces
-// compartido). Entre los dos: 405.892 reproducciones, 342.594 espectadores y
-// 2.247 seguidores nuevos. La cuenta tiene 2.195 seguidores con 5 publicaciones
-// (en el titular, "+2.000" para no pasar de lo que se ve en el perfil).
+// Caso actualizado con las capturas de principios de noviembre de 2026. Sus dos
+// reels: "¿Dónde comprar pisos baratos?" (204.158 reproducciones, 163.901
+// espectadores, 1.626 seguidores nuevos) y "¿De quién es esta casa?" (387.459
+// reproducciones, 324.357 espectadores, 2.005 seguidores nuevos). Entre los dos:
+// 591.617 reproducciones, 488.258 espectadores y 3.631 seguidores nuevos. La
+// cuenta tiene 3.544 seguidores con 8 publicaciones (en el titular, "+3.500", para
+// no pasar de lo que se ve en el perfil).
 export const EXONERIS = {
-  title: '2 vídeos: +2.000 seguidores nuevos',
+  title: '2 vídeos: +3.500 seguidores nuevos',
   client: 'Javier Núñez',
   sector: 'Exoneris Consulting, subastas y NPL',
   // La foto de su perfil, recortada de la captura.
-  avatar: { src: 'img/cases/exoneris-perfil.jpg', crop: { left: 56, top: 40, width: 262, height: 262 } },
+  avatar: { src: 'img/cases/exoneris-perfil.jpg', crop: { left: 44, top: 22, width: 266, height: 266 } },
   kpis: [
-    { value: '+405 mil', label: 'visitas' },
-    { value: '+342 mil', label: 'personas los vieron' },
-    { value: '2.195', label: 'seguidores en la cuenta' },
+    { value: '+591 mil', label: 'visitas' },
+    { value: '+488 mil', label: 'personas los vieron' },
+    { value: '3.544', label: 'seguidores en la cuenta' },
   ],
   reels: EXONERIS_REELS,
   shots: [
-    { src: 'img/cases/exoneris-estadisticas-casa.jpg', alt: 'Estadísticas del reel sobre de quién es una casa abandonada: 233.953 reproducciones, 202.054 espectadores, 16 segundos de tiempo medio de reproducción y 932 seguidores nuevos' },
-    { src: 'img/cases/exoneris-estadisticas-pisos.jpg', alt: 'Estadísticas del reel sobre dónde comprar pisos baratos: 171.939 reproducciones, 140.540 espectadores, 15 segundos de tiempo medio de reproducción y 1.315 seguidores nuevos' },
+    { src: 'img/cases/exoneris-estadisticas-casa.jpg', alt: 'Estadísticas del reel sobre de quién es una casa abandonada: 387.459 reproducciones, 324.357 espectadores, 16 segundos de tiempo medio de reproducción y 2.005 seguidores nuevos' },
+    { src: 'img/cases/exoneris-estadisticas-pisos.jpg', alt: 'Estadísticas del reel sobre dónde comprar pisos baratos: 204.158 reproducciones, 163.901 espectadores, 15 segundos de tiempo medio de reproducción y 1.626 seguidores nuevos' },
   ],
-  // Solo en las historias destacadas.
-  profile: { src: 'img/cases/exoneris-perfil.jpg', alt: 'Perfil de Instagram de Javier Núñez (Subastas y NPL) con 5 publicaciones y 2.195 seguidores' },
+  // Solo en las historias destacadas: el perfil (nombre y cifras, sin la biografía).
+  profile: { src: 'img/cases/exoneris-perfil.jpg', crop: { left: 0, top: 0, width: 1206, height: 310 }, alt: 'Perfil de Instagram de Javier Núñez (Subastas y NPL) con 8 publicaciones y 3.544 seguidores' },
   engagement: { src: 'img/cases/exoneris-interacciones-casa.jpg', alt: 'Interacciones del reel sobre de quién es una casa abandonada: 3.106 me gusta, 202 comentarios, 94 republicaciones y 1.435 veces compartido' },
 };
 
@@ -163,9 +165,9 @@ export const ACCOUNTS = [
   ['marisa-le-fay', 'Marisa Le Fay', 'tarot y guía del alma', '4.878'],
   ['javier-ruiz-vytalgroup', 'Javier Ruiz', 'fisio y equipos médicos', '4.784'],
   ['pao-guarino', 'Pao Guarino', 'registros akáshicos y tarot', '3.878'],
+  ['javier-nunez-exoneris', 'Javier Núñez', 'subastas y NPL', '3.544'],
   ['wash-go-detailing', 'Wash & Go Detailing', '', '3.159'],
   ['logolea', 'LogoLEA', 'logopedia y psicología en Madrid', '2.616'],
-  ['javier-nunez-exoneris', 'Javier Núñez', 'subastas y NPL', '2.195'],
   ['vdn-performance', 'VDN Performance', 'reprogramaciones en Madrid', '1.768'],
   ['carlos-sanchez', 'Carlos Sánchez', 'entrenador online', '1.377'],
   ['creaciones-jmc', 'Creaciones JMC', 'regalos personalizados', '1.368'],

@@ -409,12 +409,12 @@ la página publicada). Búscalos con `grep -rn "PENDIENTE\|REVISAR" src docs .en
   identificadores publicitarios en el navegador sin permiso no lo admite la
   LSSI. Como el formulario está en la misma página, los eventos llevan los
   mismos datos. Con consentimiento se guardan en sessionStorage como antes.
-- **Caso Exoneris actualizado** con las capturas de finales de octubre de 2026:
-  sus dos reels suman más de 405 mil visitas y más de 342 mil personas los
-  vieron ("¿Dónde comprar pisos baratos?", 171 mil y 1.315 seguidores nuevos;
-  "¿De quién es esta casa?", 234 mil y 932 seguidores nuevos), y la cuenta tiene
-  2.195 seguidores. El titular dice "+2.000 seguidores nuevos" aunque las
-  estadísticas suman 2.247, para no pasar de lo que se ve en el perfil.
+- **Caso Exoneris actualizado** con las capturas de principios de noviembre de
+  2026: sus dos reels suman más de 591 mil visitas y más de 488 mil personas los
+  vieron ("¿Dónde comprar pisos baratos?", 204 mil y 1.626 seguidores nuevos;
+  "¿De quién es esta casa?", 387 mil y 2.005 seguidores nuevos), y la cuenta
+  tiene 3.544 seguidores. El titular dice "+3.500 seguidores nuevos" aunque las
+  estadísticas suman 3.631, para no pasar de lo que se ve en el perfil.
 - **Perfil del formulario:** acepta @usuario, usuario o una URL de Instagram,
   TikTok o web. Si alguien escribe otra cosa (por ejemplo, el nombre del
   negocio o "no tengo"), se guarda tal cual en lugar de bloquear el envío.
