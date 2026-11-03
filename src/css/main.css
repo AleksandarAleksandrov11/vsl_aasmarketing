@@ -6,7 +6,7 @@
    ============================================================ */
 
 /* Secciones: títulos centrados, en mayúsculas y sin cambio de tipografía */
-.sec { padding-block: clamp(56px, 8vw, 112px); }
+.sec { padding-block: clamp(46px, 8vw, 112px); }
 .sec-soft { background: var(--bg-soft); }
 .sec-dark { background: var(--inv-bg); color: var(--inv-ink); }
 .sec-head { max-width: 760px; margin: 0 auto clamp(24px, 4vw, 44px); text-align: center; }
@@ -87,15 +87,27 @@
   grid-auto-columns: minmax(0, 1fr);
   grid-auto-flow: column;
   gap: 12px;
-  margin-top: 18px;
-  padding-block: 16px;
+  margin-top: 14px;
+  padding-block: 14px;
   border-block: 1px solid var(--inv-line);
 }
 .case-kpis div { text-align: center; }
 .case-kpis dt { font-size: clamp(1.375rem, 1.1rem + 1.2vw, 2rem); font-weight: 800; line-height: 1; letter-spacing: -0.04em; white-space: nowrap; }
 .case-kpis dd { margin-top: 6px; font-size: 0.8125rem; line-height: 1.35; color: var(--inv-soft); }
 .case-proof { display: grid; gap: 8px; margin-top: 16px; }
-.case-proof img { width: 100%; height: auto; border-radius: var(--r-s); border: 1px solid var(--inv-line); }
+.case-proof img, .case-vid > picture img { width: 100%; height: auto; border-radius: var(--r-s); border: 1px solid var(--inv-line); }
+/* Vídeos: su captura con las visitas y, al lado, sus estadísticas (o tres seguidos) */
+.case-vids { display: grid; gap: 10px; margin-top: 10px; }
+.case-vid { display: grid; grid-template-columns: 34% minmax(0, 1fr); gap: 10px; align-items: center; }
+.case-vids.two { grid-template-columns: repeat(2, minmax(0, 116px)); justify-content: center; gap: 12px; }
+.case-vids.two .case-vid { display: block; }
+.case .rc-img { border-radius: 14px; box-shadow: none; border: 1px solid var(--inv-line); }
+.case .rc-views { left: 8px; bottom: 7px; gap: 4px; font-size: 0.8125rem; }
+.case .rc-views svg { width: 11px; height: 11px; }
+@media (min-width: 640px) {
+  .case .rc-views { left: 12px; bottom: 10px; font-size: 1rem; gap: 6px; }
+  .case .rc-views svg { width: 14px; height: 14px; }
+}
 @media (min-width: 640px) {
   .case { padding: 28px; }
 }

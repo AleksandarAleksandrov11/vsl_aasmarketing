@@ -105,7 +105,9 @@ sin punto final y con una sola tipografía.
    guarda en el navegador para reenviarla si no llega), la pantalla de éxito
    sale al momento y WhatsApp se abre a los 0,15 s con el mensaje escrito.
 4. **Casos reales:** VDN Performance y Exoneris en dos tarjetas iguales
-   (cliente, titular, cifras y capturas de perfil o estadísticas).
+   (cliente, titular, cifras, la captura real de la cuenta y, de más a menos
+   visitas, sus vídeos con las visitas: dos en VDN y, en Javier, cada uno con sus
+   estadísticas al lado).
 5. **Más de 10 millones de visitas generadas:** las once capturas de reels, de
    más a menos visitas, todas con el mismo recorte y contador.
 6. **¿Te suena? + Así trabajo:** los tres problemas en rojo y cinco pasos

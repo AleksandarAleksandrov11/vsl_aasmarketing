@@ -133,6 +133,8 @@ test('solo cifras confirmadas en la landing', async () => {
     '3.000', '5.000', '30', '10',
     // El "18" del nombre de usuario de una reseña de Google (teeo_18)
     '18',
+    // Publicaciones del perfil de Javier Núñez (alt de su captura)
+    '11',
     // Textos: pasos, plazos, formulario, contacto y legal
     '1', '4', '5', '1/5', '100', '10/10', '100%', '2026', '695', '850', '590', '+34', '34', '0', '1.0', '6',
   ];

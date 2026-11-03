@@ -64,15 +64,22 @@ function stats() {
 </section>`;
 }
 
+// Prueba del caso, de arriba abajo: la captura real de la cuenta y, de más a menos
+// visitas, cada vídeo (su captura con las visitas) y, si lo hay, sus estadísticas
+// al lado (Javier) o solo los dos mejores en una fila (VDN).
 async function caseCard(ctx, c, { id, avatar }) {
-  const shots = await Promise.all(c.shots.map((s) => picture(ctx.assets, s.src, { alt: s.alt, widths: [450, 900, 1206], sizes: '(min-width: 1024px) 520px, calc(100vw - 72px)' })));
+  const wide = (s, extra = {}) => picture(ctx.assets, s.src, { alt: s.alt, widths: [450, 900, 1206], sizes: '(min-width: 1024px) 520px, calc(100vw - 72px)', ...extra });
+  const account = await Promise.all(c.account.map((s) => wide(s, { crop: s.crop })));
+  const withStats = !!c.stats;
+  const vids = await Promise.all(c.videos.map(async (v, i) => `<div class="case-vid">${await reelCard(ctx, v, { sizes: withStats ? '(min-width: 1024px) 190px, 120px' : '(min-width: 1024px) 200px, 38vw', widths: [270, 400], caption: false, cls: 'rc-case' })}${withStats ? await wide(c.stats[i], { sizes: '(min-width: 1024px) 320px, 62vw' }) : ''}</div>`));
   return `<article class="case" id="caso-${id}" aria-labelledby="t-${id}">
         <div class="case-who">${avatar}<p><b>${esc(c.client)}</b><span>${esc(c.sector)}</span></p></div>
         <h3 class="case-title" id="t-${id}">${esc(c.title)}</h3>
         <dl class="case-kpis">
           ${c.kpis.map((k) => `<div><dt>${esc(k.value)}</dt><dd>${esc(k.label)}</dd></div>`).join('\n          ')}
         </dl>
-        <div class="case-proof">${shots.join('')}</div>
+        <div class="case-proof">${account.join('')}</div>
+        <div class="case-vids${withStats ? '' : ' two'}">${vids.join('')}</div>
       </article>`;
 }
 

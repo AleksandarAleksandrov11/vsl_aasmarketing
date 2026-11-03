@@ -305,7 +305,7 @@ async function clientes() {
   const vdnLogo = await cropped(VDN.logo);
   const exAvatar = await cropped(EXONERIS.avatar.src, EXONERIS.avatar.crop);
   const exProfile = await cropped(EXONERIS.profile.src, EXONERIS.profile.crop);
-  const exStats = await Promise.all(EXONERIS.shots.map((s) => cropped(s.src)));
+  const exStats = await Promise.all(EXONERIS.stats.map((s) => cropped(s.src)));
   const exEngagement = await cropped(EXONERIS.engagement.src);
   const who = (logo, c) => `<div class="who"><img src="${logo}"><div><b>${esc(c.client)}</b><span>${esc(c.sector)}</span></div></div>`;
   return [
@@ -346,22 +346,22 @@ async function clientes() {
   ${who(exAvatar, EXONERIS)}
   <h2 class="case-t" style="font-size:70px">${esc(EXONERIS.title)}</h2>
   <div class="kpis" style="padding:30px 0">${EXONERIS.kpis.map((k) => `<div><b style="font-size:60px">${esc(k.value)}</b><span>${esc(k.label)}</span></div>`).join('')}</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;width:580px;margin:32px auto 0">
+  <div class="proof" style="margin-top:30px"><img src="${exProfile}"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;width:580px;margin:26px auto 0">
     ${(await Promise.all(EXONERIS.reels.map((r) => reel(r, { small: true, caption: false })))).join('')}
   </div>
-  <div class="proof" style="margin-top:26px"><img src="${exProfile}"></div>
 </div>${foot()}`, 'dark')],
     ['06-javier-estadisticas', doc(`${top('Caso de éxito')}
 <div class="safe center">
-  <p class="eyebrow">Javier Núñez · sus estadísticas</p>
-  <h2 class="h m">Lo que dicen los números</h2>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:44px">
-    ${exStats.map((src) => `<div class="proof" style="margin:0"><img src="${src}"></div>`).join('')}
+  <p class="eyebrow">Javier Núñez</p>
+  <h2 class="h m">Sus estadísticas</h2>
+  <div style="display:grid;gap:20px;margin-top:36px">
+    ${(await Promise.all(EXONERIS.reels.map(async (r, i) => `<div style="display:grid;grid-template-columns:200px 1fr;gap:22px;align-items:center">${await reel(r, { small: true, caption: false })}<div class="proof" style="margin:0;max-width:540px"><img src="${exStats[i]}"></div></div>`))).join('')}
   </div>
-  <div class="hl">
+  <div class="hl" style="margin-top:30px;padding:26px 30px">
     <p class="eyebrow">Además de visitas, clientes</p>
-    <p class="hl-t">+200 comentarios de personas interesadas en un solo vídeo</p>
-    <div class="proof" style="margin-top:26px"><img src="${exEngagement}"></div>
+    <p class="hl-t" style="font-size:44px">+200 comentarios de personas interesadas en un solo vídeo</p>
+    <div class="proof" style="margin-top:16px"><img src="${exEngagement}" style="max-width:720px;margin:0 auto"></div>
   </div>
 </div>${foot()}`, 'dark')],
     ['07-mas-resultados', doc(`${top('Resultados')}

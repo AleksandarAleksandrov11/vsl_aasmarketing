@@ -112,10 +112,12 @@ export const VDN = {
     { value: '+2.500', label: 'leads con Meta Ads en 2 meses' },
     { value: '+5.000', label: 'seguidores entre todas las plataformas' },
   ],
-  shots: [
+  account: [
     { src: 'img/cases/vdn-perfil-instagram.webp', alt: 'Perfil de Instagram de VDN Performance con 1.768 seguidores' },
     { src: 'img/cases/vdn-perfil-tiktok.webp', alt: 'Perfil de TikTok de VDN Performance con 3.541 seguidores y 74,2 mil me gusta' },
   ],
+  // Sus dos mejores vídeos (los de más visitas del muro de resultados).
+  videos: RESULTS.filter((r) => r.who === 'VDN Performance').slice(0, 2),
 };
 
 // Caso actualizado con las capturas del 3 de noviembre de 2026. Sus dos reels:
@@ -137,11 +139,14 @@ export const EXONERIS = {
     { value: '4.448', label: 'seguidores en la cuenta' },
   ],
   reels: EXONERIS_REELS,
-  shots: [
+  videos: EXONERIS_REELS,
+  account: [{ src: 'img/cases/exoneris-perfil.jpg', crop: { left: 0, top: 0, width: 1206, height: 308 }, alt: 'Perfil de Instagram de Javier Núñez (Subastas y NPL) con 11 publicaciones y 4.448 seguidores' }],
+  // Estadísticas de cada reel, en el mismo orden que EXONERIS_REELS.
+  stats: [
     { src: 'img/cases/exoneris-estadisticas-casa.jpg', alt: 'Estadísticas del reel sobre de quién es una casa abandonada: 438.983 reproducciones, 362.128 espectadores, 16 segundos de tiempo medio de reproducción y 2.489 seguidores nuevos' },
     { src: 'img/cases/exoneris-estadisticas-pisos.jpg', alt: 'Estadísticas del reel sobre dónde comprar pisos baratos: 244.578 reproducciones, 196.367 espectadores, 15 segundos de tiempo medio de reproducción y 2.083 seguidores nuevos' },
   ],
-  // Solo en las historias destacadas: el perfil (nombre y cifras, sin la biografía).
+  // La cuenta: el perfil (nombre y cifras, sin la biografía).
   profile: { src: 'img/cases/exoneris-perfil.jpg', crop: { left: 0, top: 0, width: 1206, height: 308 }, alt: 'Perfil de Instagram de Javier Núñez (Subastas y NPL) con 11 publicaciones y 4.448 seguidores' },
   engagement: { src: 'img/cases/exoneris-interacciones-casa.jpg', alt: 'Interacciones del reel sobre de quién es una casa abandonada: 3.106 me gusta, 202 comentarios, 94 republicaciones y 1.435 veces compartido' },
 };

@@ -587,9 +587,9 @@ test('formulario: validaciones de cada paso y prefijos', { skip, timeout: 90000 
     await page.focus('input[name="servicio"][value="redes"]');
     await page.keyboard.press('Enter');
     assert.equal(await page.isVisible('[data-step="1"]'), true);
-    await page.locator('.lf-opt', { hasText: 'Meta Ads' }).click();
+    await choose(page, page.locator('.lf-opt', { hasText: 'Meta Ads' }));
     // Paso 2: "Otro" obligatorio solo en ese caso, mínimo 2 letras.
-    await page.locator('.lf-chip', { hasText: 'Otro' }).click();
+    await choose(page, page.locator('.lf-chip', { hasText: 'Otro' }));
     assert.equal(await page.isVisible('#f-otro'), true);
     await page.locator('[data-step="2"] [data-next]').click();
     assert.equal(await page.textContent('#e-otro'), 'Cuéntame a qué te dedicas.');
@@ -598,7 +598,7 @@ test('formulario: validaciones de cada paso y prefijos', { skip, timeout: 90000 
     await page.fill('#f-otro', 'Academia');
     assert.equal(await page.textContent('#e-otro'), '');
     // Cambiar a un sector normal oculta "Otro" y avanza solo.
-    await page.locator('.lf-chip', { hasText: 'Belleza y estética' }).click();
+    await choose(page, page.locator('.lf-chip', { hasText: 'Belleza y estética' }));
     await page.locator('[data-step="3"]').waitFor({ state: 'visible' });
     // Paso 3: vacío no; "no tengo" sí (se guarda tal cual).
     await page.locator('[data-step="3"] [data-next]').click();
@@ -629,6 +629,8 @@ test('formulario: validaciones de cada paso y prefijos', { skip, timeout: 90000 
     await doneVisible(page);
     const lead = log.leads.at(-1);
     assert.deepEqual([lead.servicio, lead.sector, lead.sector_otro, lead.perfil, lead.prefijo], ['ads', 'belleza', '', 'no tengo', 'OTRO']);
+    // WhatsApp se abre al momento: la fila llega al Sheet un instante después.
+    for (let i = 0; i < 80 && sheetState.calls.at(-1)?.lead?.whatsapp !== '+447911123456'; i++) await new Promise((r) => setTimeout(r, 100));
     const row = sheetState.calls.at(-1).lead;
     assert.deepEqual([row.whatsapp, row.negocio, row.perfil, row.perfil_url], ['+447911123456', 'Belleza y estética', 'no tengo', '']);
     assert.deepEqual(log.errors, []);
