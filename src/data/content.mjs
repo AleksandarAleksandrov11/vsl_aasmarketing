@@ -36,17 +36,17 @@ export const META = {
 const EXONERIS_REELS = [
   {
     src: 'img/cases/exoneris-de-quien-es-esta-casa.jpg',
-    views: '387 mil',
+    views: '438 mil',
     who: 'Exoneris Consulting',
-    alt: 'Reel de Javier Núñez, de Exoneris Consulting, sobre de quién es una casa abandonada, con 387 mil visualizaciones',
-    crop: { left: 0, top: 60, width: 396, height: 495 },
+    alt: 'Reel de Javier Núñez, de Exoneris Consulting, sobre de quién es una casa abandonada, con 438 mil visualizaciones',
+    crop: { left: 0, top: 60, width: 401, height: 501 },
   },
   {
     src: 'img/cases/exoneris-pisos-baratos.jpg',
-    views: '204 mil',
+    views: '244 mil',
     who: 'Exoneris Consulting',
-    alt: 'Reel de Javier Núñez, de Exoneris Consulting, sobre dónde comprar pisos baratos, con 204 mil visualizaciones',
-    crop: { left: 0, top: 60, width: 401, height: 501 },
+    alt: 'Reel de Javier Núñez, de Exoneris Consulting, sobre dónde comprar pisos baratos, con 244 mil visualizaciones',
+    crop: { left: 0, top: 60, width: 385, height: 481 },
   },
 ];
 
@@ -86,7 +86,7 @@ export const STATS = [
   { value: '+2,5 M', label: 'visitas en menos de 2 meses' },
   { value: '+300', label: 'vídeos editados' },
   { value: '24 h', label: 'para mandarte tu estrategia' },
-  { value: '2.005', label: 'seguidores nuevos con un solo vídeo' },
+  { value: '2.489', label: 'seguidores nuevos con un solo vídeo' },
   { value: '+5.000', label: 'seguidores para un solo cliente' },
   { value: '5,0', label: 'en Google', star: true },
 ];
@@ -118,31 +118,31 @@ export const VDN = {
   ],
 };
 
-// Caso actualizado con las capturas de principios de noviembre de 2026. Sus dos
-// reels: "¿Dónde comprar pisos baratos?" (204.158 reproducciones, 163.901
-// espectadores, 1.626 seguidores nuevos) y "¿De quién es esta casa?" (387.459
-// reproducciones, 324.357 espectadores, 2.005 seguidores nuevos). Entre los dos:
-// 591.617 reproducciones, 488.258 espectadores y 3.631 seguidores nuevos. La
-// cuenta tiene 3.544 seguidores con 8 publicaciones (en el titular, "+3.500", para
-// no pasar de lo que se ve en el perfil).
+// Caso actualizado con las capturas del 3 de noviembre de 2026. Sus dos reels:
+// "¿Dónde comprar pisos baratos?" (244.578 reproducciones, 196.367 espectadores,
+// 2.083 seguidores nuevos) y "¿De quién es esta casa?" (438.983 reproducciones,
+// 362.128 espectadores, 2.489 seguidores nuevos). Entre los dos: 683.561
+// reproducciones, 558.495 espectadores y 4.572 seguidores nuevos. La cuenta tiene
+// 4.448 seguidores con 11 publicaciones (en el titular, "+4.400", para no pasar
+// de lo que se ve en el perfil).
 export const EXONERIS = {
-  title: '2 vídeos: +3.500 seguidores nuevos',
+  title: '2 vídeos: +4.400 seguidores nuevos',
   client: 'Javier Núñez',
   sector: 'Exoneris Consulting, subastas y NPL',
-  // La foto de su perfil, recortada de la captura.
-  avatar: { src: 'img/cases/exoneris-perfil.jpg', crop: { left: 44, top: 22, width: 266, height: 266 } },
+  // La foto de su perfil, recortada de la captura (sin el aro gris).
+  avatar: { src: 'img/cases/exoneris-perfil.jpg', crop: { left: 50, top: 42, width: 250, height: 250 } },
   kpis: [
-    { value: '+591 mil', label: 'visitas' },
-    { value: '+488 mil', label: 'personas los vieron' },
-    { value: '3.544', label: 'seguidores en la cuenta' },
+    { value: '+683 mil', label: 'visitas' },
+    { value: '+558 mil', label: 'personas los vieron' },
+    { value: '4.448', label: 'seguidores en la cuenta' },
   ],
   reels: EXONERIS_REELS,
   shots: [
-    { src: 'img/cases/exoneris-estadisticas-casa.jpg', alt: 'Estadísticas del reel sobre de quién es una casa abandonada: 387.459 reproducciones, 324.357 espectadores, 16 segundos de tiempo medio de reproducción y 2.005 seguidores nuevos' },
-    { src: 'img/cases/exoneris-estadisticas-pisos.jpg', alt: 'Estadísticas del reel sobre dónde comprar pisos baratos: 204.158 reproducciones, 163.901 espectadores, 15 segundos de tiempo medio de reproducción y 1.626 seguidores nuevos' },
+    { src: 'img/cases/exoneris-estadisticas-casa.jpg', alt: 'Estadísticas del reel sobre de quién es una casa abandonada: 438.983 reproducciones, 362.128 espectadores, 16 segundos de tiempo medio de reproducción y 2.489 seguidores nuevos' },
+    { src: 'img/cases/exoneris-estadisticas-pisos.jpg', alt: 'Estadísticas del reel sobre dónde comprar pisos baratos: 244.578 reproducciones, 196.367 espectadores, 15 segundos de tiempo medio de reproducción y 2.083 seguidores nuevos' },
   ],
   // Solo en las historias destacadas: el perfil (nombre y cifras, sin la biografía).
-  profile: { src: 'img/cases/exoneris-perfil.jpg', crop: { left: 0, top: 0, width: 1206, height: 310 }, alt: 'Perfil de Instagram de Javier Núñez (Subastas y NPL) con 8 publicaciones y 3.544 seguidores' },
+  profile: { src: 'img/cases/exoneris-perfil.jpg', crop: { left: 0, top: 0, width: 1206, height: 308 }, alt: 'Perfil de Instagram de Javier Núñez (Subastas y NPL) con 11 publicaciones y 4.448 seguidores' },
   engagement: { src: 'img/cases/exoneris-interacciones-casa.jpg', alt: 'Interacciones del reel sobre de quién es una casa abandonada: 3.106 me gusta, 202 comentarios, 94 republicaciones y 1.435 veces compartido' },
 };
 
@@ -164,8 +164,8 @@ export const ACCOUNTS = [
   ['daniel-pueyo', 'Daniel Pueyo', 'entrenador online', '5.784'],
   ['marisa-le-fay', 'Marisa Le Fay', 'tarot y guía del alma', '4.878'],
   ['javier-ruiz-vytalgroup', 'Javier Ruiz', 'fisio y equipos médicos', '4.784'],
+  ['javier-nunez-exoneris', 'Javier Núñez', 'subastas y NPL', '4.448'],
   ['pao-guarino', 'Pao Guarino', 'registros akáshicos y tarot', '3.878'],
-  ['javier-nunez-exoneris', 'Javier Núñez', 'subastas y NPL', '3.544'],
   ['wash-go-detailing', 'Wash & Go Detailing', '', '3.159'],
   ['logolea', 'LogoLEA', 'logopedia y psicología en Madrid', '2.616'],
   ['vdn-performance', 'VDN Performance', 'reprogramaciones en Madrid', '1.768'],

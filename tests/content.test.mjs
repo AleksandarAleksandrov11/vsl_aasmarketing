@@ -76,20 +76,22 @@ test('el CTA principal dice lo mismo en toda la landing', async () => {
 });
 
 // Cifras antiguas del caso Exoneris (las de las capturas anteriores, de octubre
-// de 2026), buscadas en el texto que se ve y se oye, no en el HTML: ahí </dt><dd>
+// y principios de noviembre de 2026), buscadas en el texto que se ve y se oye, no en el HTML: ahí </dt><dd>
 // separa la cifra de su etiqueta.
 const OLD_EXONERIS = [
   /\+\s?600\b/, /\b600\s+seguidores/i, /seguidores[^.]{0,60}\b24\s?(?:h|horas)\b/i, /(?<![\d.,])65[28](?![\d.,])/, /\b106(?:[.,]866|\s?mil)\b/,
   /\b151\s?mil\b/, /\b126\s?mil\b/, /(?<![\d.,])1[.,]058(?![\d.,])/, /(?<![\d.,])1[.,]032(?![\d.,])/, /151[.,]155/, /126[.,]433/, /su primer v[ií]deo/i,
   /\b234\s?mil\b/, /\b171\s?mil\b/, /233[.,]953/, /202[.,]054/, /171[.,]939/, /140[.,]540/, /(?<![\d.,])1[.,]315(?![\d.,])/,
   /(?<![\d.,])932\s+seguidores/, /\+\s?405\s?mil/, /\+\s?342\s?mil/, /(?<![\d.,])2[.,]195(?![\d.,])/, /\+\s?2\.000\s+seguidores/,
+  /\b387\s?mil\b/, /\b204\s?mil\b/, /387[.,]459/, /324[.,]357/, /204[.,]158/, /163[.,]901/, /(?<![\d.,])2[.,]005(?![\d.,])/, /(?<![\d.,])1[.,]626(?![\d.,])/,
+  /(?<![\d.,])3[.,]544(?![\d.,])/, /\+\s?591\s?mil/, /\+\s?488\s?mil/, /\+\s?3\.500\s+seguidores/,
 ];
 
 test('Exoneris con las cifras nuevas y ninguna antigua', async () => {
   const html = await readFile(path.join(dist, 'index.html'), 'utf8');
   const text = visibleText(html) + ' ' + attrText(html);
   for (const re of OLD_EXONERIS) assert.ok(!re.test(text), `cifra antigua: ${re}`);
-  for (const now of ['2 vídeos: +3.500 seguidores nuevos', '+591 mil', '+488 mil', '3.544 seguidores', '387 mil', '204 mil', '387.459', '324.357', '2.005 seguidores nuevos', '204.158', '163.901', '1.626 seguidores nuevos']) {
+  for (const now of ['2 vídeos: +4.400 seguidores nuevos', '+683 mil', '+558 mil', '4.448 seguidores', '438 mil', '244 mil', '438.983', '362.128', '2.489 seguidores nuevos', '244.578', '196.367', '2.083 seguidores nuevos']) {
     assert.ok(text.includes(now), `falta: ${now}`);
   }
   // Y en ningún archivo del repositorio (salvo dependencias, builds, la salida
@@ -120,9 +122,9 @@ test('solo cifras confirmadas en la landing', async () => {
   const allowed = [
     // Agencia y casos (sección 3 del encargo y web aasmarketing.com)
     '+10 M', '10 millones', '+2.500', '2.500', '+300', '+25', '25', '5,0', '+5.000', '2,5 millones', '+2,5 M', '<3', '3', '2', '24',
-    // Exoneris (capturas de principios de noviembre de 2026)
-    '+591 mil', '591 mil', '+488 mil', '488 mil', '+3.500', '3.500', '3.544', '387 mil', '204 mil', '387.459', '324.357', '2.005',
-    '204.158', '163.901', '1.626', '15', '16',
+    // Exoneris (capturas del 3 de noviembre de 2026)
+    '+683 mil', '683 mil', '+558 mil', '558 mil', '+4.400', '4.400', '4.448', '438 mil', '244 mil', '438.983', '362.128', '2.489',
+    '244.578', '196.367', '2.083', '15', '16',
     // Capturas de reels (alt del origen)
     '946 mil', '+406 mil', '406 mil', '306,9 mil', '257 mil', '110 mil', '80,3 mil', '53,8 mil', '52,4 mil', '37,1 mil', '33,2 mil',
     // Capturas de perfiles y casos (alt del origen)
