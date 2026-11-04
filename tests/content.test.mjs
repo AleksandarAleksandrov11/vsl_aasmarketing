@@ -85,13 +85,15 @@ const OLD_EXONERIS = [
   /(?<![\d.,])932\s+seguidores/, /\+\s?405\s?mil/, /\+\s?342\s?mil/, /(?<![\d.,])2[.,]195(?![\d.,])/, /\+\s?2\.000\s+seguidores/,
   /\b387\s?mil\b/, /\b204\s?mil\b/, /387[.,]459/, /324[.,]357/, /204[.,]158/, /163[.,]901/, /(?<![\d.,])2[.,]005(?![\d.,])/, /(?<![\d.,])1[.,]626(?![\d.,])/,
   /(?<![\d.,])3[.,]544(?![\d.,])/, /\+\s?591\s?mil/, /\+\s?488\s?mil/, /\+\s?3\.500\s+seguidores/,
+  /\b438\s?mil\b/, /\b244\s?mil\b/, /438[.,]983/, /362[.,]128/, /244[.,]578/, /196[.,]367/, /(?<![\d.,])2[.,]489(?![\d.,])/, /(?<![\d.,])2[.,]083(?![\d.,])/,
+  /(?<![\d.,])4[.,]448(?![\d.,])/, /\+\s?683\s?mil/, /\+\s?558\s?mil/, /\+\s?4\.400\s+seguidores/,
 ];
 
 test('Exoneris con las cifras nuevas y ninguna antigua', async () => {
   const html = await readFile(path.join(dist, 'index.html'), 'utf8');
   const text = visibleText(html) + ' ' + attrText(html);
   for (const re of OLD_EXONERIS) assert.ok(!re.test(text), `cifra antigua: ${re}`);
-  for (const now of ['2 vídeos: +4.400 seguidores nuevos', '+683 mil', '+558 mil', '4.448 seguidores', '438 mil', '244 mil', '438.983', '362.128', '2.489 seguidores nuevos', '244.578', '196.367', '2.083 seguidores nuevos']) {
+  for (const now of ['2 vídeos: +4.500 seguidores nuevos', '+694 mil', '+565 mil', '4.567 seguidores', '444 mil', '249 mil', '444.609', '364.590', '2.550 seguidores nuevos', '249.863', '200.665', '2.149 seguidores nuevos']) {
     assert.ok(text.includes(now), `falta: ${now}`);
   }
   // Y en ningún archivo del repositorio (salvo dependencias, builds, la salida
@@ -122,9 +124,9 @@ test('solo cifras confirmadas en la landing', async () => {
   const allowed = [
     // Agencia y casos (sección 3 del encargo y web aasmarketing.com)
     '+10 M', '10 millones', '+2.500', '2.500', '+300', '+25', '25', '5,0', '+5.000', '2,5 millones', '+2,5 M', '<3', '3', '2', '24',
-    // Exoneris (capturas del 3 de noviembre de 2026)
-    '+683 mil', '683 mil', '+558 mil', '558 mil', '+4.400', '4.400', '4.448', '438 mil', '244 mil', '438.983', '362.128', '2.489',
-    '244.578', '196.367', '2.083', '15', '16',
+    // Exoneris (capturas del 4 de noviembre de 2026)
+    '+694 mil', '694 mil', '+565 mil', '565 mil', '+4.500', '4.500', '4.567', '444 mil', '249 mil', '444.609', '364.590', '2.550',
+    '249.863', '200.665', '2.149', '15', '16',
     // Capturas de reels (alt del origen)
     '946 mil', '+406 mil', '406 mil', '306,9 mil', '257 mil', '110 mil', '80,3 mil', '53,8 mil', '52,4 mil', '37,1 mil', '33,2 mil',
     // Capturas de perfiles y casos (alt del origen)

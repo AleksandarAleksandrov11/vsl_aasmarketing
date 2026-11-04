@@ -360,7 +360,7 @@ async function clientes() {
   </div>
   <div class="hl" style="margin-top:30px;padding:26px 30px">
     <p class="eyebrow">Además de visitas, clientes</p>
-    <p class="hl-t" style="font-size:44px">+200 comentarios de personas interesadas en un solo vídeo</p>
+    <p class="hl-t" style="font-size:44px">+700 comentarios de personas interesadas en un solo vídeo</p>
     <div class="proof" style="margin-top:16px"><img src="${exEngagement}" style="max-width:720px;margin:0 auto"></div>
   </div>
 </div>${foot()}`, 'dark')],
