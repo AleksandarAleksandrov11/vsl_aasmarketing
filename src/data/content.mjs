@@ -195,7 +195,9 @@ export const ACCOUNTS = [
 // Fuera la de Adriana Aleksandrova y la de Maram Psicología (no quiere que salga
 // su nombre); la de Aleks Nikolaev Antonov se queda, por petición suya. Las
 // demás, de su ficha de Google (octubre de 2026), sin el emoji de la de Fátima y
-// con los párrafos de Marisa y Laura en uno.
+// con los párrafos de Marisa y Laura en uno. Las últimas cinco (Orpheus Psicología,
+// Gerard, Míchel Tobías, Pilar y Ana) son de noviembre de 2026 y van al final para
+// no cambiar la numeración de las historias ya subidas.
 export const TESTIMONIALS = [
   { name: 'Adrián López', role: 'Meta Ads', text: 'Después de probar con otras personas para la publicidad de mi negocio, decidí confiar en Aleks para llevar las campañas de Meta Ads. La diferencia ha sido enorme. Me explicó cómo iba a trabajar, fue transparente en todo momento y empezamos a recibir muchos más contactos. Muy profesional y siempre disponible para cualquier duda.' },
   { name: 'AeroFlex', role: 'Landing + Ads', text: 'Lo que más me gustó fue el trato. Aleks no intenta venderte cosas que no necesitas, sino que busca la mejor solución para tu negocio. Me hizo una landing para captar clientes con anuncios y está funcionando realmente bien. Muy contento con el trabajo.' },
@@ -222,6 +224,11 @@ export const TESTIMONIALS = [
   { name: 'Juan José Sánchez', role: 'Reseña en Google', text: 'Estupendo profesional, muy recomendable y de toda confianza.' },
   { name: 'Miguel C.', role: 'Reseña en Google', text: 'Muy profesional y trabajador. Altamente recomendado para todo tipo de públicos, un 10/10.' },
   { name: 'Comunidad Herederos', role: 'Reseña en Google', text: 'Buen profesional, de confianza y recomendable 100%.' },
+  { name: 'Orpheus Psicología', role: 'Reseña en Google', text: 'Muy satisfecha con el trato y el servicio de Aleks. Responde siempre muy rápido, te ayuda con cualquier cosa que necesites y es muy atento y resolutivo. Da gusto trabajar con él.' },
+  { name: 'Gerard Barrantes Bautista', role: 'Reseña en Google', text: 'Muy satisfecho con el servicio. Profesional, responsable y comprometido con ayudarte a obtener resultados. En menos de dos meses empezaron a aumentar exponencialmente seguidores en redes, más personas interesadas y tenía un nuevo sistema para ello super organizado. Super recomendable.' },
+  { name: 'Míchel Tobías', role: 'Reseña en Google', text: 'Encantado con el trabajo de Aleks, de AAS Marketing. Me diseñó la página web y también las redes sociales, ayudándome a dar a conocer mi consulta de psicología. Desde el primer momento mi proyecto ha explotado y está teniendo mucho alcance, gracias a él. Es cercano, atento y se implica en entender lo que quiero transmitir. En caso de duda te responde al instante. Valoro mucho poder contar con alguien que me orienta y me facilita esta parte del proyecto. Mi confianza en él es plena. Lo recomiendo totalmente sin lugar a dudas.' },
+  { name: 'Pilar Arribas', role: 'Reseña en Google', text: 'Si buscas a alguien para tu web y redes, Aleks es la persona. Desde el primer día entendió mi idea (viajes para Marruecos) y lo plasmó perfecto en la web y en los reels. Muy profesional, creativo y súper responsable con los tiempos. Además su edición con su tipografía tan característica hace que mi perfil se vea muy profesional. Estoy muy feliz con el resultado.' },
+  { name: 'Ana Alguera', role: 'Reseña en Google', text: 'Llevo trabajando con Aleks unos 4 meses y ha sido un antes y después! Muy muy cómodo, nos hemos comunicado y entendido genial a pesar de que mi gremio es muy grande. He crecido en TODAS mis redes al menos 300 seguidores, increíble. Ahora tengo colaboraciones de marcas muy top gracias a su edición' },
 ];
 
 export const ABOUT = {
